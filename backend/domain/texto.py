@@ -37,3 +37,30 @@ def normalizar_nome(texto: str) -> str:
 
     # 3) casefold() deixa todas as letras minúsculas para a comparação.
     return sem_acentos.casefold()
+
+
+def nome_corresponde(nome_completo: str, termo: str) -> bool:
+    """Diz se um nome corresponde ao termo buscado.
+
+    Recebe o nome completo de uma pessoa e o termo digitado (ambos como texto
+    normal; a função normaliza os dois). Aceita duas formas:
+    - nome completo igual ao termo (ex.: "Bianca Rocha" com "bianca rocha");
+    - primeiro nome igual ao termo, quando o termo tem uma palavra só
+      (ex.: "Bianca Rocha" com "Bianca").
+
+    Exemplo: nome_corresponde("Bianca Rocha", "BIANCA") devolve True;
+    nome_corresponde("Bianca Rocha", "Rocha") devolve False.
+    """
+    nome_normalizado = normalizar_nome(nome_completo)
+    termo_normalizado = normalizar_nome(termo)
+
+    if nome_normalizado == termo_normalizado:
+        return True
+
+    # Só comparamos o primeiro nome quando o termo tem uma palavra; assim
+    # "Bianca Rocha" não casa por prefixo com outro nome composto.
+    if " " not in termo_normalizado:
+        primeiro_nome = nome_normalizado.split(" ", 1)[0]
+        return primeiro_nome == termo_normalizado
+
+    return False

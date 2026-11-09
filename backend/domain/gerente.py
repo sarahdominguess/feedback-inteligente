@@ -8,7 +8,7 @@ misturar duas pessoas diferentes que tenham o mesmo primeiro nome.
 from collections.abc import Iterable
 
 from domain.anotacao import Anotacao
-from domain.texto import normalizar_nome
+from domain.texto import nome_corresponde, normalizar_nome
 
 
 class Gerente:
@@ -101,25 +101,11 @@ class Gerente:
             if not anotacao.e_do_time
         }
 
-        def casa_com_termo(nome_pessoa: str) -> bool:
-            """Diz se o nome da pessoa corresponde ao termo buscado.
-
-            Duas formas valem:
-            - nome completo igual ao termo;
-            - primeiro nome igual ao termo (só quando o termo tem uma palavra).
-            """
-            if nome_pessoa == termo:
-                return True
-
-            # " " not in termo garante que "Bianca" seja tratado como primeiro
-            # nome, mas "Bianca Rocha" não case por prefixo com outro nome.
-            if " " not in termo:
-                primeiro_nome = nome_pessoa.split(" ", 1)[0]
-                return primeiro_nome == termo
-
-            return False
-
-        encontradas = {pessoa for pessoa in pessoas if casa_com_termo(pessoa)}
+        # nome_corresponde é compartilhada com o DataLoader: aceita nome
+        # completo ou primeiro nome (termo de uma palavra só).
+        encontradas = {
+            pessoa for pessoa in pessoas if nome_corresponde(pessoa, termo)
+        }
 
         # Mais de uma pessoa distinta: a busca é ambígua. Nesse caso, mantemos
         # apenas quem tem exatamente o nome completo informado.
