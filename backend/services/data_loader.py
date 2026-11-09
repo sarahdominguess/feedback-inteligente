@@ -19,6 +19,7 @@ from config import (
     LOJA_NOME,
 )
 from domain.anotacao import Anotacao
+from domain.comparativo_time import ComparativoTime, MetricaComparada
 from domain.excecoes import DadosIndisponiveisError, VendedorNaoEncontradoError
 from domain.gerente import Gerente
 from domain.indicador_diario import IndicadorDiario
@@ -389,3 +390,119 @@ class DataLoader:
         vendedor = self.obter_vendedor(vendedor_id)
         gerente = self.obter_gerente()
         return gerente.anotacoes_sobre(vendedor.nome)
+
+    @staticmethod
+    def _posicao_no_ranking(
+        valor: float | None, valores: list[float | None]
+    ) -> int | None:
+        """Calcula a posição do valor no ranking (1 = maior valor).
+
+        Recebe o valor do vendedor e a lista de valores de todos os colegas.
+        Devolve None quando o vendedor não tem valor (fica fora do ranking).
+        Empates compartilham a mesma posição.
+        """
+        if valor is None:
+            return None
+
+        # Quantos colegas têm valor maior? A posição é esse número + 1.
+        return 1 + sum(
+            1 for outro in valores if outro is not None and outro > valor
+        )
+
+    @staticmethod
+    def _comparar_com_media(
+        valor: float | None, media: float | None
+    ) -> tuple[float | None, str]:
+        """Calcula a diferença percentual e a situação em relação à média.
+
+        A diferença é (valor - média) ÷ média. A situação é:
+        - "na_media" quando a diferença fica entre -5% e +5% (inclusive);
+        - "acima" quando passa de +5%;
+        - "abaixo" quando fica abaixo de -5%;
+        - "indisponivel" quando falta valor ou média (ou a média é zero).
+
+        Devolve uma dupla: (diferença percentual, situação).
+        """
+        if valor is None or media is None or media == 0:
+            return None, "indisponivel"
+
+        diferenca = (valor - media) / media
+
+        # Tolerância de 5% para mais ou para menos em torno da média.
+        if abs(diferenca) <= 0.05:
+            return diferenca, "na_media"
+        if diferenca > 0:
+            return diferenca, "acima"
+        return diferenca, "abaixo"
+
+    def obter_comparativo_time(
+        self, vendedor_id: str, mes: str | None = None
+    ) -> ComparativoTime:
+        """Compara um vendedor com a média dos vendedores do time.
+
+        A média é calculada com as somas de todos os vendedores no período:
+        - ticket médio do time = valor vendido total ÷ vendas totais;
+        - P.A. do time = peças totais ÷ vendas totais;
+        - conversão do time = vendas totais ÷ atendimentos totais.
+
+        O ranking usa as mesmas três métricas (1 = maior valor). Vendedor
+        sem dados no período fica com valor None e fora do ranking, mas
+        continua contando no total de vendedores.
+        """
+        self._garantir_carregado()
+        vendedor = self.obter_vendedor(vendedor_id)
+        vendedores = self._vendedores
+
+        # Somas do time no período pedido (mes=None usa todo o histórico).
+        total_valor = sum(v.valor_vendido(mes) for v in vendedores)
+        total_vendas = sum(v.vendas(mes) for v in vendedores)
+        total_pecas = sum(v.pecas(mes) for v in vendedores)
+        total_atendimentos = sum(v.atendimentos(mes) for v in vendedores)
+
+        # Média do time = somas totais ÷ base total. Se a base for zero, a
+        # média fica None (não inventamos divisão por zero).
+        media_ticket = total_valor / total_vendas if total_vendas > 0 else None
+        media_pa = total_pecas / total_vendas if total_vendas > 0 else None
+        media_conversao = (
+            total_vendas / total_atendimentos
+            if total_atendimentos > 0
+            else None
+        )
+
+        # Para cada métrica, pegamos o valor do vendedor e de todos os
+        # colegas via getattr (chama o método pelo nome: "ticket_medio",
+        # "pecas_por_atendimento" ou "conversao").
+        definicoes = (
+            ("ticket_medio", media_ticket),
+            ("pecas_por_atendimento", media_pa),
+            ("conversao", media_conversao),
+        )
+
+        metricas = []
+        for nome_metrica, media in definicoes:
+            valor = getattr(vendedor, nome_metrica)(mes)
+            valores = [
+                getattr(colega, nome_metrica)(mes) for colega in vendedores
+            ]
+
+            posicao = self._posicao_no_ranking(valor, valores)
+            diferenca, situacao = self._comparar_com_media(valor, media)
+
+            metricas.append(
+                MetricaComparada(
+                    nome=nome_metrica,
+                    valor=valor,
+                    media_time=media,
+                    diferenca_percentual=diferenca,
+                    posicao=posicao,
+                    total_vendedores=len(vendedores),
+                    situacao=situacao,
+                )
+            )
+
+        return ComparativoTime(
+            vendedor_id=vendedor.vendedor_id,
+            nome=vendedor.nome,
+            metricas=tuple(metricas),
+            mes=mes,
+        )
