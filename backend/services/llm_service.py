@@ -37,6 +37,7 @@ from domain.excecoes import (
 from domain.feedback_roteiro import FeedbackRoteiro
 from services.data_loader import DataLoader
 from services.prompt_feedback import montar_mensagens
+from services.validador_feedback import validar_roteiro
 
 
 class LLMService:
@@ -142,13 +143,13 @@ class LLMService:
 
         return "\n".join(linhas).strip()
 
-    @classmethod
-    def _interpretar_resposta(cls, resposta) -> FeedbackRoteiro:
-        """Transforma a resposta da API em FeedbackRoteiro.
+    @staticmethod
+    def _texto_da_resposta(resposta) -> str:
+        """Confere a resposta da API e devolve o texto bruto da IA.
 
-        Recebe o objeto devolvido pela SDK (com choices[0].message.content).
-        Levanta LLMRespostaInvalidaError quando a resposta foi cortada, veio
-        vazia, não é JSON ou não tem o formato esperado.
+        Recebe o objeto devolvido pela SDK. Levanta LLMRespostaInvalidaError
+        quando não há escolha, quando a resposta foi cortada por limite de
+        tamanho ou quando o conteúdo veio vazio.
         """
         # choices é a lista de respostas geradas; usamos a primeira.
         if not resposta.choices:
@@ -176,6 +177,17 @@ class LLMService:
                 "novamente."
             )
 
+        return conteudo
+
+    @classmethod
+    def _interpretar_resposta(cls, resposta) -> FeedbackRoteiro:
+        """Transforma a resposta da API em FeedbackRoteiro.
+
+        Recebe o objeto devolvido pela SDK (com choices[0].message.content).
+        Levanta LLMRespostaInvalidaError quando a resposta foi cortada, veio
+        vazia, não é JSON ou não tem o formato esperado.
+        """
+        conteudo = cls._texto_da_resposta(resposta)
         texto = cls._remover_cercas_markdown(conteudo.strip())
 
         try:
@@ -197,79 +209,45 @@ class LLMService:
 
         try:
             # FeedbackRoteiro.de_dict aceita chaves ausentes (viram listas
-            # vazias). A checagem de qualidade do conteúdo será feita numa
-            # próxima fatia; aqui garantimos apenas o formato.
+            # vazias); a checagem de qualidade é feita por validar_roteiro.
             return FeedbackRoteiro.de_dict(dados)
         except ValueError as erro:
             raise LLMRespostaInvalidaError(
                 f"A resposta da IA não tem o formato esperado: {erro}"
             ) from erro
 
-    def gerar_roteiro_feedback(
-        self, vendedor_id: str, mes_referencia: str | None = None
-    ) -> FeedbackRoteiro:
-        """Gera o roteiro de feedback de um vendedor com a IA.
+    @staticmethod
+    def _mensagem_de_correcao(problemas: list[str]) -> str:
+        """Monta o pedido de correção enviado à IA depois de uma reprovação.
 
-        Recebe o código do vendedor ("C0031") e, opcionalmente, o mês de
-        referência ("AAAA-MM"; None = todo o histórico).
-
-        Devolve um FeedbackRoteiro com as quatro listas de textos.
-
-        Levanta VendedorNaoEncontradoError se o vendedor não existir,
-        LLMNaoConfiguradoError se a chave faltar ou for recusada,
-        LLMIndisponivelError em falhas externas e LLMRespostaInvalidaError
-        quando a resposta não serve.
+        Recebe a lista de problemas em português e devolve um texto curto que
+        manda devolver o JSON completo corrigido, sem repetir a resposta longa.
         """
-        # 1) Busca os dados já calculados. Se o vendedor não existir, a
-        # exceção sobe daqui sem chamar a API (economiza tempo e dinheiro).
-        vendedor = self._data_loader.obter_vendedor(vendedor_id)
-        comparativo = self._data_loader.obter_comparativo_time(
-            vendedor_id, mes_referencia
+        linhas = [
+            "O JSON anterior foi reprovado nas regras de qualidade.",
+            "Corrija os problemas abaixo e devolva o JSON COMPLETO, mantendo "
+            "todas as regras do sistema:",
+        ]
+        linhas.extend(f"- {problema}" for problema in problemas)
+        linhas.append(
+            "Responda somente com o JSON corrigido, sem texto fora dele."
         )
-        anotacoes = self._data_loader.obter_anotacoes_do_vendedor(vendedor_id)
-        gerente = self._data_loader.obter_gerente()
-        anotacoes_do_time = gerente.anotacoes_do_time()
+        return "\n".join(linhas)
 
-        # 2) Monta as duas mensagens (sistema e usuário) sem tocar em rede.
-        mensagens = montar_mensagens(
-            vendedor=vendedor,
-            comparativo=comparativo,
-            anotacoes_do_vendedor=anotacoes,
-            anotacoes_do_time=anotacoes_do_time,
-            gerente_nome=gerente.nome,
-            loja_nome=gerente.loja_nome,
-            mes_referencia=mes_referencia,
-        )
+    @staticmethod
+    def _chamar_api(cliente, parametros: dict):
+        """Chama a API e traduz os erros da SDK para o nosso domínio.
 
-        modelo = self._modelo_efetivo()
-        thinking = self._thinking_efetivo()
+        Recebe o cliente (real ou fake) e os parâmetros da chamada. Devolve a
+        resposta da API.
 
-        # Parâmetros pedidos à API. response_format "json_object" é o "modo
-        # JSON": o provedor se compromete a devolver um JSON válido.
-        parametros = {
-            "model": modelo,
-            "messages": mensagens,
-            "response_format": {"type": "json_object"},
-            "max_tokens": LLM_MAX_TOKENS,
-            "temperature": LLM_TEMPERATURA,
-        }
-
-        # O thinking ("raciocínio interno") vai em extra_body porque é um
-        # parâmetro específico do provedor, fora do padrão da SDK.
-        # Com thinking ligado, a temperatura não faz efeito; mantemos o valor
-        # por simplicidade e documentamos isso aqui.
-        # "omitir" não envia o parâmetro e deixa o padrão do provedor.
-        if thinking != "omitir":
-            parametros["extra_body"] = {"thinking": {"type": thinking}}
-
-        cliente = self._obter_cliente()
-
-        # A ordem dos except importa: as subclasses precisam vir antes das
-        # classes pai, senão o erro específico seria capturado pelo genérico.
-        # Exemplo: APITimeoutError é filha de APIConnectionError, e
-        # RateLimitError é filha de APIStatusError.
+        A ordem dos except importa: as subclasses precisam vir antes das
+        classes pai, senão o erro específico seria capturado pelo genérico.
+        Exemplo: APITimeoutError é filha de APIConnectionError, e
+        RateLimitError é filha de APIStatusError.
+        """
         try:
-            resposta = cliente.chat.completions.create(**parametros)
+            return cliente.chat.completions.create(**parametros)
         except openai.AuthenticationError as erro:
             # 401: chave inválida ou recusada.
             raise LLMNaoConfiguradoError(
@@ -332,5 +310,124 @@ class LLMService:
                 "tarde."
             ) from erro
 
-        # 5) Converte a resposta em objeto de domínio.
-        return self._interpretar_resposta(resposta)
+    def gerar_roteiro_feedback(
+        self, vendedor_id: str, mes_referencia: str | None = None
+    ) -> FeedbackRoteiro:
+        """Gera o roteiro de feedback de um vendedor com a IA.
+
+        Recebe o código do vendedor ("C0031") e, opcionalmente, o mês de
+        referência ("AAAA-MM"; None = todo o histórico).
+
+        Devolve um FeedbackRoteiro com as quatro listas de textos, já validado
+        pelas regras de qualidade. Se a primeira resposta for reprovada, faz
+        UMA nova tentativa pedindo a correção; se a segunda também falhar,
+        levanta LLMRespostaInvalidaError com a lista de problemas.
+
+        Levanta VendedorNaoEncontradoError se o vendedor não existir,
+        LLMNaoConfiguradoError se a chave faltar ou for recusada,
+        LLMIndisponivelError em falhas externas e LLMRespostaInvalidaError
+        quando a resposta não serve nem após a correção.
+        """
+        # 1) Busca os dados já calculados. Se o vendedor não existir, a
+        # exceção sobe daqui sem chamar a API (economiza tempo e dinheiro).
+        vendedor = self._data_loader.obter_vendedor(vendedor_id)
+        comparativo = self._data_loader.obter_comparativo_time(
+            vendedor_id, mes_referencia
+        )
+        anotacoes = self._data_loader.obter_anotacoes_do_vendedor(vendedor_id)
+        gerente = self._data_loader.obter_gerente()
+        anotacoes_do_time = gerente.anotacoes_do_time()
+
+        # 2) Monta as duas mensagens (sistema e usuário) sem tocar em rede.
+        mensagens = montar_mensagens(
+            vendedor=vendedor,
+            comparativo=comparativo,
+            anotacoes_do_vendedor=anotacoes,
+            anotacoes_do_time=anotacoes_do_time,
+            gerente_nome=gerente.nome,
+            loja_nome=gerente.loja_nome,
+            mes_referencia=mes_referencia,
+        )
+
+        modelo = self._modelo_efetivo()
+        thinking = self._thinking_efetivo()
+
+        # Parâmetros pedidos à API. response_format "json_object" é o "modo
+        # JSON": o provedor se compromete a devolver um JSON válido.
+        parametros = {
+            "model": modelo,
+            "messages": mensagens,
+            "response_format": {"type": "json_object"},
+            "max_tokens": LLM_MAX_TOKENS,
+            "temperature": LLM_TEMPERATURA,
+        }
+
+        # O thinking ("raciocínio interno") vai em extra_body porque é um
+        # parâmetro específico do provedor, fora do padrão da SDK.
+        # Com thinking ligado, a temperatura não faz efeito; mantemos o valor
+        # por simplicidade e documentamos isso aqui.
+        # "omitir" não envia o parâmetro e deixa o padrão do provedor.
+        if thinking != "omitir":
+            parametros["extra_body"] = {"thinking": {"type": thinking}}
+
+        cliente = self._obter_cliente()
+
+        # Nomes de todos os colegas, exceto o próprio vendedor. A validação
+        # usa isso para impedir comparação nominal (regra de justiça).
+        nomes_colegas = [
+            colega.nome
+            for colega in self._data_loader.listar_vendedores()
+            if colega.vendedor_id != vendedor_id
+        ]
+
+        # Primeira tentativa: chama a API e converte a resposta.
+        resposta = self._chamar_api(cliente, parametros)
+        roteiro = self._interpretar_resposta(resposta)
+
+        # Valida o conteúdo. Lista vazia de problemas = aprovado.
+        problemas = validar_roteiro(roteiro, vendedor.nome, nomes_colegas)
+
+        if not problemas:
+            return roteiro
+
+        # Reprovou: fazemos UMA única nova tentativa. Cada chamada custa
+        # dinheiro e faz o gerente esperar; insistir muitas vezes não compensa.
+        conteudo_anterior = self._texto_da_resposta(resposta)
+        mensagens_correcao = list(mensagens) + [
+            {"role": "assistant", "content": conteudo_anterior},
+            {
+                "role": "user",
+                "content": self._mensagem_de_correcao(problemas),
+            },
+        ]
+
+        parametros_correcao = dict(parametros)
+        parametros_correcao["messages"] = mensagens_correcao
+
+        resposta_correcao = self._chamar_api(cliente, parametros_correcao)
+
+        try:
+            roteiro_corrigido = self._interpretar_resposta(resposta_correcao)
+        except LLMRespostaInvalidaError as erro:
+            # A segunda resposta nem pôde ser lida (vazia, cortada ou sem
+            # JSON). Não repetimos o texto da IA; mostramos os problemas que
+            # motivaram a correção.
+            raise LLMRespostaInvalidaError(
+                "A IA não conseguiu gerar um roteiro válido após uma "
+                "correção. Problemas da primeira resposta: "
+                f"{'; '.join(problemas)}. A segunda resposta também não pôde "
+                "ser usada."
+            ) from erro
+
+        problemas_corrigidos = validar_roteiro(
+            roteiro_corrigido, vendedor.nome, nomes_colegas
+        )
+
+        if problemas_corrigidos:
+            raise LLMRespostaInvalidaError(
+                "A IA não conseguiu gerar um roteiro válido após duas "
+                "tentativas. Problemas da última resposta: "
+                f"{'; '.join(problemas_corrigidos)}"
+            )
+
+        return roteiro_corrigido

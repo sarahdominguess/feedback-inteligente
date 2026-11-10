@@ -34,16 +34,49 @@ from services.data_loader import DataLoader
 from services.llm_service import LLMService
 
 
-# JSON de exemplo com o formato que a IA deve devolver.
+# JSON de exemplo com o formato e o conteúdo que o validador aprova.
 ROTEIRO_JSON = json.dumps(
     {
-        "pontos_positivos": ["Bom atendimento, segundo a anotação do gerente"],
-        "pontos_melhoria": ["Oferecer mais peças no caixa"],
-        "possiveis_motivos": ["Pode ser que falte tempo no fechamento"],
-        "roteiro_conversa": ["Como você vê seu atendimento hoje?"],
+        "pontos_positivos": [
+            "Conversão de 50,5%, a melhor do time, mostra segurança.",
+            "Cliente elogiou o atendimento no Google citando seu nome.",
+        ],
+        "pontos_melhoria": [
+            "Na situação do salão, o P.A. de 1,22 ficou abaixo da média; "
+            "oferecer uma segunda peça amanhã.",
+            "Na venda do vestido, repetir a oferta do cinto no caixa para "
+            "elevar o P.A.",
+        ],
+        "possiveis_motivos": [
+            "Pode ser que o ritmo do salão deixe pouco tempo para oferecer "
+            "complementos.",
+            "Pode ser que falte segurança para sugerir uma segunda peça.",
+        ],
+        "roteiro_conversa": [
+            "Abertura: obrigado por reservar este momento; quero ouvir você.",
+            "Reconhecimento: sua conversão de 50,5% é a melhor do time.",
+            "Situação: o P.A. ficou em 1,22; como você vê isso?",
+            "O que costuma acontecer quando você pensa em oferecer outra peça?",
+            "Que apoio você precisaria para testar uma oferta amanhã?",
+            "Combinado: amanhã você oferece uma segunda peça e nos falamos "
+            "na sexta.",
+        ],
     },
     ensure_ascii=False,
 )
+
+
+def roteiro_json_com_sabrina() -> str:
+    """Copia o JSON válido e acrescenta um item que cita uma colega.
+
+    Simula a IA quebrando a regra de justiça (comparação por nome) para
+    testar a nova tentativa de correção.
+    """
+    dados = json.loads(ROTEIRO_JSON)
+    dados["pontos_positivos"].append(
+        "A Sabrina Alves ajudou o time no sábado."
+    )
+    return json.dumps(dados, ensure_ascii=False)
 
 
 class FakeMensagem:
@@ -71,8 +104,10 @@ class FakeResposta:
 class FakeCompletions:
     """Imita chat.completions.create e guarda os parâmetros recebidos."""
 
-    def __init__(self, resposta=None, erro=None):
+    def __init__(self, resposta=None, respostas=None, erro=None):
         self.resposta = resposta
+        # respostas: fila de respostas diferentes para chamadas seguidas.
+        self.respostas = list(respostas) if respostas is not None else []
         self.erro = erro
         self.chamadas = []
 
@@ -81,6 +116,10 @@ class FakeCompletions:
         self.chamadas.append(kwargs)
         if self.erro is not None:
             raise self.erro
+        # Se há uma fila, cada chamada consome a próxima resposta. Quando a
+        # fila acaba, repete a resposta padrão (se existir).
+        if self.respostas:
+            return self.respostas.pop(0)
         return self.resposta
 
 
@@ -219,9 +258,17 @@ class TestLLMService(unittest.TestCase):
 
         self.loader = DataLoader()
 
-    def criar_servico(self, resposta=None, erro=None, **kwargs):
-        """Cria o serviço com um FakeClient e devolve (serviço, completions)."""
-        completions = FakeCompletions(resposta=resposta, erro=erro)
+    def criar_servico(
+        self, resposta=None, respostas=None, erro=None, **kwargs
+    ):
+        """Cria o serviço com um FakeClient e devolve (serviço, completions).
+
+        resposta vale para todas as chamadas; respostas é uma fila usada
+        para simular a primeira tentativa reprovada e a segunda corrigida.
+        """
+        completions = FakeCompletions(
+            resposta=resposta, respostas=respostas, erro=erro
+        )
         client = FakeClient(completions)
         servico = LLMService(
             data_loader=self.loader, client=client, **kwargs
@@ -235,20 +282,19 @@ class TestLLMService(unittest.TestCase):
         roteiro = servico.gerar_roteiro_feedback("C0031")
 
         self.assertIsInstance(roteiro, FeedbackRoteiro)
+
+        esperado = json.loads(ROTEIRO_JSON)
         self.assertEqual(
-            roteiro.pontos_positivos,
-            ["Bom atendimento, segundo a anotação do gerente"],
+            roteiro.pontos_positivos, esperado["pontos_positivos"]
         )
         self.assertEqual(
-            roteiro.pontos_melhoria, ["Oferecer mais peças no caixa"]
+            roteiro.pontos_melhoria, esperado["pontos_melhoria"]
         )
         self.assertEqual(
-            roteiro.possiveis_motivos,
-            ["Pode ser que falte tempo no fechamento"],
+            roteiro.possiveis_motivos, esperado["possiveis_motivos"]
         )
         self.assertEqual(
-            roteiro.roteiro_conversa,
-            ["Como você vê seu atendimento hoje?"],
+            roteiro.roteiro_conversa, esperado["roteiro_conversa"]
         )
 
     def test_parametros_enviados(self):
@@ -317,7 +363,7 @@ class TestLLMService(unittest.TestCase):
 
         roteiro = servico.gerar_roteiro_feedback("C0031")
 
-        self.assertEqual(len(roteiro.pontos_positivos), 1)
+        self.assertEqual(len(roteiro.pontos_positivos), 2)
 
     def test_conteudo_vazio(self):
         """Conteúdo None ou só espaços vira LLMRespostaInvalidaError."""
@@ -347,21 +393,89 @@ class TestLLMService(unittest.TestCase):
         with self.assertRaises(LLMRespostaInvalidaError):
             servico.gerar_roteiro_feedback("C0031")
 
-    def test_chaves_faltando_viram_listas_vazias(self):
-        """Formato é aceito, mas conteúdo vazio será tratado na próxima fatia."""
-        # Observação: a checagem de qualidade (quantidade mínima de itens,
-        # presença de SBI etc.) fica para a fatia seguinte. Aqui só garantimos
-        # que chaves ausentes não quebram a conversão.
-        servico, _ = self.criar_servico(resposta=FakeResposta("{}"))
+    def test_chaves_faltando_disparam_nova_tentativa_e_erro(self):
+        """JSON sem as listas agora é reprovado e tenta correção uma vez.
+
+        Antes da validação de qualidade, "{}" virava um roteiro com listas
+        vazias. Agora o validador reprova as listas vazias; como a segunda
+        resposta é igual, o serviço levanta LLMRespostaInvalidaError após
+        exatamente duas chamadas.
+        """
+        servico, completions = self.criar_servico(
+            resposta=FakeResposta("{}")
+        )
+
+        with self.assertRaises(LLMRespostaInvalidaError) as contexto:
+            servico.gerar_roteiro_feedback("C0031")
+
+        self.assertEqual(len(completions.chamadas), 2)
+        self.assertIn("pontos_positivos", str(contexto.exception))
+
+    def test_resposta_valida_aprova_com_uma_chamada(self):
+        """Roteiro aprovado na primeira tentativa não gera segunda chamada."""
+        servico, completions = self.criar_servico(
+            resposta=FakeResposta(ROTEIRO_JSON)
+        )
+
+        servico.gerar_roteiro_feedback("C0031")
+
+        self.assertEqual(len(completions.chamadas), 1)
+
+    def test_resposta_com_colega_e_corrigida_na_segunda(self):
+        """1ª cita "Sabrina"; a 2ª corrigida é aprovada, com 2 chamadas."""
+        servico, completions = self.criar_servico(
+            respostas=[
+                FakeResposta(roteiro_json_com_sabrina()),
+                FakeResposta(ROTEIRO_JSON),
+            ]
+        )
 
         roteiro = servico.gerar_roteiro_feedback("C0031")
 
-        self.assertEqual(roteiro.para_dict(), {
-            "pontos_positivos": [],
-            "pontos_melhoria": [],
-            "possiveis_motivos": [],
-            "roteiro_conversa": [],
-        })
+        self.assertIsInstance(roteiro, FeedbackRoteiro)
+        self.assertEqual(len(completions.chamadas), 2)
+
+        # A segunda chamada reenvia: mensagens originais + resposta anterior
+        # (assistant) + pedido de correção (user) com a lista de problemas.
+        mensagens = completions.chamadas[1]["messages"]
+        self.assertEqual(
+            [mensagem["role"] for mensagem in mensagens],
+            ["system", "user", "assistant", "user"],
+        )
+        correcao = mensagens[-1]["content"]
+        self.assertIn("Sabrina", correcao)
+        self.assertIn("reprovado", correcao)
+
+    def test_duas_respostas_reprovadas_geram_erro(self):
+        """Se as duas tentativas citam a colega, o erro lista o problema."""
+        servico, completions = self.criar_servico(
+            respostas=[
+                FakeResposta(roteiro_json_com_sabrina()),
+                FakeResposta(roteiro_json_com_sabrina()),
+            ]
+        )
+
+        with self.assertRaises(LLMRespostaInvalidaError) as contexto:
+            servico.gerar_roteiro_feedback("C0031")
+
+        self.assertEqual(len(completions.chamadas), 2)
+        self.assertIn("Sabrina", str(contexto.exception))
+        self.assertIn("duas tentativas", str(contexto.exception))
+
+    def test_segunda_resposta_invalida_gera_erro(self):
+        """Se a correção não for JSON, o erro também aparece após 2 chamadas."""
+        servico, completions = self.criar_servico(
+            respostas=[
+                FakeResposta(roteiro_json_com_sabrina()),
+                FakeResposta("isto não é json"),
+            ]
+        )
+
+        with self.assertRaises(LLMRespostaInvalidaError) as contexto:
+            servico.gerar_roteiro_feedback("C0031")
+
+        self.assertEqual(len(completions.chamadas), 2)
+        self.assertIn("segunda resposta", str(contexto.exception))
 
     def test_resposta_cortada_por_tamanho(self):
         """finish_reason "length" indica corte e vira resposta inválida."""
