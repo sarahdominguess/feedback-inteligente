@@ -31,3 +31,50 @@ LOJA_NOME = "Aurora Shopping Centro"
 # Texto que aparece na coluna "sobre" das anotações quando o gerente escreve
 # sobre o time inteiro, e não sobre uma pessoa específica.
 ANOTACAO_SOBRE_TIME = "(time)"
+
+
+# ---------------------------------------------------------------------------
+# Integração com a LLM (DeepSeek) — usada a partir da Etapa 2.
+# LLM: "Large Language Model", o modelo de linguagem que gera o texto.
+# ---------------------------------------------------------------------------
+
+# Endereço do provedor da IA. A SDK openai conversa com este endereço.
+LLM_BASE_URL = "https://api.deepseek.com"
+
+# Nomes das variáveis de ambiente lidas pelo serviço da LLM.
+# Variável de ambiente: valor guardado fora do código (no arquivo backend/.env,
+# que não é versionado), ideal para segredos como a chave da API.
+ENV_DEEPSEEK_API_KEY = "DEEPSEEK_API_KEY"
+ENV_DEEPSEEK_MODEL = "DEEPSEEK_MODEL"
+ENV_DEEPSEEK_THINKING = "DEEPSEEK_THINKING"
+
+# Modelo usado quando a variável DEEPSEEK_MODEL não estiver definida.
+# Atenção: os nomes de modelo da DeepSeek mudam com o tempo. Confira o nome
+# atual na documentação oficial ou rode client.models.list() com a sua chave.
+LLM_MODELO_PADRAO = "deepseek-flash"
+
+# Tempo máximo de espera (timeout, em segundos) por uma resposta da IA.
+LLM_TIMEOUT_SEGUNDOS = 60
+
+# Limite de tokens da resposta. Token: pedacinho de texto que o modelo lê e
+# escreve; limitar evita resposta cortada e custo inesperado.
+LLM_MAX_TOKENS = 3000
+
+# Temperatura: o quanto a resposta pode variar. Valores baixos deixam o texto
+# mais previsível e estável, o que é bom para um roteiro de feedback.
+LLM_TEMPERATURA = 0.4
+
+# Quantas vezes a SDK pode reenviar sozinha uma chamada que falhou na rede.
+# 1 significa "não reenviar": quem decide tentar de novo é o nosso código.
+LLM_MAX_TENTATIVAS_SDK = 1
+
+# "Thinking" é o raciocínio interno de alguns modelos: melhora respostas
+# difíceis, mas deixa a chamada mais lenta e cara. Nos modelos V4 ele vem
+# ligado por padrão; para esta tarefa desligamos explicitamente.
+# Valores aceitos: "disabled" (desligado), "enabled" (ligado) ou "omitir"
+# (não enviar o parâmetro e deixar o padrão do provedor).
+LLM_THINKING_PADRAO = "disabled"
+
+# Caminho absoluto do arquivo backend/.env, calculado a partir deste arquivo,
+# para o carregamento funcionar de qualquer pasta de execução.
+ENV_FILE = Path(__file__).resolve().parent / ".env"
