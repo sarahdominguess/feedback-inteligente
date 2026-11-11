@@ -139,28 +139,31 @@ h4 {
 
 /*
  * ui-botao-primario: a ação mais importante da tela.
- * Verde-menta com texto #111111 (contraste ≈ 11,2:1).
+ * Verde-menta com texto #111111 (contraste ≈ 11,2:1) e borda tinta (~14:1
+ * sobre a superfície): assim o limite do botão fica visível mesmo quando ele
+ * está sobre um cartão claro.
  */
 .ui-botao-primario {
   background-color: var(--cor-primaria);
-  border-color: var(--cor-primaria);
+  border-color: var(--cor-tinta);
   color: var(--cor-texto-sobre-primaria);
 }
 
 .ui-botao-primario:hover:not(:disabled) {
   background-color: var(--cor-primaria-ativa);
-  border-color: var(--cor-primaria-ativa);
+  border-color: var(--cor-tinta);
 }
 
 /*
  * ui-botao-secundario: ação alternativa.
- * Fundo claro com texto tinta; no hover a borda escurece para deixar claro
- * que o botão está sob o cursor. Funciona tanto dentro de cartões quanto
- * sobre o roxo da página.
+ * Fundo claro com texto tinta; a borda usa --cor-borda-controle (~10:1 sobre
+ * a superfície), porque o hairline não chega aos 3:1 exigidos para delimitar
+ * um controle. No hover a borda escurece para deixar claro que o botão está
+ * sob o cursor. Funciona tanto dentro de cartões quanto sobre o roxo.
  */
 .ui-botao-secundario {
   background-color: var(--cor-superficie-suave);
-  border-color: var(--cor-borda);
+  border-color: var(--cor-borda-controle);
   color: var(--cor-tinta);
 }
 

@@ -82,7 +82,9 @@
   max-width: 100%;
   min-height: 44px;
   padding: var(--espaco-sm) var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
+  /* Borda de controle (~10:1): o select fica sobre um cartão da mesma cor,
+     então a borda é o que delimita o campo. */
+  border: 1px solid var(--cor-borda-controle);
   border-radius: var(--raio-md);
   background-color: var(--cor-superficie-suave);
   color: var(--cor-tinta);

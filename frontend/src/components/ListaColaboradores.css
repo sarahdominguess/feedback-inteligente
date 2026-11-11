@@ -1,8 +1,8 @@
 /*
  * Estilos da lista lateral de colaboradores.
  *
- * Cada item é um botão claro sobre a página roxa, com 44px mínimos de altura
- * (alvo de toque definido no DESIGN.md). O item selecionado usa a cor
+ * Cada item é um botão claro dentro da barra lateral, com 44px mínimos de
+ * altura (alvo de toque definido no DESIGN.md). O item selecionado usa a cor
  * primária — o DESIGN.md reserva a primária para ações e seleção —, mais
  * borda escura e ícone, para o destaque não depender só de cor.
  */
@@ -40,7 +40,9 @@
   /* 44px é o alvo de toque mínimo declarado no DESIGN.md. */
   min-height: 44px;
   padding: var(--espaco-lg) var(--espaco-xl);
-  border: 1px solid var(--cor-borda);
+  /* Borda de controle (~10:1 sobre a superfície): fundo do item e barra
+     lateral têm a mesma cor, então a borda delimita a área clicável. */
+  border: 1px solid var(--cor-borda-controle);
   border-radius: var(--raio-md);
   /* Superfície clara com texto tinta: contraste ≈ 14:1. */
   background-color: var(--cor-superficie-suave);

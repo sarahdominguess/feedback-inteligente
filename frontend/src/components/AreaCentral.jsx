@@ -30,6 +30,9 @@ import './AreaCentral.css';
  *   - visão do gerente com seleção: a página da aba escolhida (Dados,
  *     Anotações ou Feedback).
  *
+ * As duas raízes são <main>: a área central é o conteúdo principal da
+ * página, e cabeçalho e barra lateral ficam fora dela.
+ *
  * Exemplo de uso: <AreaCentral />
  */
 export function AreaCentral() {
@@ -41,14 +44,14 @@ export function AreaCentral() {
   // A regional não escolhe colaborador: tem uma visão própria da loja.
   if (visao === VISOES.REGIONAL) {
     return (
-      <section className="area-central" aria-label="Visão regional">
+      <main className="area-central" aria-label="Visão regional">
         <PaginaRegional />
-      </section>
+      </main>
     );
   }
 
   return (
-    <section className="area-central" aria-label="Conteúdo do colaborador">
+    <main className="area-central" aria-label="Conteúdo do colaborador">
       {!vendedorSelecionadoId ? (
         // Gerente sem ninguém escolhido: explica o próximo passo.
         <EstadoVazio
@@ -85,6 +88,6 @@ export function AreaCentral() {
           )}
         </div>
       )}
-    </section>
+    </main>
   );
 }

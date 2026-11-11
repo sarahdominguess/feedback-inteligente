@@ -198,8 +198,17 @@ export function PaginaDados() {
           /*
            * O container permite rolar a tabela na horizontal em telas
            * estreitas, sem espremer as colunas nem quebrar a página.
+           *
+           * tabIndex={0} coloca o container na ordem do Tab, para rolar com
+           * as setas. role="region" + aria-label dão um nome ao bloco para o
+           * leitor de tela avisar onde a pessoa está.
            */
-          <div className="pagina-dados__tabela-container">
+          <div
+            className="pagina-dados__tabela-container"
+            tabIndex={0}
+            role="region"
+            aria-label="Resultado por mês, tabela com rolagem horizontal"
+          >
             {/*
              * Tabela acessível: <caption> explica o conteúdo; <th scope>
              * diz ao leitor de tela se o cabeçalho vale para a coluna toda

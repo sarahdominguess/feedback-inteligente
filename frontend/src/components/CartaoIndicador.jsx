@@ -26,8 +26,10 @@ import './CartaoIndicador.css';
  *   detalhe: linha pequena opcional (ex.: "Média do time: R$ 210,00").
  *   situacao: opcional; "acima", "abaixo", "na_media" ou "indisponivel".
  *
- * Devolve um <article> com rótulo, valor, detalhe e (quando há situação)
- * um Selo com o texto e o tom certos.
+ * Devolve um <div> com rótulo, valor, detalhe e (quando há situação) um
+ * Selo com o texto e o tom certos. Usamos <div> (e não <article>) porque o
+ * cartão não tem título próprio e não precisa virar um marco de conteúdo
+ * sem nome para leitores de tela.
  *
  * O tom de "abaixo" é "atencao", e não "negativo", porque ficar abaixo da
  * média do time é um ponto de desenvolvimento para a conversa, não uma
@@ -45,8 +47,11 @@ export function CartaoIndicador({
   const temSituacao = typeof situacao === 'string' && situacao !== '';
 
   return (
-    // <article> porque o cartão é um bloco de conteúdo que faz sentido sozinho.
-    <article className="cartao-indicador">
+    /*
+     * <div> em vez de <article>: um <article> sem título vira um marco sem
+     * nome para leitores de tela. O cartão é só um bloco visual.
+     */
+    <div className="cartao-indicador">
       {/* Nome da métrica, em texto menor. */}
       <p className="cartao-indicador__rotulo">{rotulo}</p>
 
@@ -65,6 +70,6 @@ export function CartaoIndicador({
           />
         </div>
       )}
-    </article>
+    </div>
   );
 }

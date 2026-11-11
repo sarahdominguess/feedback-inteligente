@@ -31,6 +31,11 @@
 
   /* Bordas, divisórias e contornos discretos. */
   --cor-borda: #d1d5db;
+  /* Borda de controles interativos (select, abas, itens clicáveis e botão
+     secundário). O hairline #D1D5DB tem só ~1,3:1 sobre a superfície clara,
+     abaixo dos 3:1 exigidos para limites de controle. Este tom (= texto do
+     DESIGN.md) fica em ~10:1 e continua sendo um token do sistema. */
+  --cor-borda-controle: #2e2e38;
 
   /* Fundo principal da página (roxo da marca). */
   --cor-fundo: #8328d9;

@@ -16,6 +16,9 @@
   color: var(--cor-tinta);
   /* Altura mínima de ~288px para a área não "sumir" quando está vazia. */
   min-height: calc(var(--espaco-secao) * 18);
+  /* min-width: 0 permite que a coluna encolha em telas estreitas; as tabelas
+     largas rolam dentro dos próprios containers, sem esticar a página. */
+  min-width: 0;
 }
 
 /*

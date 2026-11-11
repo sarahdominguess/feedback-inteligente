@@ -131,8 +131,15 @@ export function PaginaRegional() {
           /*
            * Container com rolagem horizontal: em telas estreitas a tabela
            * anda para o lado em vez de espremer as oito colunas.
+           * tabIndex={0} permite chegar nele pelo Tab e rolar com as setas;
+           * role="region" + aria-label nomeiam o bloco para o leitor de tela.
            */
-          <div className="pagina-regional__tabela-container">
+          <div
+            className="pagina-regional__tabela-container"
+            tabIndex={0}
+            role="region"
+            aria-label="Resultado da loja por mês, tabela com rolagem horizontal"
+          >
             {/*
              * Tabela acessível: <caption> explica o conteúdo e <th scope>
              * diz ao leitor de tela se o cabeçalho vale para a coluna
@@ -277,7 +284,16 @@ export function PaginaRegional() {
             Nenhum vendedor para mostrar.
           </p>
         ) : (
-          <div className="pagina-regional__tabela-container">
+          /*
+           * Tabela larga também: rola dentro do container e pode ser
+           * alcançada e rolada pelo teclado (tabIndex={0}).
+           */
+          <div
+            className="pagina-regional__tabela-container"
+            tabIndex={0}
+            role="region"
+            aria-label="Acompanhamento dos feedbacks por vendedor, tabela com rolagem horizontal"
+          >
             <table className="pagina-regional__tabela pagina-regional__tabela--acompanhamento">
               <caption className="pagina-regional__legenda-tabela">
                 Situação dos roteiros por vendedor. Campos sem data aparecem

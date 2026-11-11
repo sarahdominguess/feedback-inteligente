@@ -27,7 +27,9 @@
   /* 44px: alvo de toque mínimo do DESIGN.md. */
   min-height: 44px;
   padding: var(--espaco-sm) var(--espaco-base);
-  border: 1px solid var(--cor-borda);
+  /* Borda de controle (~10:1): a aba inativa e a barra lateral têm a mesma
+     cor de fundo, então a borda delimita a área clicável. */
+  border: 1px solid var(--cor-borda-controle);
   border-radius: var(--raio-md);
   /* Superfície clara com texto tinta: contraste ≈ 14:1. */
   background-color: var(--cor-superficie-suave);
