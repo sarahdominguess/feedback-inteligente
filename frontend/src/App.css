@@ -1,21 +1,75 @@
+/*
+ * Estilos mínimos do painel de verificação.
+ *
+ * Nada de layout elaborado: só margens, bordas e uma lista legível. O visual
+ * de verdade entra na Etapa 5, seguindo o DESIGN.md.
+ */
+
 .app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  max-width: 980px;
+  margin: 0 auto;
   padding: 24px;
-  text-align: center;
+  text-align: left;
 }
 
-.app h1 {
-  margin: 0;
-  font-size: 2rem;
-  letter-spacing: -0.5px;
+.painel-cabecalho {
+  border-bottom: 1px solid #d1d5db;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
 }
 
-.app p {
-  margin: 0;
+.painel h1 {
+  font-size: 1.25rem;
+  margin: 0 0 8px;
+}
+
+.painel h2 {
+  font-size: 1rem;
+  margin: 0 0 8px;
+}
+
+.painel h3 {
+  font-size: 0.95rem;
+  margin: 12px 0 4px;
+}
+
+.painel section {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.painel ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.painel li {
+  margin-bottom: 8px;
+}
+
+.painel button {
+  margin: 0 6px 6px 0;
+  padding: 4px 8px;
+}
+
+.painel code {
+  background: #f3f4f6;
+  padding: 0 3px;
+}
+
+.valores-brutos {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.legenda {
   color: #52606d;
+  font-size: 0.85rem;
+}
+
+.erro {
+  color: #b91c1c;
 }

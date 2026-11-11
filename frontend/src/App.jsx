@@ -1,32 +1,32 @@
 /**
- * Tela inicial do FullStore Feedback Inteligente.
+ * Componente principal do frontend.
  *
- * Este arquivo define o componente App, a raiz visual do frontend. Por enquanto
- * ele só mostra o título e o subtítulo do produto; as telas reais entram nas
- * próximas etapas.
+ * Por enquanto ele só mostra o painel TEMPORÁRIO de verificação da API, que
+ * existe para conferir no navegador que o contexto e os serviços funcionam.
+ * Na Etapa 5 este arquivo passa a escolher entre a visão do gerente e a visão
+ * da regional.
  */
 
 // Importa o CSS deste componente (o Vite aplica esse estilo na página).
-import './App.css'
+import './App.css';
+// Painel temporário que lê o estado e chama as ações do contexto.
+import { PainelVerificacao } from './components/PainelVerificacao.jsx';
 
 /**
- * Componente React: uma função que devolve a estrutura visual da tela.
+ * Componente raiz: devolve o conteúdo principal da página.
  *
  * React é uma biblioteca JavaScript para montar interfaces em pedaços
- * chamados "componentes". JSX é a sintaxe parecida com HTML usada dentro do
- * JavaScript para descrever o que aparece na tela.
+ * chamados "componentes"; cada componente é uma função que devolve a
+ * estrutura visual (JSX). O estado compartilhado vem do AppProvider, que
+ * envolve este componente no main.jsx.
  */
 function App() {
-  // Tudo o que está dentro do return é o que aparece na tela.
-  // <main> é a tag que indica o conteúdo principal da página.
   return (
     <main className="app">
-      {/* className é o jeito do JSX de escrever o atributo class do HTML. */}
-      <h1>Feedback Inteligente</h1>
-      <p>Co-piloto de feedback para a liderança da Rede Aurora</p>
+      <PainelVerificacao />
     </main>
-  )
+  );
 }
 
 // export default permite que outro arquivo (main.jsx) importe este componente.
-export default App
+export default App;
