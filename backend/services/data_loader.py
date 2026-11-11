@@ -2,7 +2,7 @@
 
 DataLoader é a única camada que conhece Pandas: lê os arquivos de backend/data,
 valida as colunas e monta objetos de domínio (Vendedor, Gerente, Anotacao,
-IndicadorDiario). Assim, nenhum DataFrame ou NaN vaza para o domínio.
+AnotacaoRegional, IndicadorDiario). Nenhum DataFrame ou NaN vaza para o domínio.
 """
 
 from pathlib import Path
@@ -11,7 +11,9 @@ import pandas as pd
 
 from config import (
     ARQUIVO_ANOTACOES_GERENTE,
+    ARQUIVO_ANOTACOES_REGIONAL,
     ARQUIVO_INDICADORES_DIARIOS,
+    ARQUIVO_METAS_LOJA,
     ARQUIVO_METAS_VENDEDOR,
     ARQUIVO_VENDEDORES,
     DATA_DIR,
@@ -19,6 +21,7 @@ from config import (
     LOJA_NOME,
 )
 from domain.anotacao import Anotacao
+from domain.anotacao_regional import AnotacaoRegional
 from domain.comparativo_time import ComparativoTime, MetricaComparada
 from domain.excecoes import DadosIndisponiveisError, VendedorNaoEncontradoError
 from domain.gerente import Gerente
@@ -74,8 +77,10 @@ class DataLoader:
         loja_nome: nome da loja (padrão: Aurora Shopping Centro).
 
     A leitura é preguiçosa: nada é lido no construtor. Na primeira chamada de
-    um método público, os quatro arquivos são lidos uma única vez e ficam em
-    cache interno; as chamadas seguintes reaproveitam os dados.
+    um método público, os quatro arquivos de vendas são lidos uma única vez e
+    ficam em cache interno; as chamadas seguintes reaproveitam os dados. Os
+    dois CSVs da regional têm um cache próprio, carregado apenas quando a
+    visão executiva precisar deles.
     """
 
     def __init__(
@@ -106,6 +111,13 @@ class DataLoader:
         self._anotacoes: tuple[Anotacao, ...] = ()
         self._vendedores: tuple[Vendedor, ...] = ()
         self._gerente: Gerente | None = None
+
+        # Dados da visão regional (Etapa 3). Ficam num cache separado porque
+        # só a visão executiva precisa deles: o feedback individual continua
+        # funcionando mesmo que estes dois CSVs não existam na pasta.
+        self._regional_carregado = False
+        self._anotacoes_regional: tuple[AnotacaoRegional, ...] = ()
+        self._metas_loja: dict[str, float] = {}
 
     def _ler_csv(
         self,
@@ -506,3 +518,92 @@ class DataLoader:
             metricas=tuple(metricas),
             mes=mes,
         )
+
+    # ------------------------------------------------------------------
+    # Dados da visão regional (Etapa 3)
+    # ------------------------------------------------------------------
+
+    def _carregar_regional(self) -> None:
+        """Lê os CSVs da regional e monta as coleções internas uma vez.
+
+        Usa um cache próprio (self._regional_carregado), separado do cache
+        principal: as anotações da regional e as metas da loja só são usadas
+        pela visão executiva. Assim, a leitura dos dados de vendas não passa
+        a depender destes dois arquivos.
+        """
+        # 1) Lê os arquivos reaproveitando _ler_csv, que já valida a
+        # existência do arquivo e as colunas obrigatórias.
+        anotacoes_df = self._ler_csv(
+            ARQUIVO_ANOTACOES_REGIONAL,
+            ("data", "autora", "anotacao"),
+            coluna_data="data",
+        )
+        metas_df = self._ler_csv(
+            ARQUIVO_METAS_LOJA,
+            ("mes", "meta_valor"),
+            colunas_texto=("mes",),
+        )
+
+        # 2) Monta as anotações e ordena por data. O CSV pode não estar em
+        # ordem cronológica, e a visão executiva precisa da leitura em ordem.
+        anotacoes = [
+            AnotacaoRegional(
+                data=linha["data"],
+                autora=_texto(linha["autora"]),
+                texto=_texto(linha["anotacao"]),
+            )
+            for _, linha in anotacoes_df.iterrows()
+        ]
+        self._anotacoes_regional = tuple(
+            sorted(anotacoes, key=lambda anotacao: anotacao.data)
+        )
+
+        # 3) Monta o dicionário de metas da loja: {"2026-10": 317200.0, ...}.
+        metas: dict[str, float] = {}
+        for _, linha in metas_df.iterrows():
+            mes = _texto(linha["mes"])
+            metas[mes] = _numero(
+                linha["meta_valor"], ARQUIVO_METAS_LOJA, "meta_valor"
+            )
+        self._metas_loja = metas
+
+    def _garantir_regional_carregado(self) -> None:
+        """Carrega os CSVs da regional na primeira chamada; depois reaproveita."""
+        if self._regional_carregado:
+            return
+        self._carregar_regional()
+        self._regional_carregado = True
+
+    def listar_anotacoes_regional(self) -> tuple[AnotacaoRegional, ...]:
+        """Devolve as anotações da regional em ordem cronológica.
+
+        Cada anotação traz data, autora e texto, exatamente como no CSV.
+        Devolvemos uma tupla (imutável), então o chamador não consegue
+        alterar o cache interno sem querer.
+
+        Levanta DadosIndisponiveisError se o arquivo não existir ou se
+        faltar uma coluna obrigatória.
+        """
+        self._garantir_regional_carregado()
+        return self._anotacoes_regional
+
+    def obter_meta_loja(self, mes: str) -> float | None:
+        """Devolve a meta da loja em reais para o mês "AAAA-MM".
+
+        Devolve None quando o mês não existe no arquivo (não é erro: a loja
+        pode simplesmente não ter meta cadastrada naquele mês).
+
+        Exemplo: obter_meta_loja("2026-10") devolve 317200.0.
+        """
+        self._garantir_regional_carregado()
+        return self._metas_loja.get(mes)
+
+    def listar_metas_loja(self) -> dict[str, float]:
+        """Devolve todas as metas da loja: mês ("AAAA-MM") → valor em reais.
+
+        Devolvemos uma CÓPIA do dicionário (dict(...)). Sem a cópia, quem
+        chamasse este método poderia alterar o cache interno e mudar as
+        metas para o resto do programa.
+        """
+        self._garantir_regional_carregado()
+        return dict(self._metas_loja)
