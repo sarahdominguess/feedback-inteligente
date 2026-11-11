@@ -1,15 +1,17 @@
 /**
  * Página da visão regional (Patrícia) sobre a loja do Diego.
  *
- * Lê o consolidado de estado.regional e organiza em resultado mês a mês e
- * acompanhamento dos feedbacks. Nada é calculado aqui: os números chegam
- * prontos de GET /api/regional/desempenho-gerente.
+ * Lê o consolidado de estado.regional e organiza em resultado mês a mês,
+ * acompanhamento dos feedbacks e anotações da regional sobre a liderança.
+ * Nada é calculado aqui: os números chegam prontos de
+ * GET /api/regional/desempenho-gerente.
  */
 
 import { useEffect } from 'react';
 
 import { STATUS } from '../constantes.js';
 import { useApp } from '../context/useApp.js';
+import { AnotacoesRegional } from '../components/AnotacoesRegional.jsx';
 import { CartaoIndicador } from '../components/CartaoIndicador.jsx';
 import { EstadoCarregando } from '../components/EstadoCarregando.jsx';
 import { EstadoErro } from '../components/EstadoErro.jsx';
@@ -38,7 +40,7 @@ import './PaginaRegional.css';
  *
  * Não recebe props: lê do contexto o consolidado (estado.regional) e a ação
  * carregarRegional. Devolve o cabeçalho da loja, a tabela de resultado mês a
- * mês e a seção de acompanhamento dos feedbacks.
+ * mês, a seção de acompanhamento dos feedbacks e as anotações da regional.
  *
  * Exemplo de uso: <PaginaRegional />
  */
@@ -330,6 +332,9 @@ export function PaginaRegional() {
           </div>
         )}
       </section>
+
+      {/* ---------- Anotações da regional ---------- */}
+      <AnotacoesRegional anotacoes={dados.anotacoes_regional ?? []} />
     </div>
   );
 }
