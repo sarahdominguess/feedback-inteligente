@@ -1,0 +1,55 @@
+/*
+ * Estilos do componente EstadoVazio.
+ *
+ * Fundo claro (#F5EFFB) com texto tinta (#17171C): contraste ≈ 14:1, então
+ * o bloco funciona sobre a página roxa e dentro de um cartão claro.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ *
+ * Centraliza tudo na horizontal e usa borda tracejada, que sugere "espaço
+ * reservado, ainda sem conteúdo" sem competir com os cartões de dados.
+ * -------------------------------------------------------------------- */
+
+.estado-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-lg);
+  padding: var(--espaco-secao);
+  border: 1px dashed var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  text-align: center;
+}
+
+/* Ícone opcional acima do texto. */
+.estado-vazio__icone {
+  display: inline-flex;
+  /* A tinta garante contraste; não há token de cinza médio para ícone. */
+  color: var(--cor-tinta);
+}
+
+/* Tamanho do desenho: 16px (token de seção) multiplicado por 1,5 = 24px. */
+.estado-vazio__icone svg {
+  width: calc(var(--espaco-secao) * 1.5);
+  height: calc(var(--espaco-secao) * 1.5);
+}
+
+/* Título: o resumo do vazio. */
+.estado-vazio__titulo {
+  margin: 0;
+  font-size: var(--texto-corpo);
+  font-weight: var(--peso-forte);
+}
+
+/* Descrição: explica o motivo em uma largura confortável de leitura. */
+.estado-vazio__descricao {
+  /* ≈400px, montado a partir do token de 16px para não inventar medida. */
+  max-width: calc(var(--espaco-secao) * 25);
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+}

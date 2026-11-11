@@ -1,0 +1,119 @@
+/*
+ * Estilos do componente EstadoCarregando.
+ *
+ * O bloco tem fundo claro próprio (superfície suave) e texto escuro, o que
+ * garante contraste AA tanto sobre a página roxa quanto dentro de um cartão.
+ * Cores, espaços e raios vêm todos de estilos/tokens.css.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ *
+ * Coluna com respiro entre o esqueleto, o título e a descrição.
+ * -------------------------------------------------------------------- */
+
+.estado-carregando {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-lg);
+  padding: var(--espaco-secao);
+  border-radius: var(--raio-lg);
+  /* #F5EFFB com texto #17171C: contraste ≈ 14:1 (passa em AA). */
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/* Variante "cartao": ganha uma borda discreta para parecer um cartão. */
+.estado-carregando--cartao {
+  border: 1px solid var(--cor-borda);
+}
+
+/* ----------------------------------------------------------------------
+ * Esqueleto (skeleton)
+ *
+ * Blocos cinza que imitam o conteúdo que está chegando. A cor de base é a
+ * borda cinza do sistema; o brilho é uma faixa mais clara que atravessa.
+ * -------------------------------------------------------------------- */
+
+.estado-carregando__esqueleto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+}
+
+.estado-carregando__linha {
+  display: block;
+  width: 100%;
+  /* 12px: altura aproximada de uma linha de texto. */
+  height: var(--espaco-xl);
+  border-radius: var(--raio-sm);
+  background-color: var(--cor-borda);
+  /* Gradiente montado só com tokens: borda → superfície → borda. */
+  background-image: linear-gradient(
+    90deg,
+    var(--cor-borda) 25%,
+    var(--cor-superficie-suave) 50%,
+    var(--cor-borda) 75%
+  );
+  background-size: 200% 100%;
+  animation: estado-carregando-brilho 1.4s ease-in-out infinite;
+}
+
+/* Linhas alternadas mais curtas: o bloco não parece uma tabela. */
+.estado-carregando__linha:nth-child(2n) {
+  width: 82%;
+}
+
+/* A última linha fica mais curta, como o fim de um parágrafo. */
+.estado-carregando__linha:last-child {
+  width: 60%;
+}
+
+/* Na variante cartão, os blocos são mais altos, como cartões de indicador. */
+.estado-carregando--cartao .estado-carregando__linha {
+  height: calc(var(--espaco-secao) * 1.5); /* 24px */
+}
+
+/* O brilho anda da direita para a esquerda em um ciclo suave. */
+@keyframes estado-carregando-brilho {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ----------------------------------------------------------------------
+ * Textos
+ * -------------------------------------------------------------------- */
+
+/* Título: o texto principal do estado de carregamento. */
+.estado-carregando__titulo {
+  margin: 0;
+  font-size: var(--texto-corpo);
+  font-weight: var(--peso-forte);
+}
+
+/* Descrição: informação de apoio, um pouco menor. */
+.estado-carregando__descricao {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.4;
+}
+
+/* ----------------------------------------------------------------------
+ * Movimento reduzido
+ *
+ * Quando a pessoa pede ao sistema para reduzir animações, o brilho para e
+ * a linha fica cinza e parada. O conteúdo continua legível.
+ * -------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .estado-carregando__linha {
+    animation: none;
+    background-image: none;
+    background-color: var(--cor-borda);
+  }
+}
