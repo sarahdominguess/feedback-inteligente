@@ -73,3 +73,70 @@
 .erro {
   color: #b91c1c;
 }
+
+/* ======================================================================
+ * Layout principal (fatia 5.4b)
+ *
+ * Escolha: acrescentar aqui em vez de criar App.layout.css para não ter
+ * dois arquivos de estilo do MESMO componente. As regras do painel
+ * temporário continuam acima de propósito — serão apagadas junto com o
+ * PainelVerificacao na fatia 5.10. O layout novo usa classes próprias
+ * (.app-layout...), então não conflita com .app nem com .painel.
+ * ==================================================================== */
+
+/*
+ * "Grid" é o layout em grade: definimos colunas e áreas com nome, e cada
+ * bloco ocupa a área indicada pela regra grid-area mais abaixo.
+ *
+ * A versão base tem UMA coluna (usada na visão regional). A versão com
+ * lateral troca para duas colunas.
+ */
+.app-layout {
+  display: grid;
+  /* minmax(0, 1fr) = uma coluna que ocupa o espaço sem estourar. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'cabecalho'
+    'central';
+  gap: var(--espaco-secao);
+  /* 1200px limita a largura em telas grandes. É medida de página, não da
+     escala de espaçamento, por isso não vem de um token. */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--espaco-secao);
+}
+
+/* Duas colunas: 300px para a equipe e o resto para o conteúdo. */
+.app-layout--com-lateral {
+  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-areas:
+    'cabecalho cabecalho'
+    'lateral central';
+}
+
+/* Cada componente ocupa a sua área nomeada na grade. */
+.cabecalho {
+  grid-area: cabecalho;
+}
+
+.barra-lateral {
+  grid-area: lateral;
+}
+
+.area-central {
+  grid-area: central;
+}
+
+/*
+ * Layout responsivo: em telas com menos de 768px, a lateral sai da coluna
+ * e tudo empilha na vertical, na ordem cabeçalho → equipe → conteúdo.
+ */
+@media (max-width: 767px) {
+  .app-layout--com-lateral {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'cabecalho'
+      'lateral'
+      'central';
+  }
+}

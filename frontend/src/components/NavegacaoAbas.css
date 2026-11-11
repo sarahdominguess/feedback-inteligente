@@ -1,0 +1,60 @@
+/*
+ * Estilos das abas do gerente.
+ *
+ * Três botões em grade (grid) de colunas iguais. A aba ativa usa a cor
+ * primária (ação/seleção) com texto escuro; as outras ficam claras com
+ * borda. A altura mínima de 44px segue o alvo de toque do DESIGN.md.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ *
+ * "grid" é o layout em grade: repeat(3, ...) cria três colunas iguais.
+ * minmax(0, 1fr) permite que cada coluna encolha sem estourar o espaço.
+ * -------------------------------------------------------------------- */
+
+.navegacao-abas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-sm);
+}
+
+/* ----------------------------------------------------------------------
+ * Cada aba
+ * -------------------------------------------------------------------- */
+
+.navegacao-abas__aba {
+  /* 44px: alvo de toque mínimo do DESIGN.md. */
+  min-height: 44px;
+  padding: var(--espaco-sm) var(--espaco-base);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  /* Superfície clara com texto tinta: contraste ≈ 14:1. */
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  font-family: inherit;
+  font-size: var(--texto-legenda);
+  font-weight: var(--peso-medio);
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover da aba inativa: a borda escurece. */
+.navegacao-abas__aba:hover {
+  border-color: var(--cor-tinta);
+}
+
+/*
+ * Aba ativa: fundo primária + borda escura + texto #111111 (≈ 11,2:1).
+ * aria-selected (no JSX) é o sinal para o leitor de tela; aqui o reforço
+ * visual não depende só da cor, porque o nome fica em negrito.
+ */
+.navegacao-abas__aba--ativa {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-sobre-primaria);
+  font-weight: var(--peso-forte);
+}

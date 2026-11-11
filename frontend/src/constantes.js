@@ -41,6 +41,26 @@ export const ABAS = {
 };
 
 /**
+ * Rótulos em português das abas, indexados pelo valor técnico de ABAS.
+ *
+ * Ficam aqui porque duas partes usam o mesmo texto: a navegação (botões) e a
+ * área central (aviso "Aba ... em construção"). Assim os dois nunca divergem.
+ */
+export const ROTULOS_ABAS = {
+  [ABAS.ANOTACOES]: 'Anotações',
+  [ABAS.DADOS]: 'Dados',
+  [ABAS.FEEDBACK]: 'Feedback',
+};
+
+/**
+ * Identificador do painel de conteúdo das abas (usado pelo ARIA).
+ *
+ * A aba aponta para este id com aria-controls e o painel aponta de volta para
+ * a aba com aria-labelledby. Fica num lugar só para os dois combinarem.
+ */
+export const ID_PAINEL_ABAS = 'painel-aba';
+
+/**
  * Visões do sistema (quem está olhando a tela).
  *
  * - gerente: Diego prepara o feedback de um vendedor;

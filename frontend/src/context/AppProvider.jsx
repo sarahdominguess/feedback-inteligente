@@ -67,10 +67,17 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
       despachar({ tipo: TIPOS.VENDEDORES_CARREGANDO });
 
       try {
-        const dados = await servicos.obterVendedoresPorLoja(estado.lojaId, {
+        // A API devolve o envelope { loja_id, loja_nome, mes, vendedores }.
+        // O reducer guarda SOMENTE a lista, então extraímos "vendedores"
+        // aqui. Sem isso, o reducer receberia um objeto, descartaria tudo e
+        // a tela mostraria sempre a lista vazia.
+        const resposta = await servicos.obterVendedoresPorLoja(estado.lojaId, {
           mes,
         });
-        despachar({ tipo: TIPOS.VENDEDORES_SUCESSO, dados });
+        despachar({
+          tipo: TIPOS.VENDEDORES_SUCESSO,
+          dados: resposta.vendedores,
+        });
       } catch (erro) {
         // Cancelamento é escolha nossa, não falha: não mostramos nada.
         if (erroFoiCancelamento(erro)) {

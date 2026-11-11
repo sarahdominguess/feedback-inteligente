@@ -1,0 +1,25 @@
+/*
+ * Estilos da barra lateral.
+ *
+ * Um cartão claro sobre o roxo da página, com texto tinta (contraste ≈ 14:1).
+ * A lateral não tem largura fixa aqui: quem define a coluna é o layout em
+ * App.css. Assim o componente pode ser reaproveitado em outro lugar.
+ */
+
+.barra-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+  padding: var(--espaco-secao);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/* Título "Equipe": 22px, um degrau acima do texto comum. */
+.barra-lateral__titulo {
+  margin: 0;
+  font-size: var(--texto-display-sm);
+  font-weight: var(--peso-medio);
+}

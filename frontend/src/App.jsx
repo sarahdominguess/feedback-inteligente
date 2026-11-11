@@ -1,30 +1,51 @@
 /**
  * Componente principal do frontend.
  *
- * Por enquanto ele só mostra o painel TEMPORÁRIO de verificação da API, que
- * existe para conferir no navegador que o contexto e os serviços funcionam.
- * Na Etapa 5 este arquivo passa a escolher entre a visão do gerente e a visão
- * da regional.
+ * Monta a casca do app: cabeçalho, barra lateral (só na visão do gerente) e
+ * área central. A visão e a aba vêm do estado do contexto; não há router.
  */
 
 // Importa o CSS deste componente (o Vite aplica esse estilo na página).
 import './App.css';
-// Painel temporário que lê o estado e chama as ações do contexto.
-import { PainelVerificacao } from './components/PainelVerificacao.jsx';
+
+import { AreaCentral } from './components/AreaCentral.jsx';
+import { BarraLateral } from './components/BarraLateral.jsx';
+import { Cabecalho } from './components/Cabecalho.jsx';
+import { VISOES } from './constantes.js';
+import { useApp } from './context/useApp.js';
 
 /**
- * Componente raiz: devolve o conteúdo principal da página.
+ * Componente App.
  *
- * React é uma biblioteca JavaScript para montar interfaces em pedaços
- * chamados "componentes"; cada componente é uma função que devolve a
- * estrutura visual (JSX). O estado compartilhado vem do AppProvider, que
- * envolve este componente no main.jsx.
+ * Não recebe props: é o topo da árvore. Usa o useApp() apenas para saber a
+ * visão atual, que decide se a coluna lateral existe.
+ *
+ * Devolve o layout em grade com o cabeçalho ocupando a largura toda e, na
+ * visão do gerente, a lateral à esquerda e a área central à direita.
+ *
+ * Exemplo (feito em main.jsx): <App />
  */
 function App() {
+  const { estado } = useApp();
+
+  // Na visão do gerente existe a coluna da equipe; na regional, não.
+  const mostrarLateral = estado.visao === VISOES.GERENTE;
+
   return (
-    <main className="app">
-      <PainelVerificacao />
-    </main>
+    <div
+      className={
+        mostrarLateral ? 'app-layout app-layout--com-lateral' : 'app-layout'
+      }
+    >
+      {/* Cabeçalho: título, subtítulo e alternador de visão. */}
+      <Cabecalho />
+
+      {/* A lateral só entra no DOM quando faz sentido. */}
+      {mostrarLateral && <BarraLateral />}
+
+      {/* Área central: escolhe o aviso conforme visão, seleção e aba. */}
+      <AreaCentral />
+    </div>
   );
 }
 

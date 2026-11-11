@@ -1,0 +1,88 @@
+/*
+ * Estilos do cabeçalho.
+ *
+ * O cabeçalho fica direto sobre o roxo da página, então o texto é branco
+ * (contraste ≈ 6,4:1, passa em AA). Os botões são claros para se destacarem
+ * do fundo e usam texto tinta.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ *
+ * flex-wrap permite que o alternador desça para a linha de baixo em telas
+ * estreitas, sem precisar de uma regra extra de media query.
+ * -------------------------------------------------------------------- */
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-secao);
+  /* Branco sobre o roxo #8328D9: ≈ 6,4:1. */
+  color: var(--cor-texto-sobre-fundo);
+}
+
+/* Identidade: título em cima, subtítulo embaixo. */
+.cabecalho__identidade {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-sm);
+}
+
+/* h1 herda tamanho (36px) e peso (400) de estilos/base.css. */
+.cabecalho__titulo {
+  color: inherit;
+}
+
+/* Subtítulo: mesmo branco, tamanho menor de apoio. */
+.cabecalho__subtitulo {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.4;
+}
+
+/* ----------------------------------------------------------------------
+ * Alternador de visão
+ * -------------------------------------------------------------------- */
+
+.cabecalho__visoes {
+  display: inline-flex;
+  gap: var(--espaco-sm);
+}
+
+/*
+ * Botão base: 44px de altura (alvo de toque do DESIGN.md), fundo claro e
+ * texto tinta (contraste ≈ 14:1).
+ */
+.cabecalho__botao {
+  min-height: 44px;
+  padding: var(--espaco-sm) var(--espaco-xl);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  font-family: inherit;
+  font-size: var(--texto-botao);
+  font-weight: var(--peso-forte);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover do botão inativo: a borda escurece. */
+.cabecalho__botao:hover:not(.cabecalho__botao--ativo) {
+  border-color: var(--cor-tinta);
+}
+
+/*
+ * Visão ativa: fundo primária (cor de ação/seleção) com texto #111111
+ * (contraste ≈ 11,2:1) e borda escura. Além da cor, aria-pressed avisa o
+ * leitor de tela qual botão está ativo.
+ */
+.cabecalho__botao--ativo {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-sobre-primaria);
+}

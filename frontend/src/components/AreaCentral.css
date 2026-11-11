@@ -1,0 +1,52 @@
+/*
+ * Estilos da área central.
+ *
+ * Cartão claro sobre o roxo, com texto tinta (contraste ≈ 14:1). A largura
+ * vem do layout em App.css; aqui só cuidamos do conteúdo e do respiro.
+ */
+
+.area-central {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+  padding: var(--espaco-secao);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  /* Altura mínima de ~288px para a área não "sumir" quando está vazia. */
+  min-height: calc(var(--espaco-secao) * 18);
+}
+
+/*
+ * Aviso de "em construção": uma coluna com título e explicação.
+ * max-width de ~400px mantém a linha de leitura confortável em telas largas.
+ */
+.area-central__aviso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  max-width: calc(var(--espaco-secao) * 25);
+}
+
+/* Título do aviso: 28px, peso regular da escala display do DESIGN.md. */
+.area-central__titulo {
+  margin: 0;
+  font-size: var(--texto-display-md);
+  font-weight: var(--peso-regular);
+  line-height: 1.2;
+}
+
+/* Texto de apoio do aviso, em tamanho de leitura menor. */
+.area-central__texto {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+/*
+ * O painel em si não muda nada no visual; ele existe para o papel ARIA.
+ * O foco de teclado (tabIndex=0) usa a regra global :focus-visible de
+ * estilos/base.css, então continua visível.
+ */
