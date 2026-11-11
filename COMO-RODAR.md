@@ -82,6 +82,58 @@ e tente de novo. Confira a documentação oficial em
 **Atenção:** as opções 2 e 3 fazem chamadas reais e consomem créditos da conta.
 A opção 1 é gratuita e serve para revisar o texto enviado.
 
+## Usar a API
+
+Com o venv ativo e a partir da pasta `backend/`:
+
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+A documentação interativa (Swagger) fica em http://localhost:8000/docs: lá dá
+para ver cada rota, os campos esperados e testar direto pelo navegador.
+
+O arquivo `backend/api.http` tem um exemplo pronto de cada chamada (abre no VS
+Code com a extensão REST Client ou no JetBrains com o HTTP Client). As duas
+chamadas de `POST /api/feedback/gerar` usam a DeepSeek de verdade: **consomem
+créditos** e podem levar de 10 a 60 segundos. As demais são leves.
+
+| Método | Rota | O que faz |
+| --- | --- | --- |
+| GET | `/health` | Confirma que o servidor está no ar. |
+| GET | `/api/vendedores/{loja_id}` | Lista os vendedores da loja com métricas e comparativo. Aceita `?mes=AAAA-MM`. |
+| GET | `/api/vendedores/{vendedor_id}/historico` | Histórico de um vendedor: resumo mensal, anotações e roteiros já preparados. |
+| POST | `/api/feedback/gerar` | Gera o roteiro com a IA e grava o registro. Corpo: `vendedor_id` e, opcional, `mes_referencia`. |
+| GET | `/api/regional/desempenho-gerente` | Visão da regional: resultado da loja mês a mês, cobertura dos roteiros e anotações. |
+
+Os erros seguem sempre o mesmo formato:
+
+```json
+{"erro": "mensagem em português"}
+```
+
+| Status | Quando acontece |
+| --- | --- |
+| 400 | Entrada inválida (ex.: mês fora de `AAAA-MM`, campo obrigatório faltando). |
+| 404 | Vendedor ou loja não encontrado. |
+| 500 | Erro interno do servidor ou serviço de IA não configurado no servidor. |
+| 502 | A IA respondeu algo inválido (JSON quebrado ou fora das regras). |
+| 503 | Serviço de IA indisponível (sem conexão, tempo esgotado ou sem saldo). |
+
+Opcionalmente, o `backend/.env` pode liberar outras origens do navegador para o
+CORS (o frontend do Vite já é liberado por padrão). Separe por vírgula, sem
+espaços:
+
+```bash
+#FRONTEND_ORIGINS=http://localhost:5173,http://192.168.0.10:5173
+```
+
+O arquivo `backend/data/registro_feedbacks.json` é criado sozinho na primeira
+geração, **não é versionado** e guarda os roteiros gerados (id, mês, horário e
+conteúdo). Vocabulário importante: **roteiro preparado não é feedback
+realizado** — o sistema só sabe que o roteiro foi gerado; se a conversa
+aconteceu, é o gerente quem sabe.
+
 ## Frontend
 
 Em outro terminal, a partir da raiz do repositório:
