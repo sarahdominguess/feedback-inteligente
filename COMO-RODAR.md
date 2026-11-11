@@ -166,10 +166,12 @@ Ordem para subir tudo:
 2. Frontend (terminal 2), de dentro de `frontend/`: `npm run dev`.
 3. Abra http://localhost:5173.
 
-O painel temporário de verificação em http://localhost:5173 mostra a URL da API
-em uso, a lista dos 8 vendedores da loja, os detalhes do vendedor selecionado, a
-geração de feedback e a visão regional — com valores brutos, porque a
-formatação final entra na Etapa 5.
+Em http://localhost:5173 o app abre na visão do gerente: a barra lateral lista
+a equipe da loja (a Bianca já vem selecionada) e, na área central, as abas
+**Anotações**, **Dados** e **Feedback** mostram o histórico da pessoa. O botão
+**Gerar roteiro** usa IA, consome créditos e pode levar de 10 segundos a alguns
+minutos. No cabeçalho, o alternador **Regional** mostra a visão executiva da
+loja: resultado mês a mês e acompanhamento dos feedbacks preparados.
 
 Comandos úteis, de dentro de `frontend/`:
 

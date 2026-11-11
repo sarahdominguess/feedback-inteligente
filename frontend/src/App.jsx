@@ -43,7 +43,7 @@ function App() {
       {/* A lateral só entra no DOM quando faz sentido. */}
       {mostrarLateral && <BarraLateral />}
 
-      {/* Área central: escolhe o aviso conforme visão, seleção e aba. */}
+      {/* Área central: mostra a página conforme visão, seleção e aba. */}
       <AreaCentral />
     </div>
   );
