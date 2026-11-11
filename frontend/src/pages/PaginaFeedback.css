@@ -2,8 +2,8 @@
  * Estilos da página da aba Feedback.
  *
  * A página fica dentro do cartão claro da área central, com texto tinta sobre
- * superfície suave (contraste ≈ 14:1). O roteiro gerado é exibido como texto
- * simples; o visual final entra na próxima fatia.
+ * superfície suave (contraste ≈ 14:1). O roteiro gerado usa o
+ * VisualizadorRoteiro, que fica em duas colunas em telas largas.
  */
 
 /* Coluna com os dois blocos da página. */
@@ -11,6 +11,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-secao);
+}
+
+/*
+ * A aba Feedback usa toda a largura da coluna central. A área central não
+ * tem limite de leitura (o antigo limite de 400px era só do aviso
+ * provisório); esta classe deixa a intenção explícita e garante que a
+ * própria página não aplique um max-width de leitura. As outras abas não
+ * recebem esta classe.
+ */
+.pagina-feedback--expandida {
+  width: 100%;
+  max-width: none;
 }
 
 /* Cada bloco: título e conteúdo. */
@@ -99,65 +111,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-base);
-}
-
-/* ----------------------------------------------------------------------
- * Resumo do roteiro (visual provisório)
- * -------------------------------------------------------------------- */
-
-.pagina-feedback__resumo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espaco-base);
-}
-
-/* Nome da pessoa avaliada. */
-.pagina-feedback__resumo-titulo {
-  margin: 0;
-  font-size: var(--texto-display-sm);
-  font-weight: var(--peso-medio);
-}
-
-/* Linha "Período … · Gerado em …". */
-.pagina-feedback__resumo-meta {
-  margin: 0;
-  font-size: var(--texto-rotulo);
-  color: var(--cor-texto-suave);
-}
-
-/* Cada uma das quatro seções do roteiro. */
-.pagina-feedback__secao-roteiro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espaco-xs);
-}
-
-/* Título da seção do roteiro. */
-.pagina-feedback__rotulo-secao {
-  margin: 0;
-  font-size: var(--texto-corpo);
-  font-weight: var(--peso-forte);
-}
-
-/*
- * Lista simples, com marcadores padrão. Só ajustamos o recuo e o respiro:
- * o estilo definitivo do roteiro entra na fatia 5.7b.
- */
-.pagina-feedback__lista-roteiro {
-  margin: 0;
-  padding-left: var(--espaco-secao);
-}
-
-.pagina-feedback__lista-roteiro li {
-  margin-bottom: var(--espaco-xs);
-  line-height: 1.5;
-}
-
-/* Texto quando uma das listas do roteiro vem vazia. */
-.pagina-feedback__sem-itens {
-  margin: 0;
-  font-size: var(--texto-rotulo);
-  color: var(--cor-texto-suave);
 }
 
 /* ----------------------------------------------------------------------

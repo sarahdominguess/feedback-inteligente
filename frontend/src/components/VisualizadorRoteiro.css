@@ -1,0 +1,206 @@
+/*
+ * Estilos do visualizador do roteiro de feedback.
+ *
+ * O componente fica dentro do cartão claro da área central. Usa texto tinta
+ * sobre superfície suave (contraste ≈ 14:1) e os tons de estado do sistema:
+ * verde de sucesso para os pontos positivos e borda escura para a atenção —
+ * nunca o vermelho de erro em um ponto de melhoria.
+ */
+
+.visualizador-roteiro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+}
+
+/* ----------------------------------------------------------------------
+ * Cabeçalho e nota
+ * -------------------------------------------------------------------- */
+
+.visualizador-roteiro__cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+}
+
+/* Título "Roteiro para ...": 22px, um degrau acima do texto comum. */
+.visualizador-roteiro__titulo {
+  margin: 0;
+  font-size: var(--texto-display-sm);
+  font-weight: var(--peso-medio);
+}
+
+/* Período e data/hora em texto de apoio (contraste ≈ 10:1). */
+.visualizador-roteiro__meta {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}
+
+/* Nota do método SBI: discreta, sem roubar a atenção do roteiro. */
+.visualizador-roteiro__nota {
+  margin: 0;
+  font-size: var(--texto-legenda);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+/* ----------------------------------------------------------------------
+ * Grade de seções
+ *
+ * Uma coluna por padrão; duas a partir de 1024px de largura de tela.
+ * minmax(0, 1fr) permite que as colunas encolham sem estourar o espaço.
+ * -------------------------------------------------------------------- */
+
+.visualizador-roteiro__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-secao);
+}
+
+@media (min-width: 1024px) {
+  .visualizador-roteiro__grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Cada metade é uma coluna com as suas seções empilhadas. */
+.visualizador-roteiro__coluna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+  min-width: 0;
+}
+
+/* ----------------------------------------------------------------------
+ * Seção
+ * -------------------------------------------------------------------- */
+
+.visualizador-roteiro__secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  padding: var(--espaco-secao);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/*
+ * Tom positivo: barra verde de sucesso na esquerda. A cor sozinha não
+ * carrega a informação — o título "Pontos positivos" e o ícone ajudam.
+ */
+.visualizador-roteiro__secao--positiva {
+  border-left: 4px solid var(--cor-sucesso);
+}
+
+/*
+ * Tom de atenção: o DESIGN.md não declara um token amarelo. Para não
+ * inventar cor, usamos a tinta (borda escura). É atenção, nunca erro: não
+ * existe vermelho de perigo aqui.
+ */
+.visualizador-roteiro__secao--atencao {
+  border-left: 4px solid var(--cor-tinta);
+}
+
+/* Seções neutras ficam com a borda comum. */
+.visualizador-roteiro__secao--neutra {
+  border-left: 4px solid var(--cor-borda);
+}
+
+/* ----------------------------------------------------------------------
+ * Título da seção com ícone
+ * -------------------------------------------------------------------- */
+
+.visualizador-roteiro__cabecalho-secao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-base);
+}
+
+/*
+ * Círculo do ícone: 24px (16px do token de seção × 1,5). O ícone é
+ * decorativo; a cor do desenho é tinta, com contraste garantido.
+ */
+.visualizador-roteiro__icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: calc(var(--espaco-secao) * 1.5);
+  height: calc(var(--espaco-secao) * 1.5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-full);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/* Positivo: círculo preenchido com o verde de sucesso e ícone tinta. */
+.visualizador-roteiro__secao--positiva .visualizador-roteiro__icone {
+  border-color: var(--cor-sucesso);
+  background-color: var(--cor-sucesso);
+}
+
+/* Atenção: borda escura no círculo, reforçando o tom sem cor nova. */
+.visualizador-roteiro__secao--atencao .visualizador-roteiro__icone {
+  border-color: var(--cor-tinta);
+}
+
+/* Tamanho do desenho do ícone (14px), proporcional ao texto. */
+.visualizador-roteiro__icone svg {
+  width: var(--texto-rotulo);
+  height: var(--texto-rotulo);
+}
+
+/* Título da seção. */
+.visualizador-roteiro__titulo-secao {
+  margin: 0;
+  font-size: var(--texto-corpo);
+  font-weight: var(--peso-forte);
+}
+
+/* Legenda curta (usada em "Possíveis motivos"). */
+.visualizador-roteiro__legenda {
+  margin: 0;
+  font-size: var(--texto-legenda);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+/* ----------------------------------------------------------------------
+ * Listas
+ * -------------------------------------------------------------------- */
+
+/* Recuo para os marcadores; o espaçamento entre itens vem do li. */
+.visualizador-roteiro__lista {
+  margin: 0;
+  padding-left: calc(var(--espaco-secao) * 1.5);
+}
+
+/*
+ * Texto da IA:
+ * - white-space: pre-line preserva as quebras de linha que vieram no texto
+ *   e continua juntando espaços repetidos (é só exibição, não altera o dado);
+ * - overflow-wrap: anywhere impede que uma palavra muito longa estoure a
+ *   seção.
+ */
+.visualizador-roteiro__lista li {
+  margin-bottom: var(--espaco-base);
+  font-size: var(--texto-corpo);
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* O último item não precisa de espaço extra no fim da lista. */
+.visualizador-roteiro__lista li:last-child {
+  margin-bottom: 0;
+}
+
+/* Texto quando a lista vem vazia. */
+.visualizador-roteiro__vazio {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}

@@ -2,8 +2,7 @@
  * Página da aba Feedback do colaborador selecionado.
  *
  * Tem o seletor de período, o botão que gera o roteiro com IA, os estados da
- * geração e a lista de roteiros já preparados. O visual final do roteiro
- * entra na próxima fatia; aqui ele aparece como texto simples.
+ * geração, o visualizador do roteiro e a lista de roteiros já preparados.
  */
 
 import { useState } from 'react';
@@ -13,76 +12,13 @@ import { useApp } from '../context/useApp.js';
 import { EstadoCarregando } from '../components/EstadoCarregando.jsx';
 import { EstadoErro } from '../components/EstadoErro.jsx';
 import { EstadoVazio } from '../components/EstadoVazio.jsx';
-import {
-  formatarDataHora,
-  formatarMes,
-} from '../utilitarios/formatadores.js';
+import { VisualizadorRoteiro } from '../components/VisualizadorRoteiro.jsx';
+import { formatarDataHora } from '../utilitarios/formatadores.js';
 import { montarOpcoesDePeriodo } from '../utilitarios/opcoesDePeriodo.js';
+import { rotuloPeriodo } from '../utilitarios/periodoDoRoteiro.js';
 
 // Importa o CSS desta página.
 import './PaginaFeedback.css';
-
-/**
- * Nomes das quatro seções do roteiro, na ordem em que aparecem.
- */
-const SECOES_ROTEIRO = [
-  ['pontos_positivos', 'Pontos positivos'],
-  ['pontos_melhoria', 'Pontos de melhoria'],
-  ['possiveis_motivos', 'Possíveis motivos'],
-  ['roteiro_conversa', 'Roteiro da conversa'],
-];
-
-/**
- * Monta o resumo simples do roteiro gerado.
- *
- * Recebe o objeto devolvido pela API (FeedbackGerarResposta). Devolve o nome
- * da pessoa, o período, a data/hora e as quatro listas em texto simples.
- * O texto da IA é exibido como texto do React: nunca é interpretado como HTML.
- */
-function resumoDoRoteiro(dados) {
-  // mes_referencia nulo significa que a geração usou todo o histórico.
-  const periodo = dados.mes_referencia
-    ? formatarMes(dados.mes_referencia)
-    : 'Todo o histórico';
-
-  return (
-    <div className="pagina-feedback__resumo">
-      <h3 className="pagina-feedback__resumo-titulo">
-        {dados.vendedor_nome}
-      </h3>
-
-      <p className="pagina-feedback__resumo-meta">
-        Período: {periodo} · Gerado em {formatarDataHora(dados.gerado_em)}
-      </p>
-
-      {SECOES_ROTEIRO.map(([chave, rotulo]) => {
-        /*
-         * O contrato garante uma lista em cada chave, mas o Array.isArray
-         * evita que um formato inesperado quebre a página.
-         */
-        const itens = Array.isArray(dados.roteiro?.[chave])
-          ? dados.roteiro[chave]
-          : [];
-
-        return (
-          <section key={chave} className="pagina-feedback__secao-roteiro">
-            <h4 className="pagina-feedback__rotulo-secao">{rotulo}</h4>
-
-            {itens.length === 0 ? (
-              <p className="pagina-feedback__sem-itens">Nenhum item.</p>
-            ) : (
-              <ul className="pagina-feedback__lista-roteiro">
-                {itens.map((item, indice) => (
-                  <li key={`${chave}-${indice}`}>{item}</li>
-                ))}
-              </ul>
-            )}
-          </section>
-        );
-      })}
-    </div>
-  );
-}
 
 /**
  * Componente PaginaFeedback.
@@ -200,7 +136,7 @@ export function PaginaFeedback() {
   }
 
   return (
-    <div className="pagina-feedback">
+    <div className="pagina-feedback pagina-feedback--expandida">
       {/* ---------- Gerar roteiro ---------- */}
       <section
         className="pagina-feedback__secao"
@@ -290,7 +226,16 @@ export function PaginaFeedback() {
           )}
 
           {statusFeedback === STATUS.SUCESSO && feedback?.dados && (
-            resumoDoRoteiro(feedback.dados)
+            /*
+             * O visualizador recebe o roteiro por props: não usa o contexto,
+             * não corrige o texto e não valida o conteúdo.
+             */
+            <VisualizadorRoteiro
+              roteiro={feedback.dados.roteiro}
+              vendedorNome={feedback.dados.vendedor_nome}
+              mesReferencia={feedback.dados.mes_referencia}
+              geradoEm={feedback.dados.gerado_em}
+            />
           )}
         </div>
       </section>
@@ -319,9 +264,7 @@ export function PaginaFeedback() {
             {preparados.map((item) => (
               <li key={item.feedback_id} className="pagina-feedback__preparado">
                 <span className="pagina-feedback__preparado-periodo">
-                  {item.mes_referencia
-                    ? formatarMes(item.mes_referencia)
-                    : 'Todo o histórico'}
+                  {rotuloPeriodo(item.mes_referencia)}
                 </span>
                 <span className="pagina-feedback__preparado-data">
                   {formatarDataHora(item.gerado_em)}
