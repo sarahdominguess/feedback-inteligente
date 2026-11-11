@@ -562,3 +562,343 @@ Objetivo: me dar um jeito seguro de fazer a chamada real (eu rodo; você NÃO te
 Ao final, diga claramente: (a) tudo o que foi validado de verdade; (b) que a chamada real ao DeepSeek ainda depende de mim, com os comandos exatos para eu rodar; (c) pendências reais. Não declare a Etapa 2 concluída antes de eu colar aqui o resultado da chamada real. Não faça commit. Mensagem sugerida: "Adiciona script de teste real da IA, testes opcionais e documentação". Lembre-me de registrar no DIARIO.md o que decidi e aprendi, sem escrever por mim.
 
 Lembrete de qualidade: siga a regra de COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS em TODO arquivo criado.
+
+## 2026-11-11
+
+### Prompt 1
+CONTEXTO (somente leitura). NÃO modifique, crie, apague ou renomeie nenhum arquivo e não execute comandos que alterem o repositório ou o sistema (nada de pip/npm install, git add/commit/checkout).
+
+Projeto: "FullStore Feedback Inteligente" (Desafio 3, Rede Aurora). Backend FastAPI + Pandas, frontend React (não mexa no frontend). Um co-piloto que ajuda o gerente Diego Furtado (C0030, loja L004) a preparar o feedback da vendedora Bianca Rocha (C0031) e dá à regional Patrícia Lemos uma visão executiva. Etapas 0, 1 e 2 prontas (domínio, DataLoader, LLMService). Estamos na Etapa 3: criar a API REST (endpoints finos, contratos Pydantic, CORS, erros {"erro": "..."}), em fatias pequenas.
+
+Leia SOMENTE estes arquivos agora (não leia o frontend, nem scripts/, nem os testes inteiros, nem os CSVs além do cabeçalho): backend/config.py, backend/services/data_loader.py, backend/domain/vendedor.py, backend/domain/anotacao.py, backend/domain/excecoes.py e a lista de arquivos de backend/tests/. Depois responda em no máximo 8 linhas com o que entendeu e dúvidas. Não escreva código.
+
+Regras para TODOS os prompts seguintes:
+- Leia apenas os arquivos que cada prompt citar; não explore o repositório por conta própria.
+- Endpoints finos: sem regra de negócio nem cálculo de métrica nas rotas. Métricas já existem em Vendedor/DataLoader: reaproveite, nunca duplique fórmulas. Taxas trafegam como fração 0–1; valores indisponíveis são null, nunca NaN.
+- Imports absolutos a partir de backend/. Testes com unittest (stdlib) em backend/tests/, rodados de dentro de backend/ com o python do venv: `python -m unittest discover -s tests -t .` (Windows: backend/venv/Scripts/python). A suíte existente deve continuar passando. Testes nunca chamam a internet. NUNCA peça, leia ou imprima a chave DEEPSEEK_API_KEY.
+- COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS em todo código novo: português simples; cabeçalho em todo arquivo; docstring em toda classe e função (o que faz, recebe, devolve, exemplo curto quando ajudar); comentar cada bloco explicando o PORQUÊ; explicar termos técnicos na primeira vez com palavras do dia a dia; fórmulas escritas em palavras; testes comentados dizendo o que verificam. Não altere código antigo só para comentar.
+- NÃO faça git commit/add/push/reset (eu faço os commits). Nunca coloque segredos em arquivos versionados. Não modifique dados/, prompts/, README.md, BRIEFING.md, DIARIO.md, AGENTS.md, AI-AGENTS.md, CLAUDE.md, .claude/ nem o frontend, a menos que o prompt peça.
+- Comandos de shell simples, um por vez, sem one-liners longos com pipes/awk. Se a sessão for interrompida, na retomada verifique `git status --short` e só crie o que ainda não existir.
+- Não invente fatos sobre o repositório; se algo do prompt contradisser o código, pare e me avise.
+- Ao final de cada prompt informe: arquivos criados/alterados, comandos de validação rodados e o resultado REAL.
+
+Aguarde o primeiro prompt.
+
+### Prompt 2
+FATIA 3.1a — CSVs da regional, constantes e entidade AnotacaoRegional
+
+Leia apenas: backend/config.py, backend/domain/anotacao.py e backend/tests/test_entidades.py (só o estilo).
+
+1. COPIE (não mova; dados/ não pode ser alterado) de dados/desafio-3-feedback/ para backend/data/ os arquivos anotacoes_regional.csv e metas_loja.csv. Confirme com diff que ficaram idênticos e que o .gitignore não os ignora (`git check-ignore -v backend/data/anotacoes_regional.csv` não deve listar nada).
+2. Em backend/config.py ACRESCENTE, sem alterar o que existe: ARQUIVO_ANOTACOES_REGIONAL = "anotacoes_regional.csv" e ARQUIVO_METAS_LOJA = "metas_loja.csv".
+3. Crie backend/domain/anotacao_regional.py: `AnotacaoRegional`, dataclass(frozen=True) com data (date), autora (str), texto (str). (Colunas do CSV: data, autora, anotacao.)
+4. Crie backend/tests/test_anotacao_regional.py: criação válida, imutabilidade (alterar atributo levanta FrozenInstanceError) e um teste em test_config já existente NÃO: crie um teste novo que confirme que os dois arquivos novos existem em DATA_DIR.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real e `git status --short`. Não faça commit. Mensagem sugerida: "Adiciona CSVs da regional e entidade AnotacaoRegional".
+
+### Prompt 3
+FATIA 3.1b — DataLoader lê anotações da regional e metas da loja
+
+Pré-requisito: 3.1a concluída. Leia apenas: backend/services/data_loader.py, backend/domain/anotacao_regional.py, backend/config.py e a parte inicial de backend/tests/test_data_loader.py (só para copiar o estilo de dados sintéticos).
+
+Em backend/services/data_loader.py ACRESCENTE, sem mudar o comportamento atual, a leitura dos dois novos arquivos, no MESMO padrão dos existentes (leitura preguiçosa com cache, coleções privadas, DadosIndisponiveisError para arquivo ausente ou coluna faltando). Colunas obrigatórias: anotacoes_regional.csv = data, autora, anotacao; metas_loja.csv = mes, meta_valor. Novos métodos públicos:
+- listar_anotacoes_regional() -> tuple[AnotacaoRegional, ...] em ordem cronológica;
+- obter_meta_loja(mes: str) -> float | None (None se o mês não existir);
+- listar_metas_loja() -> dict[str, float] (devolva uma CÓPIA; mes -> meta).
+
+Testes em um arquivo NOVO backend/tests/test_data_loader_regional.py: CSVs sintéticos em diretório temporário (leitura correta, arquivo ausente, coluna faltando) e um teste de fumaça com os reais: 5 anotações da Patrícia; obter_meta_loja("2026-10") == 317200.0; obter_meta_loja("2030-01") é None; alterar o dict devolvido por listar_metas_loja() não muda o loader.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "DataLoader passa a ler anotações da regional e metas da loja".
+
+### Prompt 4
+FATIA 3.1c — Vendas do gerente no DataLoader
+
+Pré-requisito: 3.1b concluída. Leia apenas: backend/services/data_loader.py, backend/domain/vendedor.py e backend/domain/gerente.py.
+
+Em backend/services/data_loader.py ACRESCENTE o método público obter_vendas_do_gerente() -> Vendedor: um objeto Vendedor com os indicadores diários do próprio gerente (Diego, C0030, que já existem em indicadores_diarios_vendedor.csv), cargo "gerente", loja da configuração e SEM metas (ele não tem meta individual; metas vazias deve funcionar). Objetivo: reaproveitar os métodos de métrica de Vendedor (valor_vendido, ticket médio etc.) para a visão da regional. Reaproveite a rotina de montagem de Vendedor que já existe no loader; não duplique a leitura do CSV.
+IMPORTANTE: o gerente NÃO pode aparecer em listar_vendedores(), obter_vendedor() (continua dando VendedorNaoEncontradoError para C0030) nem no comparativo do time; esses comportamentos não podem mudar.
+
+Testes em backend/tests/test_data_loader_regional.py (acrescente ao arquivo criado em 3.1b): com dados sintéticos e com os CSVs reais: obter_vendas_do_gerente() retorna C0030 / "Diego Furtado" / cargo "gerente"; valor_vendido("2026-10") ≈ 10916; atingimento_meta("2026-10") é None; listar_vendedores() continua com 8 pessoas sem C0030; obter_vendedor("C0030") continua levantando VendedorNaoEncontradoError.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real e `git status --short` (só arquivos de backend/). Não faça commit. Mensagem sugerida: "DataLoader expõe as vendas do gerente".
+
+### Prompt 5
+FATIA 3.2a — Configuração e entidade RegistroFeedback
+
+Leia apenas: backend/config.py, backend/domain/feedback_roteiro.py, backend/domain/anotacao_regional.py (só o estilo) e .gitignore.
+
+Contexto: a visão da regional precisa saber para quais vendedores já foi preparado um roteiro. Hoje nada é guardado depois que a IA responde. VOCABULÁRIO: o sistema só sabe que o roteiro foi GERADO/PREPARADO, não que a conversa aconteceu; nunca use "realizado".
+
+1. Em backend/config.py ACRESCENTE REGISTRO_FEEDBACKS_ARQUIVO = DATA_DIR / "registro_feedbacks.json" (comente: uso local, criado sozinho, fora do git).
+2. Em .gitignore (único arquivo de configuração que esta parte pode alterar) adicione `backend/data/registro_feedbacks.json` com um comentário curto.
+3. Crie backend/domain/registro_feedback.py: `RegistroFeedback`, dataclass(frozen=True): feedback_id (str, uuid4), vendedor_id, vendedor_nome, mes_referencia (str | None), gerado_em (datetime com fuso UTC), roteiro (dict com as 4 listas, vindo de FeedbackRoteiro.para_dict()). Métodos: para_dict() (datas em texto ISO 8601) e @classmethod de_dict() que levanta ValueError se faltar campo ou o tipo estiver errado.
+4. Teste novo backend/tests/test_registro_feedback_entidade.py: ida e volta para_dict/de_dict preservando o horário com fuso; imutabilidade; de_dict com campo faltando e com data inválida => ValueError.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS (explique UUID e UTC em linguagem simples). Validação: suíte completa a partir de backend/ com saída real; `git check-ignore -v backend/data/registro_feedbacks.json` deve mostrar a regra. Não faça commit. Mensagem sugerida: "Adiciona entidade RegistroFeedback e configuração do registro".
+
+### Prompt 6
+FATIA 3.2b — Serviço RegistroFeedbackService
+
+Pré-requisito: 3.2a concluída. Leia apenas: backend/config.py, backend/domain/registro_feedback.py, backend/domain/feedback_roteiro.py e backend/domain/excecoes.py.
+
+Crie backend/services/registro_feedback.py: `RegistroFeedbackService(arquivo: Path = REGISTRO_FEEDBACKS_ARQUIVO)` com:
+- registrar(vendedor_id, vendedor_nome, mes_referencia, roteiro: FeedbackRoteiro) -> RegistroFeedback (gera id e horário UTC);
+- listar(vendedor_id: str | None = None) -> list[RegistroFeedback], do mais novo para o mais antigo;
+- ultimo_de(vendedor_id) -> RegistroFeedback | None;
+- contar_por_vendedor() -> dict[str, int].
+Regras: arquivo inexistente = lista vazia (não é erro e NÃO é criado até o primeiro registro); escrita ATÔMICA (grava num arquivo temporário na mesma pasta e troca com os.replace); um threading.Lock protege o ciclo ler-alterar-gravar (o FastAPI atende pedidos em threads); JSON corrompido ou com formato inesperado => DadosIndisponiveisError com mensagem clara em português, SEM apagar nem sobrescrever o arquivo; utf-8 com ensure_ascii=False.
+
+Teste novo backend/tests/test_registro_feedback.py usando tempfile (NUNCA o arquivo real): arquivo inexistente => vazio e nenhum arquivo criado; registrar e listar (ordem); filtro por vendedor; ultimo_de; contar_por_vendedor; persistência entre duas instâncias; arquivo corrompido => erro e conteúdo intacto; nenhum .tmp sobrando; 20 threads registrando 1 cada => 20 registros.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS (explique escrita atômica, lock/trava e thread em linguagem simples). Validação: suíte completa com saída real; confirme que backend/data/registro_feedbacks.json NÃO existe. Não faça commit. Mensagem sugerida: "Cria serviço de registro local dos roteiros gerados".
+
+### Prompt 7
+FATIA 3.3a — Exceção de loja e contratos de erro e métricas
+
+Leia apenas: backend/domain/excecoes.py, backend/domain/comparativo_time.py, a lista de métodos públicos de backend/domain/vendedor.py e a saída de `pip list` filtrando "pydantic" no venv (para usar a sintaxe da versão instalada).
+
+1. Em backend/domain/excecoes.py ACRESCENTE `LojaNaoEncontradaError(DominioError)` (código de loja inexistente), com docstring didática. Não altere as existentes.
+2. Crie backend/contracts/erros.py: `ErroResposta` { erro: str }.
+3. Crie backend/contracts/metricas.py com Field(description=...) em português em cada campo (aparece no Swagger):
+   - `MetricasDTO` { valor_vendido, vendas, pecas, atendimentos, ticket_medio | None, pecas_por_atendimento | None, conversao | None (fração de 0 a 1) };
+   - `MetricaComparadaDTO` (espelha ComparativoTime/MetricaComparada: nome, valor, media_time, diferenca_percentual, posicao, total_vendedores, situacao; use Literal para nome e situacao);
+   - `ResumoMensalDTO` { mes, dias_com_dados, mes_parcial: bool, valor_vendido, vendas, pecas, atendimentos, ticket_medio, pecas_por_atendimento, conversao, meta | None, atingimento_meta | None }.
+   Campos float não aceitam NaN nem infinito (use allow_inf_nan=False ou validador, conforme a versão do Pydantic; comente).
+4. Teste novo backend/tests/test_contratos_metricas.py: criação válida; None vira null na serialização (model_dump_json); NaN rejeitado; valor de Literal inválido rejeitado; LojaNaoEncontradaError herda de DominioError.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS (explique Pydantic, validação, Literal e None em linguagem simples). Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Cria contratos de erro e métricas e exceção de loja".
+
+### Prompt 8
+FATIA 3.3b — Contratos de vendedores e de feedback
+
+Pré-requisito: 3.3a concluída. Leia apenas: backend/contracts/metricas.py, backend/domain/anotacao.py e backend/domain/feedback_roteiro.py.
+
+1. Crie backend/contracts/vendedores.py (Field(description=...) em português):
+   - `AnotacaoDTO` { data: date, sobre, texto, e_do_time: bool };
+   - `FeedbackPreparadoDTO` { feedback_id, mes_referencia | None, gerado_em: datetime };
+   - `VendedorResumoDTO` { vendedor_id, nome, cargo, metricas: MetricasDTO, comparativo: list[MetricaComparadaDTO] };
+   - `ListaVendedoresResposta` { loja_id, loja_nome, mes: str | None, vendedores: list[VendedorResumoDTO] };
+   - `HistoricoVendedorResposta` { vendedor_id, nome, cargo, loja_id, loja_nome, metricas (histórico todo), resumo_mensal: list[ResumoMensalDTO], comparativo: list[MetricaComparadaDTO], anotacoes: list[AnotacaoDTO] (só as SOBRE a pessoa), anotacoes_do_time: list[AnotacaoDTO], feedbacks_preparados: list[FeedbackPreparadoDTO] }.
+2. Crie backend/contracts/feedback.py:
+   - `FeedbackGerarRequisicao` { vendedor_id: str (obrigatório, min_length=1, espaços nas pontas removidos), mes_referencia: str | None com validação do formato "AAAA-MM" (mês 01 a 12; rejeita "2026-13", "2026/10", "outubro") };
+   - `FeedbackRoteiroDTO` { pontos_positivos, pontos_melhoria, possiveis_motivos, roteiro_conversa: list[str] };
+   - `FeedbackGerarResposta` { feedback_id, vendedor_id, vendedor_nome, mes_referencia | None, gerado_em: datetime, roteiro: FeedbackRoteiroDTO }.
+3. Teste novo backend/tests/test_contratos_vendedores_feedback.py: requisição válida e inválida (vendedor_id vazio ou só espaços, os formatos de mês acima), espaços removidos, serialização dos DTOs de vendedores com dados fictícios, e que nenhum DTO aceita receber um objeto de domínio ou DataFrame diretamente.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Cria contratos de vendedores e de feedback".
+
+### Prompt 9
+FATIA 3.3c — Contratos da visão regional
+
+Pré-requisito: 3.3b concluída. Leia apenas: backend/contracts/vendedores.py (estilo) e backend/domain/anotacao_regional.py.
+
+Crie backend/contracts/regional.py (Field(description=...) em português; razões como fração de 0 a 1, null quando indisponíveis, sem NaN):
+- `ResultadoLojaMesDTO` { mes, mes_parcial: bool, dias_com_dados: int, meta_loja | None, vendas_loja (inclui as vendas do gerente), atingimento_loja | None, vendas_vendedores (sem o gerente), atingimento_vendedores | None, vendas_gerente, participacao_gerente | None (fração das vendas da loja feitas pelo gerente) };
+- `AcompanhamentoVendedorDTO` { vendedor_id, nome, anotacoes_do_gerente: int, ultima_anotacao_em: date | None, roteiros_preparados: int, ultimo_roteiro_em: datetime | None, situacao: Literal["com_roteiro", "sem_roteiro"] };
+- `AcompanhamentoFeedbackDTO` { total_vendedores, vendedores_com_roteiro, cobertura (fração), total_roteiros_preparados, vendedores: list[AcompanhamentoVendedorDTO] };
+- `AnotacaoRegionalDTO` { data: date, autora, texto };
+- `DesempenhoGerenteResposta` { gerente_id, gerente_nome, loja_id, loja_nome, periodo_inicio: date | None, periodo_fim: date | None, resultado_loja: list[ResultadoLojaMesDTO], acompanhamento_feedback: AcompanhamentoFeedbackDTO, anotacoes_regional: list[AnotacaoRegionalDTO] }.
+Comente nos campos de roteiro: "preparado" quer dizer que o roteiro foi gerado, não que a conversa aconteceu.
+
+Teste novo backend/tests/test_contratos_regional.py: criação válida com dados fictícios, null onde permitido, Literal de situacao inválido rejeitado, NaN rejeitado, serialização de datas em texto ISO.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Cria contratos da visão regional".
+
+### Prompt 10
+FATIA 3.3d — Mapeadores de domínio para DTO
+
+Pré-requisito: 3.3a a 3.3c concluídas. Leia apenas: backend/contracts/metricas.py, backend/contracts/vendedores.py, backend/contracts/feedback.py, a lista de métodos públicos de backend/domain/vendedor.py, backend/domain/comparativo_time.py, backend/domain/anotacao.py, backend/domain/feedback_roteiro.py e, em backend/services/prompt_feedback.py, apenas o trecho que define quando um mês é "parcial".
+
+Crie backend/contracts/mapeadores.py com funções PURAS que convertem entidades em DTOs, sem recalcular nenhuma fórmula (use os métodos de Vendedor):
+- metricas_de(vendedor, mes: str | None = None) -> MetricasDTO;
+- resumo_mensal_de(item: dict) -> ResumoMensalDTO, onde item é um elemento de Vendedor.resumo_mensal(); mes_parcial = dias_com_dados < 10. Reutilize a regra que já existe em prompt_feedback.py: importe a constante de lá OU mova-a para config.py sem mudar o comportamento; escolha o menor impacto e me diga qual;
+- comparativo_de(ComparativoTime) -> list[MetricaComparadaDTO];
+- anotacao_de(Anotacao) -> AnotacaoDTO;
+- roteiro_de(FeedbackRoteiro) -> FeedbackRoteiroDTO.
+(Mapeadores de registro e de regional ficam para as partes que os usam.)
+
+Teste novo backend/tests/test_mapeadores.py com a Bianca real (DataLoader dos CSVs reais): conversão ≈ 0,505; ticket médio ≈ 206,3; resumo mensal de 2026-11 com mes_parcial True e de 2026-10 com False; comparativo com 3 métricas (conversão posição 1 de 8, "acima"; P.A. posição 8 de 8, "abaixo"); anotacao_de com e_do_time True e False; roteiro_de preserva as 4 listas. Se algum valor real divergir, NÃO ajuste o teste: investigue e me avise.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS (explique "mapeador" e "função pura"). Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Cria mapeadores de domínio para DTO".
+
+### Prompt 11
+FATIA 3.4a — Configuração de CORS, httpx e dependências
+
+Leia apenas: backend/config.py, backend/.env.example, backend/requirements.txt e os construtores (apenas __init__) de DataLoader (backend/services/data_loader.py), LLMService (backend/services/llm_service.py) e RegistroFeedbackService (backend/services/registro_feedback.py).
+
+1. Verifique se o pacote `httpx` está no venv (`python -c "import httpx"`): o TestClient do FastAPI precisa dele. Se NÃO estiver, acrescente `httpx` em backend/requirements.txt com um comentário de uma linha ("usado pelo TestClient nos testes") e me avise no final para eu rodar `pip install -r requirements.txt` (não instale você mesmo).
+2. Em backend/config.py ACRESCENTE ENV_FRONTEND_ORIGINS = "FRONTEND_ORIGINS" e FRONTEND_ORIGINS_PADRAO = ("http://localhost:5173", "http://127.0.0.1:5173") (comente: o Vite serve o frontend na porta 5173; a variável aceita várias origens separadas por vírgula). Em backend/.env.example acrescente a linha comentada `#FRONTEND_ORIGINS=` com explicação em português.
+3. Crie backend/endpoints/dependencias.py com funções para o Depends do FastAPI, cada uma devolvendo UMA instância compartilhada (functools.lru_cache): obter_data_loader() -> DataLoader; obter_registro_feedbacks() -> RegistroFeedbackService; obter_llm_service() -> LLMService (criado com o MESMO DataLoader; a leitura da chave continua preguiçosa, não ocorre aqui). Comente que os testes trocam essas funções com app.dependency_overrides e explique singleton em linguagem simples.
+4. Teste novo backend/tests/test_dependencias.py: cada função devolve o tipo certo; duas chamadas devolvem o MESMO objeto; obter_llm_service usa o mesmo DataLoader de obter_data_loader (use cache_clear() nos testes para isolar); criar o LLMService sem chave NÃO levanta erro.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Adiciona configuração de CORS e dependências compartilhadas da API".
+
+### Prompt 12
+FATIA 3.4b — Tratamento global de erros
+
+Pré-requisito: 3.4a concluída. Leia apenas: backend/domain/excecoes.py e backend/contracts/erros.py.
+
+Crie backend/endpoints/erros.py com `registrar_tratadores_de_erro(app)`, que instala handlers devolvendo SEMPRE o corpo {"erro": "mensagem em português"}:
+- VendedorNaoEncontradoError e LojaNaoEncontradaError -> 404;
+- RequestValidationError (entrada inválida) -> 400, com mensagem resumida e legível dizendo campo e problema (ex.: "mes_referencia: use o formato AAAA-MM"), sem despejar a estrutura técnica do Pydantic;
+- LLMIndisponivelError -> 503; LLMRespostaInvalidaError -> 502; LLMNaoConfiguradoError -> 500 (mensagem: serviço de IA não configurado no servidor; NUNCA revele chave nem caminhos de arquivo);
+- DadosIndisponiveisError e qualquer outro DominioError -> 500;
+- starlette HTTPException (rota inexistente 404, método não permitido 405) -> mesmo status, corpo {"erro": ...} em português;
+- Exception genérica -> 500 com {"erro": "Erro interno do servidor."}, traceback registrado no log (logging), nunca na resposta.
+Documente em comentário a tabela exceção -> status. Ainda NÃO mexa no main.py.
+
+Teste novo backend/tests/test_erros_globais.py com TestClient sobre um app de TESTE criado no próprio arquivo (FastAPI() + registrar_tratadores_de_erro + rotas temporárias que levantam cada exceção): confira status e corpo de cada caso; Exception genérica não vaza a mensagem original; validação -> 400 em português; rota inexistente e método errado -> {"erro": ...}. Use TestClient(app, raise_server_exceptions=False) onde preciso e comente por quê.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS (explique handler/tratador de exceção e status HTTP). Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Cria tratamento global de erros da API".
+
+### Prompt 13
+FATIA 3.4c — main.py: CORS, tratadores de erro e aquecimento dos dados
+
+Pré-requisito: 3.4a e 3.4b concluídas. Leia apenas: backend/main.py, backend/config.py, backend/endpoints/dependencias.py, backend/endpoints/erros.py e o início de backend/tests/test_erros_globais.py (estilo de TestClient).
+
+Reescreva backend/main.py preservando a rota /health e os comentários didáticos:
+- load_dotenv(ENV_FILE) (caminho do config);
+- `app = FastAPI(title="FullStore Feedback Inteligente", version="0.1.0", lifespan=...)`;
+- CORSMiddleware: allow_origins vindas da variável FRONTEND_ORIGINS (separadas por vírgula, com strip; se vazia, usa o padrão do config), allow_methods ["GET", "POST", "OPTIONS"], allow_headers ["Content-Type"], SEM allow_credentials (não usamos cookies). Crie uma função pequena `ler_origens_permitidas()` para ser testável;
+- registrar_tratadores_de_erro(app);
+- lifespan (aquecimento): na subida chama obter_data_loader().listar_vendedores() para carregar os CSVs uma vez só; se falhar com DadosIndisponiveisError, registre o erro no log e deixe o servidor subir (as rotas devolverão o erro 500 amigável). Explique em comentário por que aquecer;
+- no ponto onde os routers serão incluídos, deixe o comentário "# routers incluídos nas próximas partes (3.5 a 3.7)". NÃO crie arquivos de rotas ainda.
+
+Teste novo backend/tests/test_servidor_base.py com TestClient sobre o app REAL: /health ok; rota inexistente -> 404 com {"erro": ...}; POST em /health -> 405 com {"erro": ...}; preflight CORS (OPTIONS com Origin http://localhost:5173 e Access-Control-Request-Method: POST) devolve access-control-allow-origin correto, e uma origem não permitida (http://site-estranho.com) NÃO recebe esse cabeçalho; ler_origens_permitidas com a variável vazia, com uma origem e com duas separadas por vírgula e espaços (use unittest.mock.patch.dict); a subida com TestClient usado como context manager executa o aquecimento sem erro.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS (explique CORS, middleware, preflight e lifespan). Validação: suíte completa com saída real; suba o uvicorn de dentro de backend/, chame `curl http://localhost:8000/health` e uma rota inexistente mostrando o corpo, e encerre o servidor. Não faça commit. Mensagem sugerida: "Configura CORS, erros globais e aquecimento no main.py".
+
+### Prompt 14
+FATIA 3.5a — GET /api/vendedores/{loja_id}
+
+Leia apenas: backend/main.py, backend/contracts/vendedores.py, backend/contracts/mapeadores.py, backend/endpoints/dependencias.py, a lista de métodos públicos de backend/services/data_loader.py, backend/config.py e o início de backend/tests/test_servidor_base.py (estilo de TestClient).
+
+Crie backend/endpoints/vendedores.py com `APIRouter(prefix="/api", tags=["Vendedores"])` e inclua-o no main.py (no ponto marcado pelo comentário).
+
+Rota: GET /api/vendedores/{loja_id} — função `def` (não async), response_model=ListaVendedoresResposta, responses documentando 404 e 400 com ErroResposta.
+- Query opcional `mes` (AAAA-MM; use Query com pattern; formato inválido => 400 pelo handler global).
+- loja_id é comparado sem diferenciar maiúsculas/minúsculas com a loja configurada (L004); outra => levante LojaNaoEncontradaError("Loja 'X' não encontrada.").
+- Para cada vendedor de DataLoader.listar_vendedores() (Depends(obter_data_loader)): metricas do período (mes ou histórico todo) com metricas_de, e comparativo com DataLoader.obter_comparativo_time(vendedor_id, mes) + comparativo_de. A rota só orquestra: ZERO cálculo próprio, ZERO Pandas. Ordem da lista = ordem do CSV. O gerente não aparece.
+
+Teste novo backend/tests/test_endpoints_vendedores_lista.py com TestClient e DataLoader REAL: 8 vendedores e nenhum com cargo "gerente"; Bianca (C0031) com conversão ≈ 0,505 e, no comparativo, conversão posição 1 de 8 "acima" e P.A. posição 8 de 8 "abaixo"; ?mes=2026-10 altera os valores; ?mes=2026-13 -> 400 com {"erro": ...}; "L999" -> 404 com {"erro": ...}; "l004" minúsculo funciona; o JSON bruto não contém "NaN". Se algum valor real divergir, NÃO ajuste o teste: investigue e me avise.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS (explique APIRouter, parâmetro de caminho e query). Validação: suíte completa com saída real; suba o uvicorn, rode `curl http://localhost:8000/api/vendedores/L004` (mostre as primeiras linhas) e confirme que /docs responde 200 listando a rota. Não faça commit. Mensagem sugerida: "Cria endpoint de lista de vendedores da loja".
+
+### Prompt 15
+FATIA 3.5b — GET /api/vendedores/{vendedor_id}/historico
+
+Pré-requisito: 3.5a concluída. Leia apenas: backend/endpoints/vendedores.py, backend/contracts/vendedores.py, backend/contracts/mapeadores.py, backend/services/registro_feedback.py (só os métodos públicos) e backend/domain/gerente.py (só os métodos públicos).
+
+1. Em backend/contracts/mapeadores.py ACRESCENTE `feedback_preparado_de(RegistroFeedback) -> FeedbackPreparadoDTO` (só id, mês e horário; o texto do roteiro NÃO entra aqui).
+2. Em backend/endpoints/vendedores.py ACRESCENTE: GET /api/vendedores/{vendedor_id}/historico — função `def`, response_model=HistoricoVendedorResposta, 404 documentado.
+   - Aceita só ID de vendedor (ex.: C0031). ID inexistente ou do gerente (C0030) => VendedorNaoEncontradoError (404 pelo handler global).
+   - Monta: identidade; metricas do histórico todo; resumo_mensal (cada item de Vendedor.resumo_mensal() via resumo_mensal_de); comparativo do histórico todo; anotacoes SOBRE o vendedor (DataLoader.obter_anotacoes_do_vendedor); anotacoes_do_time (Gerente.anotacoes_do_time()); feedbacks_preparados (RegistroFeedbackService.listar(vendedor_id), via Depends(obter_registro_feedbacks)).
+   - As duas rotas do arquivo têm formatos diferentes (um segmento vs. dois) e não conflitam: confirme isso no teste.
+
+Teste novo backend/tests/test_endpoints_vendedores_historico.py com TestClient, DataLoader real e RegistroFeedbackService apontando para arquivo TEMPORÁRIO via dependency_overrides: histórico da Bianca com 4 meses no resumo (2026-08 a 2026-11), novembro com mes_parcial true, 3 anotações dela e 2 do time, nenhuma anotação sobre outras pessoas, feedbacks_preparados vazio e depois com 1 item após registrar um no registro de teste; C0030 e "XXXX" -> 404 com {"erro": ...}; JSON sem NaN; a rota da lista (3.5a) continua funcionando.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real; suba o uvicorn e rode `curl http://localhost:8000/api/vendedores/C0031/historico` mostrando as primeiras linhas; /docs lista as 2 rotas. Não faça commit. Mensagem sugerida: "Cria endpoint de histórico do vendedor".
+
+### Prompt 16
+FATIA 3.6a — POST /api/feedback/gerar (caminho feliz)
+
+Leia apenas: backend/main.py, backend/endpoints/vendedores.py (estilo), backend/endpoints/dependencias.py, backend/contracts/feedback.py, backend/contracts/mapeadores.py, backend/services/registro_feedback.py (só métodos públicos) e, em backend/services/llm_service.py, apenas a assinatura e a docstring de gerar_roteiro_feedback.
+
+1. Em backend/contracts/mapeadores.py ACRESCENTE `resposta_de_feedback(RegistroFeedback) -> FeedbackGerarResposta` (reaproveite roteiro_de).
+2. Crie backend/endpoints/feedback.py com `APIRouter(prefix="/api", tags=["Feedback"])` e inclua-o no main.py.
+   POST /api/feedback/gerar — função `def`, NÃO `async def` (a chamada à IA bloqueia por segundos; o FastAPI roda funções normais em threads; explique em comentário). Corpo: FeedbackGerarRequisicao. response_model=FeedbackGerarResposta; documente 400, 404, 500, 502 e 503 com ErroResposta.
+   Fluxo: (1) DataLoader.obter_vendedor(vendedor_id) (inexistente ou gerente => 404, SEM chamar a IA); (2) LLMService.gerar_roteiro_feedback(vendedor_id, mes_referencia) via Depends(obter_llm_service); (3) SOMENTE se a IA devolveu um roteiro válido, registrar no RegistroFeedbackService (vendedor_id, nome, mês, roteiro); (4) devolver a resposta pelo mapeador. Se a IA falhar, NADA é registrado e o erro sobe para o handler global. A rota é fina: nada de prompt, validação de qualidade ou fórmulas.
+   Se gravar o registro falhar (DadosIndisponiveisError), deixe subir (500 com mensagem clara) e comente a decisão: é melhor avisar o erro do que esconder, porque sem registro a regional não acompanha.
+
+Teste novo backend/tests/test_endpoints_feedback.py com TestClient, um LLMService FALSO via dependency_overrides (classe fake com gerar_roteiro_feedback que devolve um FeedbackRoteiro fixo e guarda os argumentos recebidos), DataLoader real e registro em arquivo temporário. NENHUM teste chama a internet. Cubra: 200 com as 4 listas preenchidas, feedback_id e gerado_em presentes, 1 registro gravado, e o fake recebeu vendedor_id e mes_referencia corretos; sem mes_referencia; duas gerações => 2 registros com ids diferentes; o histórico da Bianca (rota 3.5b) passa a listar o feedback gerado; corpo sem vendedor_id -> 400 em português; mes_referencia "2026-13" -> 400.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real. Você NÃO deve tentar a chamada real à IA. Não faça commit. Mensagem sugerida: "Cria endpoint de geração de feedback com registro do roteiro".
+
+### Prompt 17
+FATIA 3.6b — Caminhos de falha do POST /api/feedback/gerar
+
+Pré-requisito: 3.6a concluída. Leia apenas: backend/endpoints/feedback.py, backend/tests/test_endpoints_feedback.py e backend/domain/excecoes.py.
+
+Acrescente em um arquivo NOVO backend/tests/test_endpoints_feedback_falhas.py (sem editar o existente; reaproveite os ajudantes de teste copiando o mínimo necessário) testes com o LLMService FALSO programado para falhar:
+- vendedor "C9999" e "C0030" -> 404 com {"erro": ...} e o fake NÃO foi chamado;
+- LLMIndisponivelError -> 503 e NADA registrado;
+- LLMRespostaInvalidaError -> 502 e NADA registrado;
+- LLMNaoConfiguradoError -> 500, mensagem sem a palavra da chave nem caminhos de arquivo;
+- falha ao gravar o registro (DadosIndisponiveisError no RegistroFeedbackService falso) -> 500 com mensagem clara;
+- exceção inesperada no fake -> 500 com {"erro": "Erro interno do servidor."} sem vazar a mensagem original.
+Se algum teste mostrar um bug na rota, corrija a rota com a menor mudança e me explique.
+
+Validação: suíte completa com saída real. Depois suba o uvicorn SEM chave configurada (confirme que DEEPSEEK_API_KEY não está definida no ambiente do processo, sem imprimir seu valor) e rode `curl -X POST http://localhost:8000/api/feedback/gerar -H "Content-Type: application/json" -d "{\"vendedor_id\": \"C0031\"}"`: deve responder 500 com {"erro": ...} amigável, sem traceback e sem chave. Isso confirma o erro sem gastar créditos. Encerre o servidor. Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Não faça commit. Mensagem sugerida: "Testa os caminhos de falha da geração de feedback".
+
+### Prompt 18
+FATIA 3.7a — ConsolidadoRegional: resultado mensal da loja
+
+Leia apenas: backend/contracts/regional.py, a lista de métodos públicos de backend/services/data_loader.py, a lista de métodos públicos de backend/domain/vendedor.py, backend/config.py e, em backend/services/prompt_feedback.py, apenas o trecho da regra de mês parcial (ou a constante que a 3.3d escolheu).
+
+Crie backend/services/consolidado_regional.py com a classe `ConsolidadoRegional(data_loader, registro)` e, por enquanto, só o método `obter_resultado_loja() -> list[dict]` (cada dict com exatamente os campos de ResultadoLojaMesDTO). Fórmulas (escreva-as em palavras nos comentários):
+- Meses: união dos meses com dados dos 8 vendedores e do gerente, em ordem.
+- Por mês: meta_loja = DataLoader.obter_meta_loja(mes) (None se não houver); vendas_vendedores = soma de valor_vendido(mes) dos 8 vendedores (listar_vendedores()); vendas_gerente = valor_vendido(mes) do Vendedor de obter_vendas_do_gerente(); vendas_loja = vendas_vendedores + vendas_gerente; atingimento_loja = vendas_loja ÷ meta_loja; atingimento_vendedores = vendas_vendedores ÷ meta_loja; participacao_gerente = vendas_gerente ÷ vendas_loja. Denominador zero ou ausente => None.
+- dias_com_dados = maior número de dias com dados entre as pessoas naquele mês; mes_parcial = dias_com_dados < 10 (mesma regra dos contratos).
+- Comente POR QUE mostramos dois atingimentos: a meta da loja é a soma das metas dos vendedores, que NÃO inclui o gerente; as vendas do gerente ajudam a loja, mas não contam para a meta individual de ninguém.
+
+Teste novo backend/tests/test_consolidado_resultado_loja.py: (1) com STUBS simples no lugar do DataLoader (classes pequenas que devolvem Vendedores sintéticos e metas), conferindo cada fórmula à mão, denominador zero e mês parcial; (2) com os CSVs reais: 4 meses; em 2026-10 meta_loja == 317200.0, vendas_vendedores ≈ 315781.85 (atingimento ≈ 0,9955), vendas_loja ≈ 326697.48 (atingimento ≈ 1,03), vendas_gerente ≈ 10916; 2026-11 com mes_parcial True. Se algum valor real divergir, NÃO ajuste o teste: investigue e me avise.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Cria consolidado regional: resultado mensal da loja".
+
+### Prompt 19
+FATIA 3.7b — ConsolidadoRegional: acompanhamento e resposta completa
+
+Pré-requisito: 3.7a concluída. Leia apenas: backend/services/consolidado_regional.py, backend/contracts/regional.py, os métodos públicos de backend/services/registro_feedback.py e de backend/domain/gerente.py, e a lista de métodos públicos de backend/services/data_loader.py.
+
+Em backend/services/consolidado_regional.py ACRESCENTE:
+1. `obter_acompanhamento_feedback() -> dict` (campos de AcompanhamentoFeedbackDTO). Para cada um dos 8 vendedores, na ordem do CSV: anotacoes_do_gerente = quantidade de anotações do Diego SOBRE a pessoa; ultima_anotacao_em = data da mais recente (ou None); roteiros_preparados e ultimo_roteiro_em vindos do RegistroFeedbackService; situacao = "com_roteiro" se roteiros_preparados > 0, senão "sem_roteiro". Resumo: total_vendedores; vendedores_com_roteiro; cobertura = vendedores_com_roteiro ÷ total_vendedores; total_roteiros_preparados.
+2. `obter_desempenho_gerente() -> dict` com exatamente os campos de DesempenhoGerenteResposta: gerente_id e gerente_nome (do Gerente), loja_id e loja_nome (do DataLoader/config), periodo_inicio e periodo_fim (menor e maior data dos indicadores de vendedores e gerente; None se não houver), resultado_loja (3.7a), acompanhamento_feedback e anotacoes_regional (listar_anotacoes_regional(), cronológica, cada uma como dict data/autora/texto).
+Comente: "roteiro preparado" NÃO é "feedback realizado"; o sistema só sabe que o roteiro foi gerado.
+
+Teste novo backend/tests/test_consolidado_acompanhamento.py: com stubs sintéticos (cobertura 0, 1/8 e 8/8, última anotação, vendedor sem anotações) e com os CSVs reais e registro temporário: 8 vendedores todos "sem_roteiro" com registro vazio e cobertura 0; 5 anotações da regional; depois de registrar um roteiro da Bianca, ela vira "com_roteiro", cobertura = 0,125 e total_roteiros_preparados = 1; Bianca com 3 anotações do gerente; gerente_nome "Diego Furtado", loja L004; periodo_inicio 2026-08-01 e periodo_fim 2026-11-01; o dict de obter_desempenho_gerente() é aceito por DesempenhoGerenteResposta(**dict) sem erro. Se algum valor real divergir, NÃO ajuste o teste: investigue e me avise.
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real. Não faça commit. Mensagem sugerida: "Completa o consolidado regional com o acompanhamento de roteiros".
+
+### Prompt 20
+FATIA 3.7c — GET /api/regional/desempenho-gerente
+
+Pré-requisito: 3.7a e 3.7b concluídas. Leia apenas: backend/services/consolidado_regional.py (só assinaturas), backend/contracts/regional.py, backend/endpoints/dependencias.py, backend/endpoints/vendedores.py (estilo), backend/main.py e o início de backend/tests/test_endpoints_vendedores_historico.py (estilo de TestClient e overrides).
+
+1. Em backend/endpoints/dependencias.py ACRESCENTE obter_consolidado_regional() (singleton com lru_cache, montado com obter_data_loader() e obter_registro_feedbacks(); atenção: o registro precisa ser o MESMO usado pela rota de feedback para a regional enxergar os roteiros gerados).
+2. Crie backend/endpoints/regional.py com `APIRouter(prefix="/api", tags=["Regional"])` e inclua-o no main.py. GET /api/regional/desempenho-gerente — função `def`, response_model=DesempenhoGerenteResposta, erros documentados com ErroResposta. A rota só chama ConsolidadoRegional.obter_desempenho_gerente() via Depends e devolve o resultado (o Pydantic valida o dict; se precisar de conversão, crie o mapeador em contracts/mapeadores.py).
+
+Teste novo backend/tests/test_endpoints_regional.py com TestClient, overrides (DataLoader real, registro temporário compartilhado): 200 e estrutura do contrato; resultado_loja com 4 meses e outubro com meta 317200.0; 5 anotações da regional; JSON bruto sem NaN; ao registrar um roteiro da Bianca no registro de teste, a rota mostra a Bianca "com_roteiro"; e um teste de INTEGRAÇÃO entre rotas: com o LLM falso, POST /api/feedback/gerar para C0031 e em seguida GET /api/regional/desempenho-gerente mostra a Bianca "com_roteiro" e total_roteiros_preparados = 1 (isso prova que as duas rotas usam o mesmo registro).
+
+Siga os COMENTÁRIOS OBRIGATÓRIOS E DIDÁTICOS. Validação: suíte completa com saída real; suba o uvicorn e rode `curl http://localhost:8000/api/regional/desempenho-gerente` mostrando o trecho de resultado_loja de outubro e o acompanhamento. Não faça commit. Mensagem sugerida: "Cria endpoint da visão regional".
+
+### Prompt 21
+FATIA 3.8a — Arquivo backend/api.http
+
+Leia apenas: backend/main.py, os decoradores de rota (@router.get/@router.post e caminhos) de backend/endpoints/*.py e backend/contracts/feedback.py.
+
+Crie backend/api.http no formato do VS Code REST Client (aceito também pelo JetBrains), com `@base = http://localhost:8000` e uma requisição para cada rota, separadas por `###`, cada uma com um comentário em português antes explicando o que faz: GET /health; GET /api/vendedores/L004; GET /api/vendedores/L004?mes=2026-10; GET /api/vendedores/C0031/historico; POST /api/feedback/gerar com {"vendedor_id": "C0031"} (avise no comentário que consome créditos da DeepSeek e pode levar de 10 a 60 segundos); o mesmo POST com "mes_referencia": "2026-10"; GET /api/regional/desempenho-gerente; e dois exemplos de erro (loja inexistente L999 e mes_referencia inválido "2026-13"). Não crie testes nem altere outro arquivo.
+
+Validação: confira que as rotas do arquivo existem de fato em /openapi.json (suba o uvicorn, consulte e encerre). Não faça commit. Mensagem sugerida: "Adiciona arquivo api.http com exemplos de chamadas".
+
+### Prompt 22
+FATIA 3.8b — Documentação da API
+
+Leia apenas: COMO-RODAR.md, backend/endpoints/erros.py e backend/config.py.
+
+Edite SOMENTE COMO-RODAR.md: acrescente uma seção em português simples "Usar a API" com: como subir o servidor (de dentro de backend/ com o venv ativo); onde ver a documentação interativa (http://localhost:8000/docs); como usar o arquivo backend/api.http; a lista das rotas com uma linha cada; o formato dos erros ({"erro": "..."}) com a tabela de status confirmada em endpoints/erros.py (400 entrada inválida, 404 não encontrado, 500 erro interno ou IA não configurada, 502 resposta inválida da IA, 503 IA indisponível); a variável opcional FRONTEND_ORIGINS (CORS); e o aviso de que backend/data/registro_feedbacks.json é criado sozinho, não é versionado e guarda os roteiros gerados (explique "roteiro preparado" ≠ "feedback realizado"). Não altere o restante do arquivo.
+
+Validação: mostre o `git diff COMO-RODAR.md` resumido. Não faça commit. Mensagem sugerida: "Documenta o uso da API no COMO-RODAR".
+
+### Prompt 23
+FATIA 3.8c — Validação final da Etapa 3 (não crie nem altere código, só valide e relate)
+
+Rode e mostre as saídas reais:
+1. Suíte completa a partir de backend/ (diga quantos testes passaram e se algum ficou "skipped").
+2. Suba o uvicorn de dentro de backend/ e confira: /docs responde 200; /openapi.json lista exatamente estas rotas: /health, /api/vendedores/{loja_id}, /api/vendedores/{vendedor_id}/historico, /api/feedback/gerar, /api/regional/desempenho-gerente.
+3. curl em cada rota GET com um resumo do resultado; o POST sem chave devolvendo o 500 amigável; um erro 404 (loja L999) e um 400 (mes=2026-13), ambos com {"erro": ...}.
+4. Preflight CORS: curl -i -X OPTIONS http://localhost:8000/api/feedback/gerar -H "Origin: http://localhost:5173" -H "Access-Control-Request-Method: POST" -H "Content-Type: application/json" mostrando access-control-allow-origin.
+5. Varreduras: `grep -rn "fetch\|axios" backend/` sem resultados; `grep -rn "sk-" backend/ --include=*.py` sem resultados; nenhuma regra de cálculo dentro de backend/endpoints/ (liste os imports de cada arquivo ali e confirme que não importam pandas).
+6. `git status --short`: deve haver só arquivos de backend/, COMO-RODAR.md e .gitignore; nenhum .env, venv, __pycache__ nem registro_feedbacks.json.
+Encerre o servidor.
+
+Ao final diga claramente: (a) o que foi validado de verdade; (b) que a geração real de feedback pela API depende de mim, com os passos (preencher backend/.env, subir o servidor, enviar o POST do api.http para a Bianca, depois abrir a rota regional); (c) pendências reais. Não declare a Etapa 3 concluída antes de eu colar o resultado do POST real. Lembre-me de registrar no DIARIO.md o que decidi e aprendi, sem escrever por mim. Não faça commit.
