@@ -1,0 +1,205 @@
+/*
+ * Estilos da página da aba Feedback.
+ *
+ * A página fica dentro do cartão claro da área central, com texto tinta sobre
+ * superfície suave (contraste ≈ 14:1). O roteiro gerado é exibido como texto
+ * simples; o visual final entra na próxima fatia.
+ */
+
+/* Coluna com os dois blocos da página. */
+.pagina-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+}
+
+/* Cada bloco: título e conteúdo. */
+.pagina-feedback__secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-lg);
+}
+
+/* Separador discreto entre "Gerar roteiro" e "Roteiros já preparados". */
+.pagina-feedback__secao + .pagina-feedback__secao {
+  padding-top: var(--espaco-secao);
+  border-top: 1px solid var(--cor-borda);
+}
+
+/* Título de bloco: 22px, um degrau acima do texto comum. */
+.pagina-feedback__titulo {
+  margin: 0;
+  font-size: var(--texto-display-sm);
+  font-weight: var(--peso-medio);
+}
+
+/* ----------------------------------------------------------------------
+ * Seletor e botão
+ *
+ * Em telas largas ficam na mesma linha; quando falta espaço, o botão desce.
+ * align-items: flex-end alinha o botão com a base do select (o label ocupa
+ * uma linha acima).
+ * -------------------------------------------------------------------- */
+
+.pagina-feedback__controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espaco-base);
+}
+
+/* Campo = label + select, um embaixo do outro. */
+.pagina-feedback__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+}
+
+/* Rótulo do select, ligado a ele por htmlFor/id. */
+.pagina-feedback__rotulo {
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+}
+
+/*
+ * Select com 44px de altura (alvo de toque), fundo claro e texto tinta.
+ * A largura mínima evita que meses por extenso fiquem espremidos.
+ */
+.pagina-feedback__select {
+  min-width: 220px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: var(--espaco-sm) var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  font-family: inherit;
+  font-size: var(--texto-entrada);
+}
+
+/* Durante a geração o select fica apagado, como os botões desabilitados. */
+.pagina-feedback__select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Aviso de custo/tempo: caixa com borda para se separar do fundo. */
+.pagina-feedback__aviso {
+  margin: 0;
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+}
+
+/* Área dos estados da geração (aria-live fica no JSX). */
+.pagina-feedback__resultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+}
+
+/* ----------------------------------------------------------------------
+ * Resumo do roteiro (visual provisório)
+ * -------------------------------------------------------------------- */
+
+.pagina-feedback__resumo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+}
+
+/* Nome da pessoa avaliada. */
+.pagina-feedback__resumo-titulo {
+  margin: 0;
+  font-size: var(--texto-display-sm);
+  font-weight: var(--peso-medio);
+}
+
+/* Linha "Período … · Gerado em …". */
+.pagina-feedback__resumo-meta {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}
+
+/* Cada uma das quatro seções do roteiro. */
+.pagina-feedback__secao-roteiro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+}
+
+/* Título da seção do roteiro. */
+.pagina-feedback__rotulo-secao {
+  margin: 0;
+  font-size: var(--texto-corpo);
+  font-weight: var(--peso-forte);
+}
+
+/*
+ * Lista simples, com marcadores padrão. Só ajustamos o recuo e o respiro:
+ * o estilo definitivo do roteiro entra na fatia 5.7b.
+ */
+.pagina-feedback__lista-roteiro {
+  margin: 0;
+  padding-left: var(--espaco-secao);
+}
+
+.pagina-feedback__lista-roteiro li {
+  margin-bottom: var(--espaco-xs);
+  line-height: 1.5;
+}
+
+/* Texto quando uma das listas do roteiro vem vazia. */
+.pagina-feedback__sem-itens {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}
+
+/* ----------------------------------------------------------------------
+ * Roteiros já preparados
+ * -------------------------------------------------------------------- */
+
+/* Explicação de que "preparado" não é "realizado". */
+.pagina-feedback__explicacao {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+/* Lista sem marcadores; cada roteiro preparado é uma linha com borda. */
+.pagina-feedback__preparados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pagina-feedback__preparado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-base);
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+}
+
+/* Período do roteiro preparado. */
+.pagina-feedback__preparado-periodo {
+  font-weight: var(--peso-medio);
+}
+
+/* Data e hora em texto de apoio, menor. */
+.pagina-feedback__preparado-data {
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}

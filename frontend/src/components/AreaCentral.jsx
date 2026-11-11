@@ -2,15 +2,16 @@
  * Área central do app.
  *
  * Decide o que aparece no centro conforme a visão e a aba escolhidas: as
- * páginas reais (Dados e Anotações), o aviso da regional, o pedido para
- * escolher um colaborador ou o aviso da aba que ainda falta.
+ * páginas reais (Dados, Anotações e Feedback), o aviso da regional ou o
+ * pedido para escolher um colaborador.
  */
 
-import { ABAS, ID_PAINEL_ABAS, ROTULOS_ABAS, VISOES } from '../constantes.js';
+import { ABAS, ID_PAINEL_ABAS, VISOES } from '../constantes.js';
 import { useApp } from '../context/useApp.js';
-// Páginas reais já prontas; a aba Feedback ainda mostra o aviso.
+// Páginas reais das três abas do gerente.
 import { PaginaAnotacoes } from '../pages/PaginaAnotacoes.jsx';
 import { PaginaDados } from '../pages/PaginaDados.jsx';
+import { PaginaFeedback } from '../pages/PaginaFeedback.jsx';
 import { EstadoVazio } from './EstadoVazio.jsx';
 
 // Importa o CSS deste componente.
@@ -25,11 +26,11 @@ import './AreaCentral.css';
  * Devolve:
  *   - visão regional: o aviso "Visão regional em construção";
  *   - visão do gerente sem seleção: EstadoVazio pedindo para escolher alguém;
- *   - visão do gerente com seleção: a página da aba escolhida (Dados ou
- *     Anotações) ou o aviso "Aba ... em construção" (Feedback).
+ *   - visão do gerente com seleção: a página da aba escolhida (Dados,
+ *     Anotações ou Feedback).
  *
- * É NESTE arquivo que as próximas fatias trocam os avisos que restam pelas
- * páginas reais (Feedback e a visão regional).
+ * A visão regional ainda é um aviso; a página dela entra nas próximas
+ * fatias.
  *
  * Exemplo de uso: <AreaCentral />
  */
@@ -86,15 +87,11 @@ export function AreaCentral() {
           {aba === ABAS.ANOTACOES && <PaginaAnotacoes />}
 
           {aba === ABAS.FEEDBACK && (
-            <div className="area-central__aviso">
-              <h2 className="area-central__titulo">
-                Aba {ROTULOS_ABAS[aba]} em construção
-              </h2>
-              <p className="area-central__texto">
-                Nas próximas fatias, esta aba passa a mostrar a página real
-                do colaborador.
-              </p>
-            </div>
+            /*
+             * key={vendedorSelecionadoId} reinicia o estado local da página
+             * (o período escolhido) quando a pessoa muda.
+             */
+            <PaginaFeedback key={vendedorSelecionadoId} />
           )}
         </div>
       )}
