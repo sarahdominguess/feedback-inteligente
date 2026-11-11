@@ -43,6 +43,11 @@ LOJA_NOME = "Aurora Shopping Centro"
 # sobre o time inteiro, e não sobre uma pessoa específica.
 ANOTACAO_SOBRE_TIME = "(time)"
 
+# Abaixo deste número de dias com dados, o mês é tratado como parcial (por
+# exemplo, novembro com 1 dia). A regra é usada no prompt enviado à IA e nos
+# contratos da API, por isso mora aqui, num lugar só, para não divergir.
+DIAS_MINIMOS_MES_COMPLETO = 10
+
 
 # ---------------------------------------------------------------------------
 # Integração com a LLM (DeepSeek) — usada a partir da Etapa 2.

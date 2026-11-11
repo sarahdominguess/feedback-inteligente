@@ -9,6 +9,7 @@ de usuário (dados da vendedora). É daqui que sai a qualidade do roteiro.
 from collections.abc import Sequence
 from datetime import date
 
+from config import DIAS_MINIMOS_MES_COMPLETO
 from domain.anotacao import Anotacao
 from domain.comparativo_time import ComparativoTime
 from domain.vendedor import Vendedor
@@ -316,8 +317,9 @@ def _montar_mensagem_usuario(
             )
         linhas.append(linha)
 
-        # Abaixo de 10 dias com dados, o mês é sinalizado como parcial.
-        if resumo["dias_com_dados"] < 10:
+        # Abaixo do mínimo de dias com dados (DIAS_MINIMOS_MES_COMPLETO, em
+        # config), o mês é sinalizado como parcial.
+        if resumo["dias_com_dados"] < DIAS_MINIMOS_MES_COMPLETO:
             quantidade = resumo["dias_com_dados"]
             unidade = "dia" if quantidade == 1 else "dias"
             linhas.append(
