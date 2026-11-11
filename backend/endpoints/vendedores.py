@@ -14,11 +14,25 @@ from fastapi import APIRouter, Depends, Path, Query
 
 from config import LOJA_ID, LOJA_NOME
 from contracts.erros import ErroResposta
-from contracts.mapeadores import comparativo_de, metricas_de
-from contracts.vendedores import ListaVendedoresResposta, VendedorResumoDTO
+from contracts.mapeadores import (
+    anotacao_de,
+    comparativo_de,
+    feedback_preparado_de,
+    metricas_de,
+    resumo_mensal_de,
+)
+from contracts.vendedores import (
+    HistoricoVendedorResposta,
+    ListaVendedoresResposta,
+    VendedorResumoDTO,
+)
 from domain.excecoes import LojaNaoEncontradaError
-from endpoints.dependencias import obter_data_loader
+from endpoints.dependencias import (
+    obter_data_loader,
+    obter_registro_feedbacks,
+)
 from services.data_loader import DataLoader
+from services.registro_feedback import RegistroFeedbackService
 
 # Router com prefixo /api: as rotas declaradas aqui começam com /api.
 # tags=["Vendedores"] agrupa a rota na documentação automática.
@@ -103,4 +117,79 @@ def listar_vendedores_da_loja(
         loja_nome=LOJA_NOME,
         mes=mes,
         vendedores=vendedores,
+    )
+
+
+@router.get(
+    "/vendedores/{vendedor_id}/historico",
+    response_model=HistoricoVendedorResposta,
+    responses={
+        404: {
+            "model": ErroResposta,
+            "description": "Vendedor não encontrado.",
+        },
+    },
+)
+def obter_historico_do_vendedor(
+    vendedor_id: str = Path(
+        description='Código do vendedor (ex.: "C0031").',
+    ),
+    data_loader: DataLoader = Depends(obter_data_loader),
+    registro: RegistroFeedbackService = Depends(obter_registro_feedbacks),
+) -> HistoricoVendedorResposta:
+    """Devolve o histórico completo de um vendedor.
+
+    Esta rota tem DOIS segmentos depois de /vendedores ({vendedor_id} e
+    "historico"), enquanto a lista usa UM ({loja_id}). São formatos
+    diferentes, então o FastAPI não confunde uma com a outra.
+
+    Recebe só o ID do vendedor (nome não vale aqui). Devolve:
+    - identidade e loja;
+    - métricas de todo o histórico e o resumo mês a mês;
+    - comparativo com a média do time;
+    - anotações do gerente SOBRE a pessoa e, separadamente, as do time;
+    - roteiros já preparados para a pessoa (do mais novo para o mais antigo).
+
+    ID desconhecido ou do gerente (C0030) => 404 pelo tratador global.
+
+    Exemplo: GET /api/vendedores/C0031/historico
+    """
+    # obter_vendedor devolve VendedorNaoEncontradoError para ID inexistente
+    # ou que pertence ao gerente; não capturamos para o handler global
+    # responder 404 com mensagem clara.
+    vendedor = data_loader.obter_vendedor(vendedor_id)
+
+    # Anotações SOBRE a pessoa (sem as do time) e anotações do time inteiro.
+    anotacoes = [
+        anotacao_de(anotacao)
+        for anotacao in data_loader.obter_anotacoes_do_vendedor(vendedor_id)
+    ]
+    anotacoes_do_time = [
+        anotacao_de(anotacao)
+        for anotacao in data_loader.obter_gerente().anotacoes_do_time()
+    ]
+
+    # Roteiros já preparados: listar() já devolve do mais novo para o mais
+    # antigo. O texto do roteiro não entra no histórico, só o resumo.
+    feedbacks_preparados = [
+        feedback_preparado_de(registro_gravado)
+        for registro_gravado in registro.listar(vendedor_id)
+    ]
+
+    return HistoricoVendedorResposta(
+        vendedor_id=vendedor.vendedor_id,
+        nome=vendedor.nome,
+        cargo=vendedor.cargo,
+        loja_id=vendedor.loja_id,
+        loja_nome=vendedor.loja_nome,
+        metricas=metricas_de(vendedor),
+        resumo_mensal=[
+            resumo_mensal_de(item) for item in vendedor.resumo_mensal()
+        ],
+        comparativo=comparativo_de(
+            data_loader.obter_comparativo_time(vendedor.vendedor_id)
+        ),
+        anotacoes=anotacoes,
+        anotacoes_do_time=anotacoes_do_time,
+        feedbacks_preparados=feedbacks_preparados,
     )

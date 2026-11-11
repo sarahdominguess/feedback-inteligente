@@ -17,10 +17,11 @@ from contracts.metricas import (
     MetricasDTO,
     ResumoMensalDTO,
 )
-from contracts.vendedores import AnotacaoDTO
+from contracts.vendedores import AnotacaoDTO, FeedbackPreparadoDTO
 from domain.anotacao import Anotacao
 from domain.comparativo_time import ComparativoTime
 from domain.feedback_roteiro import FeedbackRoteiro
+from domain.registro_feedback import RegistroFeedback
 from domain.vendedor import Vendedor
 
 
@@ -116,3 +117,23 @@ def roteiro_de(roteiro: FeedbackRoteiro) -> FeedbackRoteiroDTO:
     assim o DTO não compartilha listas com o objeto de domínio.
     """
     return FeedbackRoteiroDTO(**roteiro.para_dict())
+
+
+def feedback_preparado_de(
+    registro: RegistroFeedback,
+) -> FeedbackPreparadoDTO:
+    """Resume um registro de roteiro para a lista do histórico.
+
+    Recebe o RegistroFeedback gravado pelo serviço e devolve só o
+    identificador, o mês de referência e o horário. O CONTEÚDO do roteiro
+    (as quatro listas) NÃO entra aqui: o histórico só precisa mostrar que
+    existe um preparo, não repetir o texto.
+
+    "Preparado" significa que o roteiro foi GERADO; não sabemos se a
+    conversa aconteceu.
+    """
+    return FeedbackPreparadoDTO(
+        feedback_id=registro.feedback_id,
+        mes_referencia=registro.mes_referencia,
+        gerado_em=registro.gerado_em,
+    )
