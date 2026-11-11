@@ -19,6 +19,9 @@ E `obter_data_loader.cache_clear()` limpa o cache entre um teste e outro.
 
 from functools import lru_cache
 
+from fastapi import Depends
+
+from services.consolidado_regional import ConsolidadoRegional
 from services.data_loader import DataLoader
 from services.llm_service import LLMService
 from services.registro_feedback import RegistroFeedbackService
@@ -54,3 +57,25 @@ def obter_llm_service() -> LLMService:
     na primeira geração real de roteiro (leitura preguiçosa).
     """
     return LLMService(data_loader=obter_data_loader())
+
+
+@lru_cache(maxsize=1)
+def obter_consolidado_regional(
+    data_loader: DataLoader = Depends(obter_data_loader),
+    registro: RegistroFeedbackService = Depends(obter_registro_feedbacks),
+) -> ConsolidadoRegional:
+    """Devolve o consolidado da regional montado com as MESMAS dependências.
+
+    Os parâmetros usam Depends de propósito: assim o FastAPI resolve o
+    DataLoader e o registro do jeito normal (inclusive respeitando
+    app.dependency_overrides nos testes). Com isso, o consolidado enxerga
+    exatamente o MESMO registro usado pela rota de geração de feedback — sem
+    isso, a regional não veria os roteiros recém-gerados.
+
+    O lru_cache guarda o resultado por par de dependências: como as duas já
+    são singletons, o consolidado também é único em uso normal.
+    """
+    return ConsolidadoRegional(
+        data_loader=data_loader,
+        registro=registro,
+    )

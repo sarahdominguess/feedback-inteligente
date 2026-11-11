@@ -19,6 +19,7 @@ from domain.excecoes import DadosIndisponiveisError
 from endpoints.dependencias import obter_data_loader
 from endpoints.erros import registrar_tratadores_de_erro
 from endpoints.feedback import router as feedback_router
+from endpoints.regional import router as regional_router
 from endpoints.vendedores import router as vendedores_router
 
 # Logger: canal de registro do servidor (mensagens técnicas no log, nunca na
@@ -111,8 +112,9 @@ registrar_tratadores_de_erro(app)
 # Rotas de negócio. Cada router cuida de um assunto e é incluído aqui.
 app.include_router(vendedores_router)
 app.include_router(feedback_router)
+app.include_router(regional_router)
 
-# routers incluídos na próxima parte (3.7)
+# routers incluídos na próxima parte (3.8)
 
 
 @app.get("/health")
