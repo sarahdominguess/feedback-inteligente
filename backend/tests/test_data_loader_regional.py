@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 
 from config import DATA_DIR
-from domain.excecoes import DadosIndisponiveisError
+from domain.excecoes import DadosIndisponiveisError, VendedorNaoEncontradoError
 from services.data_loader import DataLoader
 
 
@@ -27,6 +27,30 @@ METAS_LOJA = """\
 mes,meta_valor
 2026-09,282500.0
 2026-10,317200.0
+"""
+
+
+# --- CSVs sintéticos com vendas do gerente ---------------------------------
+# O gerente (C0030) também tem linhas no arquivo de indicadores, como nos
+# dados reais. Aqui ele vende 6000 + 4916 = 10916 em outubro de 2026.
+VENDEDORES_COM_GERENTE = """\
+vendedor_id,nome,cargo
+C0030,Diego Furtado,gerente
+C0031,Bianca Rocha,vendedor
+"""
+
+INDICADORES_COM_GERENTE = """\
+data,vendedor_id,valor_vendido,vendas,pecas,atendimentos
+2026-10-01,C0030,6000.0,3,4,5
+2026-10-02,C0030,4916.0,2,3,4
+2026-10-01,C0031,1000.0,2,2,4
+"""
+
+# Meta individual só da Bianca: o gerente não tem meta, então a busca de
+# atingimento dele deve devolver None.
+METAS_COM_GERENTE = """\
+vendedor_id,mes,meta_valor
+C0031,2026-10,2000.0
 """
 
 
@@ -232,3 +256,115 @@ class TestDataLoaderRegionalComDadosReais(unittest.TestCase):
         metas["2026-10"] = 0.0
 
         self.assertEqual(self.loader.obter_meta_loja("2026-10"), 317200.0)
+
+
+class TestVendasDoGerenteComDadosSinteticos(unittest.TestCase):
+    """Testes das vendas do gerente expostas como um Vendedor.
+
+    O objetivo é reaproveitar as métricas do Vendedor para a visão da
+    regional, sem que o gerente entre nas listas ou no comparativo do time.
+    """
+
+    def setUp(self):
+        """Cria um diretório temporário com gerente e vendedor e um DataLoader."""
+        self._diretorio_temporario = tempfile.TemporaryDirectory()
+        self.addCleanup(self._diretorio_temporario.cleanup)
+
+        self.data_dir = Path(self._diretorio_temporario.name)
+        escrever_arquivos(
+            self.data_dir,
+            {
+                "vendedores.csv": VENDEDORES_COM_GERENTE,
+                "indicadores_diarios_vendedor.csv": INDICADORES_COM_GERENTE,
+                "metas_vendedor.csv": METAS_COM_GERENTE,
+                "anotacoes_gerente.csv": ANOTACOES_GERENTE_VAZIO,
+            },
+        )
+
+        self.loader = DataLoader(data_dir=self.data_dir)
+
+    def test_carrega_vendas_do_gerente_sem_metas(self):
+        """O gerente vem com identidade, cargo, loja e as métricas calculadas.
+
+        Outubro/2026 soma 6000 + 4916 = 10916 reais em 3 + 2 = 5 vendas, com
+        4 + 3 = 7 peças. Ticket médio = 10916 ÷ 5 = 2183,20.
+        """
+        vendas = self.loader.obter_vendas_do_gerente()
+
+        self.assertEqual(vendas.vendedor_id, "C0030")
+        self.assertEqual(vendas.nome, "Diego Furtado")
+        self.assertEqual(vendas.cargo, "gerente")
+        self.assertEqual(vendas.loja_id, "L004")
+
+        self.assertEqual(vendas.valor_vendido("2026-10"), 10916.0)
+        self.assertEqual(vendas.vendas("2026-10"), 5)
+        self.assertAlmostEqual(
+            vendas.ticket_medio("2026-10"), 10916.0 / 5
+        )
+        self.assertAlmostEqual(
+            vendas.pecas_por_atendimento("2026-10"), 7 / 5
+        )
+
+        # Sem meta individual: dicionário vazio e atingimento None.
+        self.assertEqual(vendas.metas, {})
+        self.assertIsNone(vendas.atingimento_meta("2026-10"))
+
+    def test_gerente_fica_fora_das_listas_e_do_comparativo(self):
+        """O gerente não vira vendedor nem entra na média do time.
+
+        Mesmo existindo um objeto Vendedor para ele, listar_vendedores()
+        devolve só a Bianca, obter_vendedor("C0030") continua falhando e o
+        comparativo conta 1 vendedor (e não 2).
+        """
+        ids = [
+            vendedor.vendedor_id
+            for vendedor in self.loader.listar_vendedores()
+        ]
+        self.assertEqual(ids, ["C0031"])
+
+        with self.assertRaises(VendedorNaoEncontradoError):
+            self.loader.obter_vendedor("C0030")
+
+        comparativo = self.loader.obter_comparativo_time("C0031")
+        self.assertEqual(comparativo.metricas[0].total_vendedores, 1)
+
+
+class TestVendasDoGerenteComDadosReais(unittest.TestCase):
+    """Teste de fumaça das vendas do gerente nos CSVs reais."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Cria um único DataLoader para todos os testes da classe."""
+        cls.loader = DataLoader(data_dir=DATA_DIR)
+
+    def test_vendas_do_gerente_real_em_outubro(self):
+        """Diego vendeu cerca de 10.916 reais em outubro/2026 e não tem meta."""
+        vendas = self.loader.obter_vendas_do_gerente()
+
+        self.assertEqual(vendas.vendedor_id, "C0030")
+        self.assertEqual(vendas.nome, "Diego Furtado")
+        self.assertEqual(vendas.cargo, "gerente")
+
+        # O CSV guarda os valores diários com 2 casas; a soma real de outubro
+        # é 10.915,63, que arredonda para 10.916. A tolerância de 0,5 cobre
+        # apenas esse arredondamento (não aceita diferenças grandes).
+        self.assertAlmostEqual(
+            vendas.valor_vendido("2026-10"), 10916.0, delta=0.5
+        )
+        self.assertIsNone(vendas.atingimento_meta("2026-10"))
+
+    def test_gerente_real_continua_fora_das_listas_e_do_comparativo(self):
+        """O comportamento antigo não muda: 8 vendedores, sem C0030."""
+        ids = [
+            vendedor.vendedor_id
+            for vendedor in self.loader.listar_vendedores()
+        ]
+        self.assertEqual(len(ids), 8)
+        self.assertNotIn("C0030", ids)
+
+        with self.assertRaises(VendedorNaoEncontradoError):
+            self.loader.obter_vendedor("C0030")
+
+        # O comparativo continua considerando apenas os 8 vendedores.
+        comparativo = self.loader.obter_comparativo_time("C0031")
+        self.assertEqual(comparativo.metricas[0].total_vendedores, 8)

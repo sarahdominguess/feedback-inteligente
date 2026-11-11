@@ -112,6 +112,11 @@ class DataLoader:
         self._vendedores: tuple[Vendedor, ...] = ()
         self._gerente: Gerente | None = None
 
+        # O gerente também tem vendas próprias no arquivo de indicadores.
+        # Guardamos essas vendas separadamente para a visão executiva, sem
+        # misturar com a lista de vendedores nem com o comparativo do time.
+        self._vendas_gerente: Vendedor | None = None
+
         # Dados da visão regional (Etapa 3). Ficam num cache separado porque
         # só a visão executiva precisa deles: o feedback individual continua
         # funcionando mesmo que estes dois CSVs não existam na pasta.
@@ -190,6 +195,33 @@ class DataLoader:
                 )
 
         return df
+
+    def _montar_vendedor(
+        self,
+        vendedor_id: str,
+        nome: str,
+        cargo: str,
+        metas: dict[str, float] | None = None,
+    ) -> Vendedor:
+        """Monta um Vendedor com os indicadores já agrupados por ID.
+
+        Recebe o ID, o nome, o cargo e, opcionalmente, as metas do mês.
+        Devolve um Vendedor com a loja da configuração e a lista de
+        indicadores que já foi agrupada em _carregar_dados. metas=None vira
+        um dicionário vazio dentro do próprio Vendedor.
+
+        Existe para o gerente reaproveitar exatamente a mesma rotina dos
+        vendedores, sem duplicar a montagem em dois lugares.
+        """
+        return Vendedor(
+            vendedor_id=vendedor_id,
+            nome=nome,
+            cargo=cargo,
+            loja_id=self._loja_id,
+            loja_nome=self._loja_nome,
+            indicadores=self._indicadores_por_vendedor.get(vendedor_id, ()),
+            metas=metas,
+        )
 
     def _carregar_dados(self) -> None:
         """Lê os quatro CSVs e monta todas as coleções internas uma vez.
@@ -287,15 +319,10 @@ class DataLoader:
 
             vendedor_id = _texto(linha["vendedor_id"])
             vendedores.append(
-                Vendedor(
+                self._montar_vendedor(
                     vendedor_id=vendedor_id,
                     nome=_texto(linha["nome"]),
                     cargo=cargo,
-                    loja_id=self._loja_id,
-                    loja_nome=self._loja_nome,
-                    indicadores=self._indicadores_por_vendedor.get(
-                        vendedor_id, ()
-                    ),
                     metas=self._metas_por_vendedor.get(vendedor_id),
                 )
             )
@@ -320,6 +347,17 @@ class DataLoader:
             anotacoes=self._anotacoes,
         )
 
+        # 7) Monta as vendas do gerente como um Vendedor, para a visão da
+        # regional reaproveitar as mesmas métricas (ticket médio, P.A. etc.).
+        # Sem metas: metas=None porque o gerente não tem meta individual.
+        # Este objeto NÃO entra em _vendedores, então continua fora das
+        # listagens, das buscas por ID e do comparativo do time.
+        self._vendas_gerente = self._montar_vendedor(
+            vendedor_id=self._gerente.gerente_id,
+            nome=self._gerente.nome,
+            cargo="gerente",
+        )
+
     def _garantir_carregado(self) -> None:
         """Carrega os arquivos na primeira chamada; depois só reaproveita."""
         if self._carregado:
@@ -334,6 +372,24 @@ class DataLoader:
         """
         self._garantir_carregado()
         return self._gerente
+
+    def obter_vendas_do_gerente(self) -> Vendedor:
+        """Devolve as vendas do próprio gerente como um Vendedor.
+
+        Serve para a visão executiva da regional reaproveitar os mesmos
+        métodos de métrica do Vendedor (valor_vendido, ticket_medio,
+        pecas_por_atendimento etc.) sem criar fórmulas novas.
+
+        O objeto vem com cargo "gerente", a loja da configuração e SEM metas
+        (o gerente não tem meta individual), então atingimento_meta devolve
+        None.
+
+        Importante: ele NÃO entra em listar_vendedores(), obter_vendedor()
+        nem no comparativo do time; continua sendo só uma leitura das vendas
+        do gerente.
+        """
+        self._garantir_carregado()
+        return self._vendas_gerente
 
     def listar_vendedores(self) -> list[Vendedor]:
         """Devolve os vendedores (cargo "vendedor") na ordem do CSV.
