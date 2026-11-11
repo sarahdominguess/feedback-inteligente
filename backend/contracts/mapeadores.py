@@ -11,7 +11,7 @@ métodos do próprio domínio.
 """
 
 from config import DIAS_MINIMOS_MES_COMPLETO
-from contracts.feedback import FeedbackRoteiroDTO
+from contracts.feedback import FeedbackGerarResposta, FeedbackRoteiroDTO
 from contracts.metricas import (
     MetricaComparadaDTO,
     MetricasDTO,
@@ -136,4 +136,24 @@ def feedback_preparado_de(
         feedback_id=registro.feedback_id,
         mes_referencia=registro.mes_referencia,
         gerado_em=registro.gerado_em,
+    )
+
+
+def resposta_de_feedback(registro: RegistroFeedback) -> FeedbackGerarResposta:
+    """Monta a resposta da geração de feedback a partir do registro gravado.
+
+    Recebe o RegistroFeedback que acabou de ser salvo e devolve identidade,
+    id, mês, horário e o roteiro em quatro listas. O roteiro é reconstruído
+    com FeedbackRoteiro.de_dict (a partir do dicionário gravado) e convertido
+    com roteiro_de, para não duplicar a conversão.
+
+    Exemplo: resposta_de_feedback(registro).roteiro.roteiro_conversa
+    """
+    return FeedbackGerarResposta(
+        feedback_id=registro.feedback_id,
+        vendedor_id=registro.vendedor_id,
+        vendedor_nome=registro.vendedor_nome,
+        mes_referencia=registro.mes_referencia,
+        gerado_em=registro.gerado_em,
+        roteiro=roteiro_de(FeedbackRoteiro.de_dict(registro.roteiro)),
     )
