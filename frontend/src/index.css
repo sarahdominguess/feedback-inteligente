@@ -1,13 +1,10 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: #1f2933;
-  background: #ffffff;
-}
+/*
+ * Este arquivo ficou vazio de propósito.
+ *
+ * O reset, a fonte, as cores e os títulos agora vivem em:
+ * - src/estilos/tokens.css (variáveis de cor, fonte, espaço e raio);
+ * - src/estilos/base.css (corpo da página, títulos, foco e utilitários).
+ *
+ * Mantemos o arquivo (e o import no main.jsx) só para não quebrar o
+ * carregamento; nenhuma regra duplicada mora aqui.
+ */

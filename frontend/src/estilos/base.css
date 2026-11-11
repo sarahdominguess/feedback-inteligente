@@ -1,0 +1,223 @@
+/*
+ * Estilos base do app.
+ *
+ * Contém o "chão" visual: reset simples, corpo da página, títulos, foco
+ * visível para teclado e algumas classes utilitárias (prefixo "ui-") que
+ * qualquer tela pode reaproveitar. As cores, fontes, espaços e raios vêm de
+ * estilos/tokens.css (variáveis CSS).
+ */
+
+/* ----------------------------------------------------------------------
+ * Reset mínimo
+ *
+ * box-sizing: border-box faz largura/altura incluírem borda e padding; sem
+ * isso, um cartão com borda fica maior do que o planejado.
+ * -------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+/* ----------------------------------------------------------------------
+ * Corpo da página
+ *
+ * Fundo roxo da marca com texto branco (contraste ≈ 6,4:1, passa em AA).
+ * Cartões claros definem a própria cor de texto (tinta), então dentro deles
+ * o texto não fica branco.
+ * -------------------------------------------------------------------- */
+
+body {
+  min-height: 100vh;
+  font-family: var(--fonte-familia);
+  font-size: var(--texto-corpo);
+  line-height: 1.5;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto-sobre-fundo);
+}
+
+/* ----------------------------------------------------------------------
+ * Títulos h1–h4
+ *
+ * Só tamanho, peso e espaçamento: a cor é herdada do elemento pai. Assim o
+ * mesmo título fica branco na página e tinta dentro de um cartão claro.
+ * -------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: var(--peso-regular);
+}
+
+h1 {
+  font-size: var(--texto-display-lg);
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: var(--texto-display-md);
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: var(--texto-display-sm);
+  line-height: 1.25;
+}
+
+h4 {
+  font-size: var(--texto-corpo);
+  line-height: 1.35;
+}
+
+/* ----------------------------------------------------------------------
+ * Foco visível para teclado
+ *
+ * :focus-visible só aparece quando a pessoa navega com Tab (não a cada
+ * clique de mouse), o que evita "pulos" visuais para quem usa mouse.
+ *
+ * Usamos DOIS sinais: o contorno verde-menta aparece sobre fundos escuros
+ * e o anel escuro (box-shadow) aparece sobre superfícies claras. Juntos
+ * garantem foco percebido em qualquer uma das combinações do app.
+ * -------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 3px solid var(--cor-primaria-ativa);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--cor-tinta);
+}
+
+/* ----------------------------------------------------------------------
+ * Classes utilitárias de uso comum
+ * -------------------------------------------------------------------- */
+
+/*
+ * ui-cartao: superfície clara com borda e raio para agrupar conteúdo.
+ * Texto em tinta (contraste ≈ 14:1 sobre a superfície suave).
+ */
+.ui-cartao {
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/*
+ * Botões: base compartilhada.
+ *
+ * Altura 44px, raio 12px e fonte de botão vêm dos componentes do
+ * DESIGN.md. A transição é curta para o clique parecer imediato.
+ */
+.ui-botao-primario,
+.ui-botao-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-sm);
+  min-height: 44px;
+  padding: var(--espaco-sm) var(--espaco-lg);
+  border: 1px solid transparent;
+  border-radius: var(--raio-md);
+  font-family: inherit;
+  font-size: var(--texto-botao);
+  font-weight: var(--peso-forte);
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+/*
+ * ui-botao-primario: a ação mais importante da tela.
+ * Verde-menta com texto #111111 (contraste ≈ 11,2:1).
+ */
+.ui-botao-primario {
+  background-color: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: var(--cor-texto-sobre-primaria);
+}
+
+.ui-botao-primario:hover:not(:disabled) {
+  background-color: var(--cor-primaria-ativa);
+  border-color: var(--cor-primaria-ativa);
+}
+
+/*
+ * ui-botao-secundario: ação alternativa.
+ * Fundo claro com texto tinta; no hover a borda escurece para deixar claro
+ * que o botão está sob o cursor. Funciona tanto dentro de cartões quanto
+ * sobre o roxo da página.
+ */
+.ui-botao-secundario {
+  background-color: var(--cor-superficie-suave);
+  border-color: var(--cor-borda);
+  color: var(--cor-tinta);
+}
+
+.ui-botao-secundario:hover:not(:disabled) {
+  border-color: var(--cor-tinta);
+}
+
+/*
+ * Desabilitado: opacidade menor e cursor de "não permitido".
+ * Opacidade é uma técnica de CSS (não é uma cor nova do DESIGN.md).
+ */
+.ui-botao-primario:disabled,
+.ui-botao-secundario:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/*
+ * ui-texto-suave: descrições e metadados.
+ * Use SOMENTE dentro de cartões/superfícies claras: sobre o roxo da página
+ * a cor não teria contraste suficiente.
+ */
+.ui-texto-suave {
+  color: var(--cor-texto-suave);
+}
+
+/*
+ * ui-visualmente-oculto: some da tela, mas continua sendo lido por
+ * leitores de tela (útil para rótulos que não precisam aparecer).
+ */
+.ui-visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ----------------------------------------------------------------------
+ * Movimento reduzido
+ *
+ * Quando a pessoa pede ao sistema operacional para reduzir animações
+ * (prefers-reduced-motion), desligamos transições e animações. Isso ajuda
+ * quem sente desconforto com movimento na tela.
+ * -------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,134 @@
+/*
+ * Tokens de design do app.
+ *
+ * "Token" é um valor com nome (uma variável CSS). Em vez de espalhar códigos
+ * como #00E6B8 pelos arquivos, guardamos tudo aqui e usamos
+ * var(--cor-primaria). Para mudar o visual, muda-se em um lugar só.
+ *
+ * Todos os valores abaixo vêm do frontend/DESIGN.md. As combinações de
+ * fundo/texto escolhidas estão explicadas nos comentários de contraste.
+ */
+
+:root {
+  /* ------------------------------------------------------------------
+   * Cores da marca e de superfície
+   * ------------------------------------------------------------------ */
+
+  /* Cor de ação principal (CTAs). Só para o que precisa de destaque. */
+  --cor-primaria: #00e6b8;
+  /* Variação do primário para hover/estado ativo. */
+  --cor-primaria-ativa: #74f1ce;
+  /* Cor de apoio (chips, destaques secundários). */
+  --cor-secundaria: #74f1ce;
+
+  /* Texto forte e títulos em superfícies claras. */
+  --cor-tinta: #17171c;
+  /* Texto de leitura em superfícies claras. */
+  --cor-texto: #2e2e38;
+  /* Texto de menor ênfase (descrições, metadados), em superfícies claras.
+     No DESIGN.md "muted" tem o mesmo valor de "body". */
+  --cor-texto-suave: #2e2e38;
+
+  /* Bordas, divisórias e contornos discretos. */
+  --cor-borda: #d1d5db;
+
+  /* Fundo principal da página (roxo da marca). */
+  --cor-fundo: #8328d9;
+  /* Superfície clara para cartões e painéis. Escolhida no lugar de
+     "surface-card" (que tem o MESMO roxo do fundo) para o cartão se destacar
+     e para o texto escuro ficar legível. */
+  --cor-superficie-suave: #f5effb;
+  /* Tom escuro declarado no DESIGN.md para barras laterais/cabeçalhos. */
+  --cor-fundo-escuro: #1e1e24;
+
+  /* Texto sobre a cor primária (contraste alto com o verde-menta). */
+  --cor-texto-sobre-primaria: #111111;
+  /* Texto sobre fundos escuros ou sobre o roxo da página. */
+  --cor-texto-sobre-fundo: #ffffff;
+
+  /* ------------------------------------------------------------------
+   * Cores de estado
+   *
+   * O DESIGN.md cita success/warning/danger, mas NÃO declara valores para
+   * elas. Para não inventar cores, reaproveitamos tokens declarados:
+   * - sucesso usa border-color-3 (#48EDBA);
+   * - perigo usa background-color-4 (#FEE2E2) e border-color-2 (#FECACA).
+   * Não há token de amarelo/laranja para "alerta"; quando precisar de aviso,
+   * use superfície suave com borda e texto (sem cor nova).
+   * ------------------------------------------------------------------ */
+
+  --cor-sucesso: #48edba;
+  --cor-perigo-fundo: #fee2e2;
+  --cor-perigo-borda: #fecaca;
+
+  /* ------------------------------------------------------------------
+   * Tipografia (família e escala do DESIGN.md)
+   *
+   * A fonte "Space Grotesk" não é baixada da internet: se não estiver
+   * instalada, o navegador usa system-ui/sans-serif (fallback).
+   * ------------------------------------------------------------------ */
+
+  --fonte-familia: 'Space Grotesk', system-ui, sans-serif;
+
+  --texto-display-xl: 48px;
+  --texto-display-lg: 36px;
+  --texto-display-md: 28px;
+  --texto-display-sm: 22px;
+  --texto-corpo: 16px;
+  --texto-legenda: 12px;
+  --texto-botao: 14px;
+  --texto-rotulo: 14px;
+  --texto-entrada: 16px;
+  --texto-link: 16px;
+
+  --peso-regular: 400;
+  --peso-medio: 500;
+  --peso-forte: 700;
+
+  /* ------------------------------------------------------------------
+   * Espaçamentos (escala do DESIGN.md)
+   * ------------------------------------------------------------------ */
+
+  --espaco-xxs: 0px;
+  --espaco-xs: 1px;
+  --espaco-sm: 3px;
+  --espaco-md: 5px;
+  --espaco-base: 7px;
+  --espaco-lg: 10px;
+  --espaco-xl: 12px;
+  --espaco-xxl: 1rem;
+  --espaco-secao: 16px;
+
+  /* ------------------------------------------------------------------
+   * Raios (escala do DESIGN.md)
+   * ------------------------------------------------------------------ */
+
+  --raio-xs: 2px;
+  --raio-sm: 4px;
+  --raio-md: 12px;
+  --raio-lg: 1rem;
+  --raio-xl: 16px;
+  --raio-full: 9999px;
+}
+
+/*
+ * Combinações de fundo e texto usadas no app (razões aproximadas):
+ *
+ * 1) Página: roxo #8328D9 com texto branco #FFFFFF.
+ *    Razão ≈ 6,4:1 — passa em AA para texto normal.
+ *    (O DESIGN.md sugere texto #17171C no roxo, mas isso dá ≈ 2,8:1 e
+ *    reprova; por isso usamos o token de texto sobre fundo escuro.)
+ *
+ * 2) Cartões/painéis: superfície suave #F5EFFB com texto:
+ *    - tinta #17171C → ≈ 14,1:1;
+ *    - texto #2E2E38 → ≈ 10,2:1.
+ *
+ * 3) Cabeçalho/barra lateral: fundo escuro #1E1E24 com texto branco.
+ *    Razão ≈ 16,5:1.
+ *
+ * 4) Botão principal: verde-menta #00E6B8 com texto #111111.
+ *    Razão ≈ 11,2:1.
+ *
+ * 5) Estado de perigo: fundo #FEE2E2 com texto tinta.
+ *    Razão ≈ 14,8:1.
+ */

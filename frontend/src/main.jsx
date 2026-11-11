@@ -12,7 +12,12 @@ import { StrictMode } from 'react'
 // createRoot: função do React que cria a "raiz" da interface dentro de um
 // elemento do HTML.
 import { createRoot } from 'react-dom/client'
-// Estilos globais da aplicação (reset e fonte padrão).
+// Tokens: variáveis de cor, fonte, espaçamento e raio (carregam primeiro,
+// porque os outros arquivos usam var(--nome-do-token)).
+import './estilos/tokens.css'
+// Base: reset, corpo da página, títulos, foco visível e classes utilitárias.
+import './estilos/base.css'
+// Arquivo mantido vazio de propósito: os estilos globais estão nos dois acima.
 import './index.css'
 // Componente principal da interface, definido em App.jsx.
 import App from './App.jsx'
