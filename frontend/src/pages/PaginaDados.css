@@ -1,0 +1,172 @@
+/*
+ * Estilos da página da aba Dados.
+ *
+ * A página fica dentro do cartão claro da área central, então usa texto tinta
+ * sobre superfície suave (contraste ≈ 14:1). Só tokens de cor, espaço e raio.
+ */
+
+/* Coluna com as três seções e respiro entre elas. */
+.pagina-dados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+}
+
+/* Cada seção: título em cima e conteúdo embaixo. */
+.pagina-dados__secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-lg);
+}
+
+/*
+ * Separador discreto entre seções (menos na primeira), para o olho entender
+ * onde termina um bloco e começa outro.
+ */
+.pagina-dados__secao + .pagina-dados__secao {
+  padding-top: var(--espaco-secao);
+  border-top: 1px solid var(--cor-borda);
+}
+
+/* Título de seção: 22px, um degrau acima do texto comum. */
+.pagina-dados__titulo {
+  margin: 0;
+  font-size: var(--texto-display-sm);
+  font-weight: var(--peso-medio);
+}
+
+/* ----------------------------------------------------------------------
+ * Indicadores
+ *
+ * Grade que se ajusta sozinha: três colunas quando há espaço; uma coluna
+ * quando a área fica estreita. minmax(180px, 1fr) é a largura mínima de um
+ * cartão antes de ele descer para a linha de baixo.
+ * -------------------------------------------------------------------- */
+
+.pagina-dados__cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--espaco-base);
+}
+
+/* ----------------------------------------------------------------------
+ * Totais (lista de termos)
+ * -------------------------------------------------------------------- */
+
+.pagina-dados__totais {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--espaco-base);
+  margin: 0;
+}
+
+/* Cada par termo/valor vira uma caixinha com borda. */
+.pagina-dados__total {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+}
+
+/* Nome do total: menor e em tom de apoio. */
+.pagina-dados__total-rotulo {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-suave);
+}
+
+/* Valor do total: maior e forte, sem o recuo padrão do <dd>. */
+.pagina-dados__total-valor {
+  margin: 0;
+  font-size: var(--texto-corpo);
+  font-weight: var(--peso-forte);
+}
+
+/* ----------------------------------------------------------------------
+ * Tabela mensal
+ *
+ * "overflow-x: auto" permite rolar a tabela para o lado quando ela é mais
+ * larga que a tela. O conteúdo não estoura a página: a rolagem acontece
+ * dentro deste container.
+ * -------------------------------------------------------------------- */
+
+.pagina-dados__tabela-container {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+}
+
+.pagina-dados__tabela {
+  width: 100%;
+  /* Largura mínima para as 8 colunas não se espremerem; abaixo disso, rola. */
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: var(--texto-rotulo);
+}
+
+/* Legenda visível: explica a tabela para todo mundo, inclusive leitores de tela. */
+.pagina-dados__legenda-tabela {
+  padding: var(--espaco-lg) var(--espaco-xl);
+  border-bottom: 1px solid var(--cor-borda);
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-legenda);
+  text-align: left;
+}
+
+/* Células: respiro e linha separadora entre as linhas. */
+.pagina-dados__tabela th,
+.pagina-dados__tabela td {
+  padding: var(--espaco-lg) var(--espaco-xl);
+  border-bottom: 1px solid var(--cor-borda);
+  text-align: left;
+  vertical-align: top;
+}
+
+/* Cabeçalhos em negrito para se destacarem dos valores. */
+.pagina-dados__tabela thead th {
+  font-weight: var(--peso-forte);
+}
+
+/* A última linha não precisa de borda: o container já tem a sua. */
+.pagina-dados__tabela tbody tr:last-child th,
+.pagina-dados__tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/*
+ * Colunas de números alinhadas à direita, com algarismos de mesma largura
+ * (tabular-nums) para as casas decimais ficarem alinhadas na vertical.
+ * nowrap evita que "R$ 42.542,86" quebre em duas linhas.
+ */
+.pagina-dados__numero {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* O <th> continua sendo célula de tabela; o flex fica no conteúdo de dentro. */
+.pagina-dados__mes {
+  font-weight: var(--peso-medio);
+}
+
+/* Nome do mês e selo lado a lado; o selo desce se faltar espaço. */
+.pagina-dados__mes-conteudo {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-sm);
+}
+
+/* O nome do mês não quebra no meio ("outubro de 2026"). */
+.pagina-dados__mes-nome {
+  white-space: nowrap;
+}
+
+/* Mensagem quando não há nenhum mês com dados. */
+.pagina-dados__vazio {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}

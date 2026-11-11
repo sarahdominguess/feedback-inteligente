@@ -6,8 +6,10 @@
  * ativa. As páginas reais entram nas próximas fatias.
  */
 
-import { ID_PAINEL_ABAS, ROTULOS_ABAS, VISOES } from '../constantes.js';
+import { ABAS, ID_PAINEL_ABAS, ROTULOS_ABAS, VISOES } from '../constantes.js';
 import { useApp } from '../context/useApp.js';
+// Página real da aba Dados (as outras abas ainda mostram o aviso).
+import { PaginaDados } from '../pages/PaginaDados.jsx';
 import { EstadoVazio } from './EstadoVazio.jsx';
 
 // Importa o CSS deste componente.
@@ -77,15 +79,20 @@ export function AreaCentral() {
           aria-labelledby={`aba-${aba}`}
           tabIndex={0}
         >
-          <div className="area-central__aviso">
-            <h2 className="area-central__titulo">
-              Aba {ROTULOS_ABAS[aba]} em construção
-            </h2>
-            <p className="area-central__texto">
-              Nas próximas fatias, esta aba passa a mostrar a página real do
-              colaborador.
-            </p>
-          </div>
+          {aba === ABAS.DADOS ? (
+            /* A aba Dados já tem página real; as outras ainda mostram aviso. */
+            <PaginaDados />
+          ) : (
+            <div className="area-central__aviso">
+              <h2 className="area-central__titulo">
+                Aba {ROTULOS_ABAS[aba]} em construção
+              </h2>
+              <p className="area-central__texto">
+                Nas próximas fatias, esta aba passa a mostrar a página real
+                do colaborador.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </section>
