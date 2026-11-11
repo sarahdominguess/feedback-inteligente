@@ -16,12 +16,20 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 // Componente principal da interface, definido em App.jsx.
 import App from './App.jsx'
+// AppProvider: componente que guarda o estado global (vendedores, abas,
+// feedbacks, visão regional) e entrega as ações para as telas via contexto.
+import { AppProvider } from './context/AppProvider.jsx'
 
 // getElementById("root") busca a div vazia declarada no index.html; dentro
 // dela o React desenha a aplicação. Por que existe este arquivo: o navegador
 // carrega apenas o index.html, e o main.jsx é quem inicia o React.
+//
+// O AppProvider envolve o App para que qualquer tela (mesmo as que ainda
+// serão criadas) possa ler o estado e chamar as ações com o hook useApp().
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AppProvider>
+      <App />
+    </AppProvider>
   </StrictMode>,
 )
