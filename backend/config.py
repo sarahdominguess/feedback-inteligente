@@ -22,6 +22,12 @@ ARQUIVO_INDICADORES_DIARIOS = "indicadores_diarios_vendedor.csv"
 ARQUIVO_METAS_VENDEDOR = "metas_vendedor.csv"
 ARQUIVO_ANOTACOES_GERENTE = "anotacoes_gerente.csv"
 
+# Arquivos usados pela visão da regional (Etapa 3). Ficam separados dos quatro
+# acima porque ainda não são lidos pelo DataLoader: são a base da visão
+# executiva, não do feedback individual.
+ARQUIVO_ANOTACOES_REGIONAL = "anotacoes_regional.csv"
+ARQUIVO_METAS_LOJA = "metas_loja.csv"
+
 # Identificação da loja do desafio. O arquivo vendedores.csv não tem coluna de
 # loja, então esse dado vem do LEIAME do desafio. Todos os funcionários do CSV
 # pertencem a esta loja.
