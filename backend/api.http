@@ -1,0 +1,67 @@
+# Exemplos de chamadas da API do FullStore Feedback Inteligente.
+# Como usar: abra este arquivo no VS Code com a extensão "REST Client"
+# (ou no JetBrains com o HTTP Client) e clique em "Send Request" acima de
+# cada bloco. O servidor precisa estar rodando:
+#   cd backend
+#   venv/Scripts/python -m uvicorn main:app --reload
+# O @base abaixo é o endereço local do servidor.
+
+@base = http://localhost:8000
+
+
+### Confirma que o servidor está no ar (não depende de dados nem de IA).
+GET {{base}}/health
+
+
+### Lista os 8 vendedores da loja L004 com métricas de TODO o histórico.
+GET {{base}}/api/vendedores/L004
+
+
+### A mesma lista, mas só com outubro de 2026.
+GET {{base}}/api/vendedores/L004?mes=2026-10
+
+
+### Histórico completo da Bianca (C0031): métricas, resumo mensal,
+### comparativo, anotações e roteiros já preparados.
+GET {{base}}/api/vendedores/C0031/historico
+
+
+### Gera o roteiro de feedback da Bianca com a IA (todo o histórico).
+### ATENÇÃO: esta chamada usa a DeepSeek de verdade, CONSOME CRÉDITOS e
+### pode levar de 10 a 60 segundos. Requer DEEPSEEK_API_KEY no backend/.env.
+POST {{base}}/api/feedback/gerar
+Content-Type: application/json
+
+{
+  "vendedor_id": "C0031"
+}
+
+
+### Gera o roteiro olhando só outubro de 2026.
+### Também consome créditos e pode levar de 10 a 60 segundos.
+POST {{base}}/api/feedback/gerar
+Content-Type: application/json
+
+{
+  "vendedor_id": "C0031",
+  "mes_referencia": "2026-10"
+}
+
+
+### Visão executiva da regional: resultado da loja mês a mês,
+### cobertura dos roteiros preparados e anotações da Patrícia.
+GET {{base}}/api/regional/desempenho-gerente
+
+
+### ERRO esperado: loja inexistente devolve 404 {"erro": "..."}.
+GET {{base}}/api/vendedores/L999
+
+
+### ERRO esperado: mês fora do formato AAAA-MM devolve 400 {"erro": "..."}.
+POST {{base}}/api/feedback/gerar
+Content-Type: application/json
+
+{
+  "vendedor_id": "C0031",
+  "mes_referencia": "2026-13"
+}
