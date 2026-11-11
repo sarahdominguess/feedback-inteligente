@@ -28,6 +28,11 @@ ARQUIVO_ANOTACOES_GERENTE = "anotacoes_gerente.csv"
 ARQUIVO_ANOTACOES_REGIONAL = "anotacoes_regional.csv"
 ARQUIVO_METAS_LOJA = "metas_loja.csv"
 
+# Arquivo local onde ficam registrados os roteiros já gerados (visão da
+# regional). Diferente dos CSVs, ele é criado sozinho pelo programa na
+# primeira gravação e NÃO vai para o git (é dado de execução, não código).
+REGISTRO_FEEDBACKS_ARQUIVO = DATA_DIR / "registro_feedbacks.json"
+
 # Identificação da loja do desafio. O arquivo vendedores.csv não tem coluna de
 # loja, então esse dado vem do LEIAME do desafio. Todos os funcionários do CSV
 # pertencem a esta loja.

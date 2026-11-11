@@ -25,3 +25,6 @@ NOTICE
 .dscode/
 dscode.exe
 templates/
+
+# registro local de roteiros gerados (dado de execução, não código)
+backend/data/registro_feedbacks.json
