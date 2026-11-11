@@ -94,3 +94,25 @@ LLM_THINKING_PADRAO = "disabled"
 # Caminho absoluto do arquivo backend/.env, calculado a partir deste arquivo,
 # para o carregamento funcionar de qualquer pasta de execução.
 ENV_FILE = Path(__file__).resolve().parent / ".env"
+
+
+# ---------------------------------------------------------------------------
+# CORS — quais sites do navegador podem chamar esta API.
+# CORS ("Cross-Origin Resource Sharing"): regra do navegador que decide se uma
+# página de um endereço pode pedir dados a outro endereço. Sem liberar a
+# origem do frontend, o navegador bloqueia a resposta.
+# ---------------------------------------------------------------------------
+
+# Nome da variável de ambiente que pode substituir a lista de origens.
+# Ela aceita várias origens separadas por vírgula, por exemplo:
+# FRONTEND_ORIGINS=http://localhost:5173,http://192.168.0.10:5173
+ENV_FRONTEND_ORIGINS = "FRONTEND_ORIGINS"
+
+# Origens liberadas quando a variável não está definida. O Vite (servidor de
+# desenvolvimento do frontend React) serve a página na porta 5173; incluímos
+# também 127.0.0.1 porque o navegador trata localhost e 127.0.0.1 como
+# endereços diferentes.
+FRONTEND_ORIGINS_PADRAO = (
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+)
