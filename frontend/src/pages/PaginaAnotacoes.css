@@ -1,0 +1,100 @@
+/*
+ * Estilos da página da aba Anotações.
+ *
+ * A página fica dentro do cartão claro da área central; usa texto tinta sobre
+ * superfície suave (contraste ≈ 14:1). Só tokens de cor, espaço e raio.
+ */
+
+/* Coluna com a orientação e as duas seções. */
+.pagina-anotacoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+}
+
+/*
+ * Orientação fixa do topo: uma caixa discreta, com borda para se separar do
+ * fundo da página (que é da mesma cor).
+ */
+.pagina-anotacoes__orientacao {
+  margin: 0;
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+}
+
+/* Cada seção: título, explicação e lista. */
+.pagina-anotacoes__secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-lg);
+}
+
+/* Separador discreto entre a primeira e a segunda seção. */
+.pagina-anotacoes__secao + .pagina-anotacoes__secao {
+  padding-top: var(--espaco-secao);
+  border-top: 1px solid var(--cor-borda);
+}
+
+/* Título de seção: 22px, um degrau acima do texto comum. */
+.pagina-anotacoes__titulo {
+  margin: 0;
+  font-size: var(--texto-display-sm);
+  font-weight: var(--peso-medio);
+}
+
+/* Explicação da seção do time: texto de apoio, menor. */
+.pagina-anotacoes__explicacao {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+/* ----------------------------------------------------------------------
+ * Lista de anotações
+ * -------------------------------------------------------------------- */
+
+/* Sem marcadores e sem recuo padrão; cada anotação é um cartão. */
+.pagina-anotacoes__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Um cartão por anotação, com borda para separar do fundo. */
+.pagina-anotacoes__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+}
+
+/* Data em letra menor e tom de apoio (contraste ≈ 10:1). */
+.pagina-anotacoes__data {
+  font-size: var(--texto-legenda);
+  font-weight: var(--peso-medio);
+  color: var(--cor-texto-suave);
+}
+
+/*
+ * Texto original da anotação.
+ *
+ * white-space: pre-wrap preserva quebras de linha e espaços exatamente como
+ * vieram no texto (é só exibição, não altera o dado). overflow-wrap evita
+ * que uma palavra muito longa estoure o cartão.
+ */
+.pagina-anotacoes__texto {
+  margin: 0;
+  font-size: var(--texto-corpo);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

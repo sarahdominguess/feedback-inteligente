@@ -1,14 +1,15 @@
 /**
  * Área central do app.
  *
- * Decide o que aparece no centro conforme a visão e a aba escolhidas:
- * aviso da regional, pedido para escolher um colaborador ou o aviso da aba
- * ativa. As páginas reais entram nas próximas fatias.
+ * Decide o que aparece no centro conforme a visão e a aba escolhidas: as
+ * páginas reais (Dados e Anotações), o aviso da regional, o pedido para
+ * escolher um colaborador ou o aviso da aba que ainda falta.
  */
 
 import { ABAS, ID_PAINEL_ABAS, ROTULOS_ABAS, VISOES } from '../constantes.js';
 import { useApp } from '../context/useApp.js';
-// Página real da aba Dados (as outras abas ainda mostram o aviso).
+// Páginas reais já prontas; a aba Feedback ainda mostra o aviso.
+import { PaginaAnotacoes } from '../pages/PaginaAnotacoes.jsx';
 import { PaginaDados } from '../pages/PaginaDados.jsx';
 import { EstadoVazio } from './EstadoVazio.jsx';
 
@@ -24,10 +25,11 @@ import './AreaCentral.css';
  * Devolve:
  *   - visão regional: o aviso "Visão regional em construção";
  *   - visão do gerente sem seleção: EstadoVazio pedindo para escolher alguém;
- *   - visão do gerente com seleção: painel de aba com "Aba ... em construção".
+ *   - visão do gerente com seleção: a página da aba escolhida (Dados ou
+ *     Anotações) ou o aviso "Aba ... em construção" (Feedback).
  *
- * É NESTE arquivo que as próximas fatias trocam cada aviso pela página real
- * (Anotacoes, Dados, Feedback e a página da regional).
+ * É NESTE arquivo que as próximas fatias trocam os avisos que restam pelas
+ * páginas reais (Feedback e a visão regional).
  *
  * Exemplo de uso: <AreaCentral />
  */
@@ -79,10 +81,11 @@ export function AreaCentral() {
           aria-labelledby={`aba-${aba}`}
           tabIndex={0}
         >
-          {aba === ABAS.DADOS ? (
-            /* A aba Dados já tem página real; as outras ainda mostram aviso. */
-            <PaginaDados />
-          ) : (
+          {aba === ABAS.DADOS && <PaginaDados />}
+
+          {aba === ABAS.ANOTACOES && <PaginaAnotacoes />}
+
+          {aba === ABAS.FEEDBACK && (
             <div className="area-central__aviso">
               <h2 className="area-central__titulo">
                 Aba {ROTULOS_ABAS[aba]} em construção
