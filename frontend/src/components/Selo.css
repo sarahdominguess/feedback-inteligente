@@ -1,0 +1,78 @@
+/*
+ * Estilos do componente Selo (badge).
+ *
+ * As quatro cores de estado saem dos tokens. A cor primária NÃO é usada aqui:
+ * ela é reservada para ações (botões e links), não para situação.
+ * Toda combinação usa texto tinta (#17171C) sobre fundo claro, com
+ * contraste acima de 12:1.
+ */
+
+/* ----------------------------------------------------------------------
+ * Forma comum a todos os tons
+ *
+ * Pill (raio total), texto pequeno e ícone opcional ao lado. A cor de fundo
+ * e a borda ficam nas classes de tom abaixo.
+ * -------------------------------------------------------------------- */
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-sm);
+  /* Em uma coluna flex, o selo não deve esticar a largura toda. */
+  align-self: flex-start;
+  padding: var(--espaco-sm) var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-full);
+  font-size: var(--texto-legenda);
+  font-weight: var(--peso-medio);
+  line-height: 1.35;
+  color: var(--cor-tinta);
+}
+
+/* Ícone acompanha a cor do texto e não encolhe. */
+.selo__icone {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+/* 12px de desenho: proporcional ao texto pequeno do selo. */
+.selo__icone svg {
+  width: var(--texto-legenda);
+  height: var(--texto-legenda);
+}
+
+/* ----------------------------------------------------------------------
+ * Tons
+ * -------------------------------------------------------------------- */
+
+/* Neutro: sem juízo de valor (na média, sem dados). Fundo claro discreto. */
+.selo--neutro {
+  background-color: var(--cor-superficie-suave);
+  border-color: var(--cor-borda);
+}
+
+/*
+ * Positivo: usa o token de sucesso (verde-menta claro), com texto tinta.
+ * Contraste ≈ 12:1. Não usamos a primária, que é cor de ação.
+ */
+.selo--positivo {
+  background-color: var(--cor-sucesso);
+  border-color: var(--cor-sucesso);
+}
+
+/*
+ * Atenção: o DESIGN.md cita "warning", mas não declara um token amarelo.
+ * Para não inventar cor, usamos a superfície clara com uma borda escura
+ * (tinta), que destaca o selo sem depender de cor. O texto continua dizendo
+ * "Abaixo da média do time".
+ */
+.selo--atencao {
+  background-color: var(--cor-superficie-suave);
+  border-color: var(--cor-tinta);
+}
+
+/* Negativo: fundo e borda de perigo declarados; contraste ≈ 14,8:1. */
+.selo--negativo {
+  background-color: var(--cor-perigo-fundo);
+  border-color: var(--cor-perigo-borda);
+}
