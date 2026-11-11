@@ -119,3 +119,133 @@ class ConsolidadoRegional:
             )
 
         return resultado
+
+    def obter_acompanhamento_feedback(self) -> dict:
+        """Monta o acompanhamento de feedbacks preparados por vendedor.
+
+        Devolve exatamente os campos de AcompanhamentoFeedbackDTO:
+        total_vendedores, vendedores_com_roteiro, cobertura,
+        total_roteiros_preparados e a lista "vendedores" (um item por
+        vendedor, na ordem do CSV).
+
+        IMPORTANTE: "roteiro preparado" quer dizer que o roteiro foi GERADO
+        pela IA. NÃO é "feedback realizado": o sistema não sabe se a
+        conversa chegou a acontecer.
+
+        Contas em palavras:
+        - roteiros_preparados = quantos registros existem para a pessoa;
+        - cobertura = vendedores com pelo menos 1 roteiro dividido pelo
+          total de vendedores (0 quando não há vendedores);
+        - situacao = "com_roteiro" quando há pelo menos 1 roteiro gerado.
+        """
+        vendedores = self._data_loader.listar_vendedores()
+
+        # Lemos o registro UMA vez e agrupamos por vendedor. Reler o arquivo
+        # para cada pessoa seriam 8 leituras dentro de um único pedido.
+        registros_por_vendedor: dict[str, list] = {}
+        for registro_gravado in self._registro.listar():
+            registros_por_vendedor.setdefault(
+                registro_gravado.vendedor_id, []
+            ).append(registro_gravado)
+
+        itens = []
+        vendedores_com_roteiro = 0
+        total_roteiros = 0
+
+        for vendedor in vendedores:
+            # Anotações do gerente SOBRE a pessoa (sem as do time), em ordem
+            # cronológica — por isso a última da tupla é a mais recente.
+            anotacoes = self._data_loader.obter_anotacoes_do_vendedor(
+                vendedor.vendedor_id
+            )
+            registros = registros_por_vendedor.get(vendedor.vendedor_id, [])
+
+            total_roteiros += len(registros)
+            if registros:
+                vendedores_com_roteiro += 1
+
+            itens.append(
+                {
+                    "vendedor_id": vendedor.vendedor_id,
+                    "nome": vendedor.nome,
+                    "anotacoes_do_gerente": len(anotacoes),
+                    "ultima_anotacao_em": (
+                        anotacoes[-1].data if anotacoes else None
+                    ),
+                    "roteiros_preparados": len(registros),
+                    # max() pega o roteiro mais recente sem depender da ordem
+                    # em que o registro devolveu a lista.
+                    "ultimo_roteiro_em": max(
+                        (registro.gerado_em for registro in registros),
+                        default=None,
+                    ),
+                    "situacao": (
+                        "com_roteiro" if registros else "sem_roteiro"
+                    ),
+                }
+            )
+
+        total_vendedores = len(vendedores)
+
+        # Sem vendedores, a cobertura é 0 (evita divisão por zero).
+        cobertura = (
+            vendedores_com_roteiro / total_vendedores
+            if total_vendedores > 0
+            else 0.0
+        )
+
+        return {
+            "total_vendedores": total_vendedores,
+            "vendedores_com_roteiro": vendedores_com_roteiro,
+            "cobertura": cobertura,
+            "total_roteiros_preparados": total_roteiros,
+            "vendedores": itens,
+        }
+
+    def obter_desempenho_gerente(self) -> dict:
+        """Monta a resposta completa da visão executiva da regional.
+
+        Devolve exatamente os campos de DesempenhoGerenteResposta: identidade
+        do gerente e da loja, período com dados, resultado mês a mês,
+        acompanhamento dos roteiros e anotações da regional.
+
+        Período: menor e maior data entre TODOS os indicadores (vendedores e
+        gerente); None quando não há nenhuma data.
+
+        Reforçando o vocabulário: os "roteiros preparados" foram apenas
+        GERADOS; não sabemos se a conversa de feedback aconteceu.
+
+        Exemplo: obter_desempenho_gerente()["gerente_nome"] == "Diego Furtado"
+        """
+        gerente = self._data_loader.obter_gerente()
+        gerente_como_vendedor = self._data_loader.obter_vendas_do_gerente()
+
+        # Junta as datas de todos os indicadores para achar o período.
+        datas = []
+        for vendedor in self._data_loader.listar_vendedores():
+            for indicador in vendedor.indicadores:
+                datas.append(indicador.data)
+        for indicador in gerente_como_vendedor.indicadores:
+            datas.append(indicador.data)
+
+        # Anotações da regional já vêm em ordem cronológica do DataLoader.
+        anotacoes_regional = [
+            {
+                "data": anotacao.data,
+                "autora": anotacao.autora,
+                "texto": anotacao.texto,
+            }
+            for anotacao in self._data_loader.listar_anotacoes_regional()
+        ]
+
+        return {
+            "gerente_id": gerente.gerente_id,
+            "gerente_nome": gerente.nome,
+            "loja_id": gerente.loja_id,
+            "loja_nome": gerente.loja_nome,
+            "periodo_inicio": min(datas) if datas else None,
+            "periodo_fim": max(datas) if datas else None,
+            "resultado_loja": self.obter_resultado_loja(),
+            "acompanhamento_feedback": self.obter_acompanhamento_feedback(),
+            "anotacoes_regional": anotacoes_regional,
+        }
