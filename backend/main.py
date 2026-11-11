@@ -18,6 +18,7 @@ from config import ENV_FILE, ENV_FRONTEND_ORIGINS, FRONTEND_ORIGINS_PADRAO
 from domain.excecoes import DadosIndisponiveisError
 from endpoints.dependencias import obter_data_loader
 from endpoints.erros import registrar_tratadores_de_erro
+from endpoints.vendedores import router as vendedores_router
 
 # Logger: canal de registro do servidor (mensagens técnicas no log, nunca na
 # resposta ao usuário).
@@ -106,7 +107,10 @@ app.add_middleware(
 # Tratadores globais: todo erro responde {"erro": "..."} com o status certo.
 registrar_tratadores_de_erro(app)
 
-# routers incluídos nas próximas partes (3.5 a 3.7)
+# Rotas de negócio. Cada router cuida de um assunto e é incluído aqui.
+app.include_router(vendedores_router)
+
+# routers incluídos nas próximas partes (3.6 a 3.7)
 
 
 @app.get("/health")

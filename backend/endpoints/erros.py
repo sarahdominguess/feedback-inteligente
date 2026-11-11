@@ -50,6 +50,8 @@ logger = logging.getLogger(__name__)
 _TRADUCOES_DE_VALIDACAO = {
     "missing": "campo obrigatório",
     "string_too_short": "texto muito curto",
+    # Formato que não casa com o molde (pattern), ex.: mês "2026-13".
+    "string_pattern_mismatch": "formato inválido",
     "string_type": "deve ser um texto",
     "int_parsing": "deve ser um número inteiro",
     "int_type": "deve ser um número inteiro",
