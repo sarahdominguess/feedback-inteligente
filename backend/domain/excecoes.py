@@ -33,6 +33,16 @@ class VendedorNaoEncontradoError(DominioError):
     """
 
 
+class LojaNaoEncontradaError(DominioError):
+    """Erro para quando o código de loja informado não existe.
+
+    Acontece quando alguém pede a lista de vendedores de uma loja cujo código
+    não é o da loja atendida (ex.: "L999"). Não é um problema técnico: é um
+    pedido para um dado que não temos, por isso a API responde "não
+    encontrada".
+    """
+
+
 class LLMNaoConfiguradoError(DominioError):
     """Erro para quando a integração com a IA não está configurada.
 
