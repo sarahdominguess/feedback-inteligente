@@ -2,16 +2,17 @@
  * Área central do app.
  *
  * Decide o que aparece no centro conforme a visão e a aba escolhidas: as
- * páginas reais (Dados, Anotações e Feedback), o aviso da regional ou o
+ * páginas reais (Dados, Anotações e Feedback), a página da regional ou o
  * pedido para escolher um colaborador.
  */
 
 import { ABAS, ID_PAINEL_ABAS, VISOES } from '../constantes.js';
 import { useApp } from '../context/useApp.js';
-// Páginas reais das três abas do gerente.
+// Páginas reais das abas do gerente e da visão regional.
 import { PaginaAnotacoes } from '../pages/PaginaAnotacoes.jsx';
 import { PaginaDados } from '../pages/PaginaDados.jsx';
 import { PaginaFeedback } from '../pages/PaginaFeedback.jsx';
+import { PaginaRegional } from '../pages/PaginaRegional.jsx';
 import { EstadoVazio } from './EstadoVazio.jsx';
 
 // Importa o CSS deste componente.
@@ -24,13 +25,10 @@ import './AreaCentral.css';
  * aba ativa. O estado é a única fonte de verdade.
  *
  * Devolve:
- *   - visão regional: o aviso "Visão regional em construção";
+ *   - visão regional: a página da loja (PaginaRegional);
  *   - visão do gerente sem seleção: EstadoVazio pedindo para escolher alguém;
  *   - visão do gerente com seleção: a página da aba escolhida (Dados,
  *     Anotações ou Feedback).
- *
- * A visão regional ainda é um aviso; a página dela entra nas próximas
- * fatias.
  *
  * Exemplo de uso: <AreaCentral />
  */
@@ -44,15 +42,7 @@ export function AreaCentral() {
   if (visao === VISOES.REGIONAL) {
     return (
       <section className="area-central" aria-label="Visão regional">
-        <div className="area-central__aviso">
-          <h2 className="area-central__titulo">
-            Visão regional em construção
-          </h2>
-          <p className="area-central__texto">
-            Nas próximas fatias, esta área mostra o consolidado da loja e a
-            cobertura dos roteiros preparados.
-          </p>
-        </div>
+        <PaginaRegional />
       </section>
     );
   }
