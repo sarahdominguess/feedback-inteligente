@@ -1,0 +1,127 @@
+/*
+ * Estilos da lista lateral de colaboradores.
+ *
+ * Cada item é um botão claro sobre a página roxa, com 44px mínimos de altura
+ * (alvo de toque definido no DESIGN.md). O item selecionado usa a cor
+ * primária — o DESIGN.md reserva a primária para ações e seleção —, mais
+ * borda escura e ícone, para o destaque não depender só de cor.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ * -------------------------------------------------------------------- */
+
+.lista-colaboradores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-lg);
+}
+
+/* Lista sem marcadores e sem recuo padrão do navegador. */
+.lista-colaboradores__itens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ----------------------------------------------------------------------
+ * Item (botão)
+ * -------------------------------------------------------------------- */
+
+.lista-colaboradores__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-lg);
+  width: 100%;
+  /* 44px é o alvo de toque mínimo declarado no DESIGN.md. */
+  min-height: 44px;
+  padding: var(--espaco-lg) var(--espaco-xl);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  /* Superfície clara com texto tinta: contraste ≈ 14:1. */
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  font-family: inherit;
+  font-size: var(--texto-corpo);
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover: a borda escurece, deixando claro que o item é clicável. */
+.lista-colaboradores__item:hover {
+  border-color: var(--cor-tinta);
+}
+
+/* Texto em coluna: nome em cima, cargo embaixo. */
+.lista-colaboradores__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  /* min-width: 0 permite que o texto encolha em vez de estourar a largura. */
+  min-width: 0;
+}
+
+/* Nome do colaborador, como veio da API. */
+.lista-colaboradores__nome {
+  font-weight: var(--peso-medio);
+}
+
+/* Cargo em letra menor e tom de apoio. */
+.lista-colaboradores__cargo {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-suave);
+}
+
+/* Ícone de seleção: acompanha a cor do texto e não encolhe. */
+.lista-colaboradores__marca {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+/* 16px de desenho, alinhado ao texto do item. */
+.lista-colaboradores__marca svg {
+  width: var(--texto-corpo);
+  height: var(--texto-corpo);
+}
+
+/* ----------------------------------------------------------------------
+ * Item selecionado
+ *
+ * Três sinais além da cor: borda escura, ícone de check e nome em negrito.
+ * O texto usa on-primary (#111111) sobre a primária (#00E6B8): ≈ 11,2:1.
+ * -------------------------------------------------------------------- */
+
+.lista-colaboradores__item--selecionado {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-sobre-primaria);
+}
+
+/* No hover do item selecionado, só clareia o fundo (sem perder o destaque). */
+.lista-colaboradores__item--selecionado:hover {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria-ativa);
+}
+
+/* Terceiro sinal: o nome fica em negrito no item atual. */
+.lista-colaboradores__item--selecionado .lista-colaboradores__nome {
+  font-weight: var(--peso-forte);
+}
+
+/* O cargo herda o texto escuro da primária, mantendo o contraste. */
+.lista-colaboradores__item--selecionado .lista-colaboradores__cargo {
+  color: inherit;
+}
+
+/*
+ * O foco de teclado vem da regra global :focus-visible em estilos/base.css
+ * (contorno verde-menta + anel escuro), que já aparece em qualquer botão.
+ */

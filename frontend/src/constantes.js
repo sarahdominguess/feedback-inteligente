@@ -50,3 +50,12 @@ export const VISOES = {
   GERENTE: 'gerente',
   REGIONAL: 'regional',
 };
+
+/**
+ * Vendedora usada como foco do cenário da demo: Bianca Rocha (C0031).
+ *
+ * Serve apenas para a lateral já abrir com ela selecionada quando a lista
+ * carregar. É uma conveniência de tela, não uma regra de negócio: se esse ID
+ * não estiver na lista devolvida pela API, ninguém é selecionado.
+ */
+export const VENDEDOR_FOCO_ID = 'C0031';
