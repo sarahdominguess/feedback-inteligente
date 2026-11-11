@@ -147,6 +147,49 @@ npm run dev
 
 O `frontend/.env` também não é versionado; ele apenas guarda a URL da API.
 
+## Frontend: comunicação com a API
+
+O frontend conversa com a API por um cliente HTTP central; nenhuma tela chama
+axios diretamente. Para configurar, a partir da pasta `frontend/`:
+
+```bash
+cp .env.example .env
+```
+
+O `frontend/.env` guarda só `VITE_API_URL` (padrão `http://localhost:8000`) e
+não é versionado.
+
+Ordem para subir tudo:
+
+1. Backend (terminal 1), de dentro de `backend/` com o venv ativo:
+   `uvicorn main:app --reload --port 8000`.
+2. Frontend (terminal 2), de dentro de `frontend/`: `npm run dev`.
+3. Abra http://localhost:5173.
+
+O painel temporário de verificação em http://localhost:5173 mostra a URL da API
+em uso, a lista dos 8 vendedores da loja, os detalhes do vendedor selecionado, a
+geração de feedback e a visão regional — com valores brutos, porque a
+formatação final entra na Etapa 5.
+
+Comandos úteis, de dentro de `frontend/`:
+
+```bash
+# testes de lógica (sem rede)
+npm test
+
+# confere a API no endereço padrão (NÃO chama a IA)
+npm run verificar:api
+
+# além de tudo, gera um roteiro real — CONSOME CRÉDITOS da DeepSeek
+npm run verificar:api -- --gerar
+```
+
+Se aparecer "Não foi possível conectar ao servidor":
+- confirme que o backend está rodando na porta 8000;
+- confira `VITE_API_URL` no `frontend/.env` (endereço ou porta errados);
+- se o navegador bloquear por CORS, ajuste `FRONTEND_ORIGINS` no
+  `backend/.env` (o padrão já libera http://localhost:5173).
+
 ## URLs esperadas
 
 | O que | URL |

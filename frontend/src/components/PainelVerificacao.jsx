@@ -5,7 +5,7 @@
  * backend conversam. Ele será substituído pelas telas reais na Etapa 5;
  * por isso o visual é o mais simples possível e nenhum número é formatado.
  *
- * Regra importante: esta tela NÃO calcula nada e NÃO chama axios/fetch.
+ * Regra importante: esta tela NÃO calcula nada e NÃO faz chamadas HTTP diretas.
  * Ela lê o estado e chama as ações do contexto (useApp).
  */
 
