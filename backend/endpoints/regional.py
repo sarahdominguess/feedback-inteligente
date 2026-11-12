@@ -5,12 +5,14 @@ preparados. A rota é fina: só pede o consolidado pronto e devolve no formato
 do contrato — nenhuma conta é feita aqui.
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 
-from config import LOJA_ID
+from config import LOJA_ID, REGIONAL_NOME
 from contracts.erros import ErroResposta
 from contracts.mapeadores import feedback_gerente_de
 from contracts.regional import (
+    AnotacaoRegionalDTO,
+    AnotacaoRegionalNovaRequisicao,
     DesempenhoGerenteResposta,
     HistoricoLojaResposta,
     ListaLojasResposta,
@@ -18,9 +20,13 @@ from contracts.regional import (
 from domain.excecoes import LojaNaoEncontradaError
 from endpoints.dependencias import (
     obter_consolidado_regional,
+    obter_registro_anotacoes_regional,
     obter_registro_feedbacks_regional,
 )
 from services.consolidado_regional import ConsolidadoRegional
+from services.registro_anotacoes_regional import (
+    RegistroAnotacoesRegionalService,
+)
 from services.registro_feedback_regional import (
     RegistroFeedbackRegionalService,
 )
@@ -141,4 +147,69 @@ def obter_historico_loja(
         feedbacks_preparados=[
             feedback_gerente_de(item) for item in roteiros
         ],
+    )
+
+
+@router.post(
+    "/regional/lojas/{loja_id}/anotacoes",
+    response_model=AnotacaoRegionalDTO,
+    # 201 = "criado": o padrão HTTP para um POST que cria um recurso novo.
+    status_code=201,
+    responses={
+        400: {
+            "model": ErroResposta,
+            "description": (
+                "Texto da anotação inválido (vazio, só com espaços ou acima "
+                "do limite) ou corpo da requisição malformado."
+            ),
+        },
+        404: {
+            "model": ErroResposta,
+            "description": "Loja não encontrada.",
+        },
+    },
+)
+def registrar_anotacao_da_loja(
+    requisicao: AnotacaoRegionalNovaRequisicao,
+    loja_id: str = Path(
+        description='Código da loja (ex.: "L004").',
+    ),
+    registro_anotacoes: RegistroAnotacoesRegionalService = Depends(
+        obter_registro_anotacoes_regional
+    ),
+) -> AnotacaoRegionalDTO:
+    """Grava uma anotação nova da regional sobre a loja.
+
+    Recebe o código da loja no caminho e, no corpo, APENAS o texto.
+    O cliente NÃO manda a autora nem a data:
+    - a autora é REGIONAL_NOME (config), porque não há login — quem usa a
+      visão regional é sempre a Patrícia;
+    - a data é o dia de hoje no SERVIDOR, para ninguém inventar a data.
+
+    Fluxo:
+    1) loja diferente da configurada => LojaNaoEncontradaError (404);
+    2) o serviço apara os espaços, valida o limite e grava;
+    3) devolve a anotação no DTO que já existe.
+
+    Texto inválido => 400 pelo tratador global (AnotacaoInvalidaError).
+    A rota é fina: validação e gravação ficam no serviço; aqui só orquestra.
+
+    Exemplo: POST /api/regional/lojas/L004/anotacoes
+    {"texto": "visitar a loja na sexta"} responde 201 com data, autora e texto.
+    """
+    # Normalização só para comparar; a resposta usa a autora do config.
+    if loja_id.strip().upper() != LOJA_ID.upper():
+        raise LojaNaoEncontradaError(
+            f"Loja '{loja_id.strip()}' não encontrada."
+        )
+
+    anotacao = registro_anotacoes.registrar(
+        texto=requisicao.texto,
+        autora=REGIONAL_NOME,
+    )
+
+    return AnotacaoRegionalDTO(
+        data=anotacao.data,
+        autora=anotacao.autora,
+        texto=anotacao.texto,
     )
