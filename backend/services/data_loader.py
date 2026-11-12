@@ -29,6 +29,9 @@ from domain.indicador_diario import IndicadorDiario
 from domain.texto import nome_corresponde
 from domain.vendedor import Vendedor
 from services.registro_anotacoes import RegistroAnotacoesService
+from services.registro_anotacoes_regional import (
+    RegistroAnotacoesRegionalService,
+)
 
 
 def _texto(valor) -> str:
@@ -76,8 +79,11 @@ class DataLoader:
         data_dir: pasta onde estão os CSVs (padrão: backend/data).
         loja_id: código da loja dos funcionários (padrão: L004).
         loja_nome: nome da loja (padrão: Aurora Shopping Centro).
-        registro_anotacoes: serviço das anotações NOVAS, escritas na
-            interface (padrão: None = ignora essas anotações e usa só o CSV).
+        registro_anotacoes: serviço das anotações NOVAS do gerente, escritas
+            na interface (padrão: None = ignora essas anotações e usa só o
+            CSV).
+        registro_anotacoes_regional: serviço das anotações NOVAS da regional
+            (padrão: None = usa só o CSV anotacoes_regional.csv).
 
     A leitura é preguiçosa: nada é lido no construtor. Na primeira chamada de
     um método público, os quatro arquivos de vendas são lidos uma única vez e
@@ -89,7 +95,8 @@ class DataLoader:
     novas são lidas do serviço a cada obter_gerente(). Elas mudam a cada
     gravação feita na interface, então guardar uma cópia faria uma anotação
     recém-escrita só aparecer depois de reiniciar o servidor. O CSV, que não
-    muda durante a execução, continua sendo lido uma vez só.
+    muda durante a execução, continua sendo lido uma vez só. O mesmo vale para
+    as anotações novas da regional em listar_anotacoes_regional().
     """
 
     def __init__(
@@ -98,6 +105,9 @@ class DataLoader:
         loja_id: str = LOJA_ID,
         loja_nome: str = LOJA_NOME,
         registro_anotacoes: RegistroAnotacoesService | None = None,
+        registro_anotacoes_regional: (
+            RegistroAnotacoesRegionalService | None
+        ) = None,
     ):
         """Guarda a configuração; os arquivos só serão lidos depois."""
         self._data_dir = Path(data_dir)
@@ -107,6 +117,10 @@ class DataLoader:
         # Fonte extra de anotações (as escritas no site). None é o padrão
         # histórico: nesse caso o comportamento é exatamente o de antes.
         self._registro_anotacoes = registro_anotacoes
+
+        # Fonte extra das anotações da regional (as escritas na interface).
+        # Mesma regra: None = só o CSV, comportamento idêntico ao anterior.
+        self._registro_anotacoes_regional = registro_anotacoes_regional
 
         # "Cache": guardar o resultado para não recalcular (aqui, para não
         # reler os arquivos a cada chamada).
@@ -688,15 +702,45 @@ class DataLoader:
     def listar_anotacoes_regional(self) -> tuple[AnotacaoRegional, ...]:
         """Devolve as anotações da regional em ordem cronológica.
 
-        Cada anotação traz data, autora e texto, exatamente como no CSV.
-        Devolvemos uma tupla (imutável), então o chamador não consegue
-        alterar o cache interno sem querer.
+        Junta duas fontes: o CSV (anotacoes_regional.csv, lido uma vez e
+        guardado em cache) e o serviço de anotações NOVAS (as escritas na
+        interface), quando ele foi informado no construtor. Cada anotação traz
+        data, autora e texto.
 
-        Levanta DadosIndisponiveisError se o arquivo não existir ou se
-        faltar uma coluna obrigatória.
+        Por que o serviço é lido a cada chamada: uma anotação nova pode ser
+        gravada a qualquer momento e a próxima leitura já precisa mostrá-la.
+        O CSV, que não muda durante a execução, continua em cache.
+
+        Ordem: sorted é estável, e passamos primeiro as do CSV. Por isso, em
+        datas iguais, as do CSV vêm antes, e entre as novas vale a ordem em
+        que foram registradas.
+
+        Devolvemos uma tupla (imutável), então o chamador não consegue alterar
+        o cache interno sem querer.
+
+        Levanta DadosIndisponiveisError se o CSV não existir ou se faltar uma
+        coluna obrigatória.
         """
         self._garantir_regional_carregado()
-        return self._anotacoes_regional
+
+        # Sem o serviço, devolvemos exatamente a tupla montada do CSV: o
+        # comportamento de quem não usa anotações novas não muda.
+        if self._registro_anotacoes_regional is None:
+            return self._anotacoes_regional
+
+        anotacoes_novas = self._registro_anotacoes_regional.listar()
+
+        if not anotacoes_novas:
+            return self._anotacoes_regional
+
+        # Tupla nova, do CSV para as novas, e o sorted (estável) ordena por
+        # data sem trocar a ordem dos empates.
+        return tuple(
+            sorted(
+                (*self._anotacoes_regional, *anotacoes_novas),
+                key=lambda anotacao: anotacao.data,
+            )
+        )
 
     def obter_meta_loja(self, mes: str) -> float | None:
         """Devolve a meta da loja em reais para o mês "AAAA-MM".

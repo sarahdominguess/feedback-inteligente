@@ -40,6 +40,17 @@ REGISTRO_FEEDBACKS_ARQUIVO = DATA_DIR / "registro_feedbacks.json"
 # criado sozinho na primeira gravação e NÃO vai para o git.
 ANOTACOES_NOVAS_ARQUIVO = DATA_DIR / "anotacoes_novas.json"
 
+# Arquivo local onde ficam as anotações NOVAS escritas pela regional no site.
+# Mesma ideia do anterior: o CSV (anotacoes_regional.csv) é o dado de origem e
+# não é alterado; as anotações digitadas na visão da regional ficam neste
+# arquivo à parte, criado sozinho na primeira gravação e NÃO versionado.
+ANOTACOES_REGIONAL_NOVAS_ARQUIVO = DATA_DIR / "anotacoes_regional_novas.json"
+
+# Nome de quem assina as anotações novas da regional. Fica aqui (e não no
+# código das rotas) porque o serviço precisa de um valor padrão quando a rota
+# não informar a autora — o sistema não tem login para descobrir sozinho.
+AUTORA_REGIONAL_PADRAO = "Patrícia Lemos"
+
 # Limite de caracteres de uma anotação nova. Existe por dois motivos: o texto
 # precisa caber na tela sem virar um paredão, e o prompt enviado à IA tem
 # tamanho limitado — uma anotação gigante empurraria os números de venda para
