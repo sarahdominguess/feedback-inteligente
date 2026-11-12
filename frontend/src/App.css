@@ -2,8 +2,8 @@
  * Estilos do componente App: o layout principal da aplicação.
  *
  * O app usa uma grade (grid): o cabeçalho ocupa a largura toda e, na visão
- * do gerente, a barra lateral fica à esquerda com a área central à direita.
- * Em telas estreitas, tudo empilha em uma coluna.
+ * do gerente, a barra lateral (menu do colaborador) fica à esquerda com a
+ * área central à direita. Em telas estreitas, tudo empilha em uma coluna.
  */
 
 /*
@@ -28,9 +28,16 @@
   padding: var(--espaco-secao);
 }
 
-/* Duas colunas: 300px para a equipe e o resto para o conteúdo. */
+/*
+ * Duas colunas: 260px para o menu do colaborador e o resto para o conteúdo.
+ *
+ * A lateral diminuiu de 300px para 260px porque ela deixou de listar a equipe
+ * inteira: agora mostra só três abas curtas e o card de uma pessoa. Com menos
+ * largura, sobra mais espaço para o conteúdo (indicadores, anotações e o
+ * roteiro), que é onde o gerente passa a maior parte do tempo.
+ */
 .app-layout--com-lateral {
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
   grid-template-areas:
     'cabecalho cabecalho'
     'lateral central';
@@ -51,7 +58,8 @@
 
 /*
  * Layout responsivo: em telas com menos de 768px, a lateral sai da coluna
- * e tudo empilha na vertical, na ordem cabeçalho → equipe → conteúdo.
+ * e tudo empilha na vertical, na ordem cabeçalho → menu do colaborador →
+ * conteúdo.
  */
 @media (max-width: 767px) {
   .app-layout--com-lateral {

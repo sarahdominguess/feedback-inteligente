@@ -28,7 +28,7 @@ import { useApp } from './context/useApp.js';
 function App() {
   const { estado } = useApp();
 
-  // Na visão do gerente existe a coluna da equipe; na regional, não.
+  // Na visão do gerente existe a coluna do menu do colaborador; na regional, não.
   const mostrarLateral = estado.visao === VISOES.GERENTE;
 
   return (

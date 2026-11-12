@@ -56,7 +56,7 @@ export function AreaCentral() {
         // Gerente sem ninguém escolhido: explica o próximo passo.
         <EstadoVazio
           titulo="Escolha um colaborador"
-          descricao="Selecione alguém na lista à esquerda para ver as anotações, os dados e o feedback."
+          descricao="Escolha um colaborador no card da barra lateral para ver as anotações, os dados e o feedback."
         />
       ) : (
         /*

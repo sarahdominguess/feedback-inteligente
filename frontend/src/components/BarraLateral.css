@@ -2,8 +2,10 @@
  * Estilos da barra lateral.
  *
  * Um cartão claro sobre o roxo da página, com texto tinta (contraste ≈ 14:1).
- * A lateral não tem largura fixa aqui: quem define a coluna é o layout em
- * App.css. Assim o componente pode ser reaproveitado em outro lugar.
+ * Os filhos ficam em COLUNA: as abas primeiro e o card do colaborador por
+ * último. Não usamos a propriedade "order": assim a ordem que aparece na tela
+ * é a mesma do DOM, e leitores de tela e teclado percorrem o mesmo caminho
+ * que os olhos.
  */
 
 .barra-lateral {
@@ -15,11 +17,10 @@
   border-radius: var(--raio-lg);
   background-color: var(--cor-superficie-suave);
   color: var(--cor-tinta);
-}
-
-/* Título "Equipe": 22px, um degrau acima do texto comum. */
-.barra-lateral__titulo {
-  margin: 0;
-  font-size: var(--texto-display-sm);
-  font-weight: var(--peso-medio);
+  /*
+   * min-width: 0 permite que a coluna encolha dentro da grade do App em vez
+   * de estourar a largura quando o nome de alguém for muito comprido.
+   * A largura da coluna em si é definida em App.css.
+   */
+  min-width: 0;
 }
