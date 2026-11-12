@@ -18,7 +18,7 @@ Regras (escritas em palavras):
 - mês parcial = menos de DIAS_MINIMOS_MES_COMPLETO dias com dados.
 """
 
-from config import DIAS_MINIMOS_MES_COMPLETO
+from config import DIAS_MINIMOS_MES_COMPLETO, LOJA_ID, LOJA_NOME
 from services.data_loader import DataLoader
 from services.registro_feedback import RegistroFeedbackService
 
@@ -249,3 +249,28 @@ class ConsolidadoRegional:
             "acompanhamento_feedback": self.obter_acompanhamento_feedback(),
             "anotacoes_regional": anotacoes_regional,
         }
+
+    def listar_lojas(self) -> list[dict]:
+        """Devolve as lojas que a regional pode acompanhar.
+
+        Hoje o desafio tem UMA loja com dados (a L004, da configuração), então
+        a lista traz um único item: código e nome da loja + código e nome do
+        gerente carregado.
+
+        Por que devolver uma LISTA em vez de um objeto só: o frontend já é
+        escrito para escolher entre N lojas. Quando existirem outras, basta
+        acrescentar itens aqui, sem mudar o contrato nem a tela. Nenhuma conta
+        é feita: os dados vêm do config e do próprio gerente.
+
+        Exemplo: listar_lojas()[0]["loja_id"] == "L004"
+        """
+        gerente = self._data_loader.obter_gerente()
+
+        return [
+            {
+                "loja_id": LOJA_ID,
+                "loja_nome": LOJA_NOME,
+                "gerente_id": gerente.gerente_id,
+                "gerente_nome": gerente.nome,
+            }
+        ]
