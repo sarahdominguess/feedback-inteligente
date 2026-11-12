@@ -72,7 +72,9 @@ export function criarEstadoInicial() {
   return {
     lojaId: LOJA_PADRAO_ID,
     visao: VISOES.GERENTE,
-    aba: ABAS.DADOS,
+    // O app abre na aba Feedback porque é o fluxo principal do gerente:
+    // preparar o roteiro da conversa. Anotações e Dados dão apoio a ele.
+    aba: ABAS.FEEDBACK,
 
     // Lista de vendedores da loja.
     vendedores: { status: STATUS.OCIOSO, dados: [], erro: null },

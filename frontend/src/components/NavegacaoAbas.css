@@ -1,22 +1,24 @@
 /*
  * Estilos das abas do gerente.
  *
- * Três botões em grade (grid) de colunas iguais. A aba ativa usa a cor
- * primária (ação/seleção) com texto escuro; as outras ficam claras com
- * borda. A altura mínima de 44px segue o alvo de toque do DESIGN.md.
+ * As abas ficam EMPILHADAS (uma embaixo da outra, na ordem Feedback,
+ * Anotações, Dados). Cada botão ocupa a largura toda da lateral, com ícone e
+ * texto alinhados à esquerda e altura mínima de 44px (alvo de toque do
+ * DESIGN.md). A aba ativa se destaca por fundo, peso da fonte e uma barra
+ * escura à esquerda — nunca só pela cor.
  */
 
 /* ----------------------------------------------------------------------
  * Container
  *
- * "grid" é o layout em grade: repeat(3, ...) cria três colunas iguais.
- * minmax(0, 1fr) permite que cada coluna encolha sem estourar o espaço.
+ * "flex" com direção "column" coloca os itens em fila vertical. O gap é o
+ * espaço entre uma aba e a seguinte.
  * -------------------------------------------------------------------- */
 
 .navegacao-abas {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--espaco-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
 }
 
 /* ----------------------------------------------------------------------
@@ -24,39 +26,88 @@
  * -------------------------------------------------------------------- */
 
 .navegacao-abas__aba {
+  /* Ocupa a largura toda do container (fila vertical). */
+  width: 100%;
+  /* Ícone e texto ficam lado a lado, centralizados na altura e à esquerda. */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espaco-base);
   /* 44px: alvo de toque mínimo do DESIGN.md. */
   min-height: 44px;
-  padding: var(--espaco-sm) var(--espaco-base);
+  padding: var(--espaco-lg) var(--espaco-xl);
   /* Borda de controle (~10:1): a aba inativa e a barra lateral têm a mesma
      cor de fundo, então a borda delimita a área clicável. */
   border: 1px solid var(--cor-borda-controle);
+  /*
+   * A borda esquerda é mais grossa (4px) porque ela vira a marca da aba
+   * ativa. Nas abas inativas ela recebe a cor do fundo (fica invisível), o
+   * que mantém ícone e texto alinhados nos dois estados, sem "pular" ao
+   * trocar de aba.
+   */
+  border-left-width: 4px;
+  border-left-color: var(--cor-superficie-suave);
   border-radius: var(--raio-md);
   /* Superfície clara com texto tinta: contraste ≈ 14:1. */
   background-color: var(--cor-superficie-suave);
   color: var(--cor-tinta);
   font-family: inherit;
-  font-size: var(--texto-legenda);
+  font-size: var(--texto-botao);
   font-weight: var(--peso-medio);
   line-height: 1.2;
+  /* Alinha o texto à esquerda (botões centralizam por padrão). */
+  text-align: left;
   cursor: pointer;
   transition:
     background-color 150ms ease,
     border-color 150ms ease;
 }
 
-/* Hover da aba inativa: a borda escurece. */
+/* Hover da aba inativa: a borda escurece e a área clicável fica evidente. */
 .navegacao-abas__aba:hover {
   border-color: var(--cor-tinta);
 }
 
 /*
  * Aba ativa: fundo primária + borda escura + texto #111111 (≈ 11,2:1).
- * aria-selected (no JSX) é o sinal para o leitor de tela; aqui o reforço
- * visual não depende só da cor, porque o nome fica em negrito.
+ *
+ * O destaque NÃO depende só da cor: o nome fica em negrito e a barra escura
+ * de 4px à esquerda marca a posição na fila. aria-selected (no JSX) é o
+ * sinal equivalente para o leitor de tela.
  */
 .navegacao-abas__aba--ativa {
   border-color: var(--cor-tinta);
   background-color: var(--cor-primaria);
   color: var(--cor-texto-sobre-primaria);
   font-weight: var(--peso-forte);
+}
+
+/*
+ * O foco do teclado NÃO é definido aqui de propósito: a regra global
+ * :focus-visible de estilos/base.css já desenha um contorno bem visível sobre
+ * qualquer fundo. Definir outro aqui só criaria duas regras para manter.
+ */
+
+/* ----------------------------------------------------------------------
+ * Ícone
+ * -------------------------------------------------------------------- */
+
+/* Caixa do ícone: não encolhe quando o texto é longo. */
+.navegacao-abas__icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* Tamanho do desenho em 16px (o mesmo token do texto de corpo). */
+.navegacao-abas__icone svg {
+  width: var(--texto-corpo);
+  height: var(--texto-corpo);
+}
+
+/* Nome da aba: pode quebrar linha em telas muito estreitas. */
+.navegacao-abas__texto {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

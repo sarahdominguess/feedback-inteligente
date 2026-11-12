@@ -1,10 +1,12 @@
 /**
- * Abas do gerente: Anotações, Dados e Feedback.
+ * Abas do gerente: Feedback, Anotações e Dados.
  *
- * Só aparecem na visão do gerente. A aba ativa vem do contexto (fonte única
- * de verdade) e pode ser trocada por clique ou pelas setas do teclado.
+ * Aparecem empilhadas (uma embaixo da outra) e só existem na visão do gerente.
+ * A aba ativa vem do contexto (fonte única de verdade) e pode ser trocada por
+ * clique ou pelas setas do teclado.
  */
 
+import { ChartColumn, NotebookPen, Sparkles } from 'lucide-react';
 import { useRef } from 'react';
 
 import {
@@ -19,9 +21,26 @@ import { useApp } from '../context/useApp.js';
 import './NavegacaoAbas.css';
 
 /**
- * Ordem visual das abas. É esta lista que as setas do teclado percorrem.
+ * Ordem visual das abas, de cima para baixo. É esta lista que as setas do
+ * teclado percorrem.
+ *
+ * Feedback vem primeiro porque é o fluxo principal do gerente (preparar o
+ * roteiro da conversa); as outras duas abas dão apoio a ele.
  */
-const ORDEM_ABAS = [ABAS.ANOTACOES, ABAS.DADOS, ABAS.FEEDBACK];
+const ORDEM_ABAS = [ABAS.FEEDBACK, ABAS.ANOTACOES, ABAS.DADOS];
+
+/**
+ * Ícone de cada aba, ligado pelo valor técnico de ABAS.
+ *
+ * Os componentes vêm do pacote lucide-react (biblioteca de ícones em SVG).
+ * São decorativos: quem diz o nome da aba é o texto ao lado, por isso eles
+ * entram na tela com aria-hidden (explicado no JSX, mais abaixo).
+ */
+const ICONES_ABAS = {
+  [ABAS.FEEDBACK]: Sparkles,
+  [ABAS.ANOTACOES]: NotebookPen,
+  [ABAS.DADOS]: ChartColumn,
+};
 
 /**
  * Componente NavegacaoAbas.
@@ -29,11 +48,12 @@ const ORDEM_ABAS = [ABAS.ANOTACOES, ABAS.DADOS, ABAS.FEEDBACK];
  * Não recebe props: lê do contexto a aba atual e a ação mudarAba. Também
  * confere a visão, porque as abas são exclusivas do gerente.
  *
- * Devolve uma barra com três botões no papel de abas (role="tab").
+ * Devolve a lista vertical com três botões no papel de abas (role="tab"),
+ * cada um com ícone e texto.
  *
  * "role" é um atributo que diz ao navegador e ao leitor de tela qual é o
  * papel de um elemento (aqui: lista de abas e cada aba). aria-selected diz
- * qual aba está aberta agora.
+ * qual aba está aberta agora e aria-orientation avisa que a fila é vertical.
  *
  * Exemplo de uso: <NavegacaoAbas />
  */
@@ -50,21 +70,26 @@ export function NavegacaoAbas() {
   }
 
   /**
-   * Trata as setas esquerda/direita dentro da lista de abas.
+   * Trata as setas do teclado dentro da lista de abas.
    *
    * Recebe o evento do teclado e a posição da aba que estava com foco.
    * Devolve nada: troca a aba no contexto e move o foco para o novo botão.
    *
+   * Como as abas ficam empilhadas, o movimento natural é ↑ e ↓. As setas
+   * ← e → continuam funcionando porque parte das pessoas (e dos leitores de
+   * tela) está acostumada com o padrão de abas lado a lado; aceitar as duas
+   * duplas não atrapalha ninguém.
+   *
    * A conta com "%" (resto da divisão) faz a navegação dar a volta: da
-   * última aba, a seta direita leva para a primeira, e vice-versa.
+   * última aba, a seta para baixo leva para a primeira, e vice-versa.
    */
   function aoTeclar(evento, indice) {
     const total = ORDEM_ABAS.length;
     let proximoIndice = null;
 
-    if (evento.key === 'ArrowRight') {
+    if (evento.key === 'ArrowDown' || evento.key === 'ArrowRight') {
       proximoIndice = (indice + 1) % total;
-    } else if (evento.key === 'ArrowLeft') {
+    } else if (evento.key === 'ArrowUp' || evento.key === 'ArrowLeft') {
       proximoIndice = (indice - 1 + total) % total;
     } else {
       // Outra tecla: o comportamento normal do botão continua valendo.
@@ -84,10 +109,16 @@ export function NavegacaoAbas() {
     <div
       className="navegacao-abas"
       role="tablist"
+      // Avisa ao leitor de tela que a fila é vertical (↑/↓), e não lado a lado.
+      aria-orientation="vertical"
       aria-label="Seções do colaborador"
     >
       {ORDEM_ABAS.map((valor, indice) => {
         const ativa = valor === estado.aba;
+
+        // Cada aba usa o seu próprio ícone. A variável começa com maiúscula
+        // porque, em JSX, componente sempre começa com letra maiúscula.
+        const Icone = ICONES_ABAS[valor];
 
         return (
           <button
@@ -120,7 +151,18 @@ export function NavegacaoAbas() {
             onClick={() => mudarAba(valor)}
             onKeyDown={(evento) => aoTeclar(evento, indice)}
           >
-            {ROTULOS_ABAS[valor]}
+            {/*
+             * Ícone decorativo: aria-hidden impede que o leitor de tela
+             * anuncie um "desenho" antes do nome que o texto já informa.
+             */}
+            <span className="navegacao-abas__icone" aria-hidden="true">
+              <Icone />
+            </span>
+
+            {/* Nome da aba (texto visível). */}
+            <span className="navegacao-abas__texto">
+              {ROTULOS_ABAS[valor]}
+            </span>
           </button>
         );
       })}

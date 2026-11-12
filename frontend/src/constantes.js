@@ -30,26 +30,31 @@ export const STATUS = {
 /**
  * Abas da tela do gerente (o que aparece no centro da página).
  *
+ * A ordem dos itens aqui é a MESMA ordem usada na tela (documentação viva):
+ * Feedback primeiro, porque é o fluxo principal do gerente; depois Anotações,
+ * que alimentam o roteiro; por último Dados, os indicadores.
+ *
+ * - feedback: geração e leitura do roteiro de feedback;
  * - anotacoes: o que o gerente escreveu sobre a pessoa;
- * - dados: indicadores e comparativo com o time;
- * - feedback: geração e leitura do roteiro.
+ * - dados: indicadores e comparativo com o time.
  */
 export const ABAS = {
+  FEEDBACK: 'feedback',
   ANOTACOES: 'anotacoes',
   DADOS: 'dados',
-  FEEDBACK: 'feedback',
 };
 
 /**
  * Rótulos em português das abas, indexados pelo valor técnico de ABAS.
  *
- * Ficam aqui porque duas partes usam o mesmo texto: a navegação (botões) e a
- * área central (aviso "Aba ... em construção"). Assim os dois nunca divergem.
+ * Ficam aqui porque a navegação (botões) e a área central (título do painel)
+ * usam o mesmo texto. Assim os dois nunca divergem.
  */
 export const ROTULOS_ABAS = {
+  // Mesma ordem das abas: Feedback, Anotações, Dados.
+  [ABAS.FEEDBACK]: 'Feedback',
   [ABAS.ANOTACOES]: 'Anotações',
   [ABAS.DADOS]: 'Dados',
-  [ABAS.FEEDBACK]: 'Feedback',
 };
 
 /**

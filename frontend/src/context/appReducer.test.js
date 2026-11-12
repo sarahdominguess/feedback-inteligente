@@ -18,7 +18,8 @@ test('estado inicial tem a forma combinada', () => {
   assert.deepEqual(estado, {
     lojaId: LOJA_PADRAO_ID,
     visao: VISOES.GERENTE,
-    aba: ABAS.DADOS,
+    // O app abre na aba Feedback: é o fluxo principal do gerente.
+    aba: ABAS.FEEDBACK,
     vendedores: { status: STATUS.OCIOSO, dados: [], erro: null },
     vendedorSelecionadoId: null,
     detalhes: { status: STATUS.OCIOSO, dados: null, erro: null },
