@@ -1,8 +1,9 @@
-"""Contratos (formatos) das respostas de vendedores e do histórico.
+"""Contratos (formatos) de entrada e saída de vendedores e do histórico.
 
-Estes modelos dizem exatamente o que o frontend recebe nas rotas de listagem
-de vendedores e de histórico individual. Eles só carregam dados já calculados
-no domínio; as descrições em português aparecem no Swagger.
+Estes modelos dizem exatamente o que o frontend envia e recebe nas rotas de
+listagem de vendedores, de histórico individual e de anotação nova. Eles só
+carregam dados já calculados no domínio; as descrições em português aparecem
+no Swagger.
 
 Termos:
     DTO: "objeto de transferência de dados", o formato combinado entre a API
@@ -13,13 +14,46 @@ Termos:
 
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
+from config import ANOTACAO_TEXTO_MAXIMO
 from contracts.metricas import (
     MetricaComparadaDTO,
     MetricasDTO,
     ResumoMensalDTO,
 )
+
+
+class AnotacaoNovaRequisicao(BaseModel):
+    """Dados que o frontend envia para gravar uma anotação nova.
+
+    Recebe APENAS o texto. A data e o nome da pessoa NÃO vêm do cliente:
+    - a data é o dia de hoje no servidor, para ninguém conseguir inventar ou
+      adulterar a data de uma anotação;
+    - o "sobre" é o nome do vendedor encontrado pelo vendedor_id da URL, então
+      a anotação nunca fica apontando para a pessoa errada.
+
+    Regras de validação (o FastAPI devolve 400 com {"erro": ...} quando elas
+    falham):
+    - str_strip_whitespace remove os espaços das pontas ANTES de contar;
+    - min_length=1 recusa texto vazio e texto só com espaços (que vira "");
+    - max_length usa o MESMO limite do serviço (config), para as duas camadas
+      nunca divergirem.
+
+    Exemplo: AnotacaoNovaRequisicao(texto="  cliente elogiou  ")
+    vira texto="cliente elogiou".
+    """
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    texto: str = Field(
+        min_length=1,
+        max_length=ANOTACAO_TEXTO_MAXIMO,
+        description=(
+            "O que o gerente escreveu sobre a pessoa. Até "
+            f"{ANOTACAO_TEXTO_MAXIMO} caracteres; não pode ser vazio."
+        ),
+    )
 
 
 class AnotacaoDTO(BaseModel):

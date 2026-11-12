@@ -26,6 +26,17 @@ GET {{base}}/api/vendedores/L004?mes=2026-10
 GET {{base}}/api/vendedores/C0031/historico
 
 
+### Grava uma anotação nova sobre a Bianca e responde 201 com o que foi salvo.
+### A data é a de hoje no SERVIDOR e o "sobre" é o nome do vendedor: nenhum
+### dos dois é enviado pelo cliente. O texto é gravado como digitado.
+POST {{base}}/api/vendedores/C0031/anotacoes
+Content-Type: application/json
+
+{
+  "texto": "cliente elogiou o atendimento no caixa e levou o cinto"
+}
+
+
 ### Gera o roteiro de feedback da Bianca com a IA (todo o histórico).
 ### ATENÇÃO: esta chamada usa a DeepSeek de verdade, CONSOME CRÉDITOS e
 ### pode levar de 10 a 60 segundos. Requer DEEPSEEK_API_KEY no backend/.env.
@@ -64,4 +75,13 @@ Content-Type: application/json
 {
   "vendedor_id": "C0031",
   "mes_referencia": "2026-13"
+}
+
+
+### ERRO esperado: texto vazio devolve 400 {"erro": "..."} e nada é gravado.
+POST {{base}}/api/vendedores/C0031/anotacoes
+Content-Type: application/json
+
+{
+  "texto": ""
 }

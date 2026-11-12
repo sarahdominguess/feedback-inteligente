@@ -15,6 +15,7 @@ Tabela exceção -> status:
 | VendedorNaoEncontradoError               | 404    | a mensagem da própria exceção     |
 | LojaNaoEncontradaError                   | 404    | a mensagem da própria exceção     |
 | RequestValidationError                   | 400    | resumo legível de campo/problema  |
+| AnotacaoInvalidaError                    | 400    | a mensagem da própria exceção     |
 | LLMIndisponivelError                     | 503    | a mensagem da própria exceção     |
 | LLMRespostaInvalidaError                 | 502    | a mensagem da própria exceção     |
 | LLMNaoConfiguradoError                   | 500    | texto fixo (sem chave nem caminho)|
@@ -32,6 +33,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from domain.excecoes import (
+    AnotacaoInvalidaError,
     DadosIndisponiveisError,
     DominioError,
     LLMIndisponivelError,
@@ -50,6 +52,9 @@ logger = logging.getLogger(__name__)
 _TRADUCOES_DE_VALIDACAO = {
     "missing": "campo obrigatório",
     "string_too_short": "texto muito curto",
+    # Texto acima do max_length do campo (ex.: anotação com mais de 1000
+    # caracteres). Sem esta linha, a mensagem sairia em inglês.
+    "string_too_long": "texto muito longo",
     # Formato que não casa com o molde (pattern), ex.: mês "2026-13".
     "string_pattern_mismatch": "formato inválido",
     "string_type": "deve ser um texto",
@@ -137,6 +142,22 @@ async def _tratar_requisicao_invalida(
 ) -> JSONResponse:
     """Responde 400 quando o corpo/parâmetros do pedido estão inválidos."""
     return _resposta_erro(400, _mensagem_de_validacao(exc))
+
+
+async def _tratar_anotacao_invalida(
+    request: Request, exc: AnotacaoInvalidaError
+) -> JSONResponse:
+    """Responde 400 quando a anotação nova não passa nas regras do domínio.
+
+    Acontece com texto vazio, só com espaços, acima do limite ou com data
+    inválida. É um problema do PEDIDO (o cliente mandou algo que não serve),
+    não do servidor — por isso 400, e não 500.
+
+    A mensagem vem da própria exceção e já está escrita para o usuário. Este
+    tratador precisa existir porque AnotacaoInvalidaError herda de
+    DominioError; sem ele, o tratador genérico de domínio responderia 500.
+    """
+    return _resposta_erro(400, str(exc) or "A anotação não pôde ser salva.")
 
 
 async def _tratar_llm_indisponivel(
@@ -242,6 +263,11 @@ def registrar_tratadores_de_erro(app: FastAPI) -> None:
     # 400
     app.add_exception_handler(
         RequestValidationError, _tratar_requisicao_invalida
+    )
+    # 400 de regra de negócio: o texto da anotação não serve (vazio, só
+    # espaços ou acima do limite). Sem esta linha, cairia no 500 genérico.
+    app.add_exception_handler(
+        AnotacaoInvalidaError, _tratar_anotacao_invalida
     )
 
     # 502 / 503

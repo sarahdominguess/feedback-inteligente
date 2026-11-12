@@ -22,6 +22,8 @@ from contracts.mapeadores import (
     resumo_mensal_de,
 )
 from contracts.vendedores import (
+    AnotacaoDTO,
+    AnotacaoNovaRequisicao,
     HistoricoVendedorResposta,
     ListaVendedoresResposta,
     VendedorResumoDTO,
@@ -29,9 +31,11 @@ from contracts.vendedores import (
 from domain.excecoes import LojaNaoEncontradaError
 from endpoints.dependencias import (
     obter_data_loader,
+    obter_registro_anotacoes,
     obter_registro_feedbacks,
 )
 from services.data_loader import DataLoader
+from services.registro_anotacoes import RegistroAnotacoesService
 from services.registro_feedback import RegistroFeedbackService
 
 # Router com prefixo /api: as rotas declaradas aqui começam com /api.
@@ -193,3 +197,73 @@ def obter_historico_do_vendedor(
         anotacoes_do_time=anotacoes_do_time,
         feedbacks_preparados=feedbacks_preparados,
     )
+
+
+@router.post(
+    "/vendedores/{vendedor_id}/anotacoes",
+    response_model=AnotacaoDTO,
+    # 201 = "criado": o padrão HTTP para quando um POST cria um recurso novo.
+    status_code=201,
+    responses={
+        400: {
+            "model": ErroResposta,
+            "description": (
+                "Texto da anotação inválido (vazio, só com espaços ou acima "
+                "do limite) ou corpo da requisição malformado."
+            ),
+        },
+        404: {
+            "model": ErroResposta,
+            "description": "Vendedor não encontrado.",
+        },
+    },
+)
+def registrar_anotacao_do_vendedor(
+    requisicao: AnotacaoNovaRequisicao,
+    vendedor_id: str = Path(
+        description='Código do vendedor (ex.: "C0031").',
+    ),
+    data_loader: DataLoader = Depends(obter_data_loader),
+    registro_anotacoes: RegistroAnotacoesService = Depends(
+        obter_registro_anotacoes
+    ),
+) -> AnotacaoDTO:
+    """Grava uma anotação nova sobre um vendedor e devolve o que foi salvo.
+
+    Endpoint: um endereço da API que faz uma tarefa. Dependência (Depends): um
+    objeto que o FastAPI entrega pronto para a rota — aqui, o DataLoader e o
+    serviço de anotações, sempre os mesmos (singletons) em toda a aplicação.
+
+    Recebe:
+        vendedor_id: no caminho da URL (o trecho entre chaves).
+        requisicao: no corpo, no formato AnotacaoNovaRequisicao — só o texto.
+
+    O cliente NÃO manda a data nem o "sobre": a data é o dia de hoje no
+    servidor (ninguém inventa data) e o "sobre" é o nome do vendedor
+    encontrado pelo ID. Assim a anotação nunca fica na pessoa errada.
+
+    Fluxo:
+    1) procura o vendedor (ID desconhecido ou do gerente => 404);
+    2) pede ao serviço para gravar (texto inválido => 400 pelo tratador
+       global de AnotacaoInvalidaError);
+    3) devolve a anotação convertida pelo mapeador que já existe.
+
+    A rota é fina de propósito: validação e gravação ficam no serviço; aqui só
+    orquestramos e convertemos para o DTO (o formato da resposta).
+
+    Exemplo: POST /api/vendedores/C0031/anotacoes {"texto": "elogiou o caixa"}
+    responde 201 {"data": "2026-11-12", "sobre": "Bianca Rocha",
+    "texto": "elogiou o caixa", "e_do_time": false}.
+    """
+    # 1) VendedorNaoEncontradoError (ID inexistente ou gerente) vira 404 no
+    #    tratador global, com a mesma mensagem usada pelo histórico.
+    vendedor = data_loader.obter_vendedor(vendedor_id)
+
+    # 2) O serviço apara os espaços, valida o limite e usa a data de hoje.
+    anotacao = registro_anotacoes.registrar(
+        sobre=vendedor.nome,
+        texto=requisicao.texto,
+    )
+
+    # 3) Mesma conversão usada no histórico: um formato só para a anotação.
+    return anotacao_de(anotacao)
