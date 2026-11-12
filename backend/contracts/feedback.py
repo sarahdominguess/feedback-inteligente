@@ -14,38 +14,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-# Molde (regex) do mês de referência: quatro dígitos, um hífen e um mês de 01
-# a 12. Fica em UMA constante porque o mesmo campo "mes_referencia" existe em
-# mais de um contrato (feedback do vendedor e feedback do gerente da loja).
-# Com uma constante só, os dois aceitam e recusam exatamente as mesmas coisas.
-MES_REFERENCIA_REGEX = re.compile(r"\d{4}-(0[1-9]|1[0-2])")
-
-
-def validar_formato_mes_referencia(valor: str | None) -> str | None:
-    """Confere se o mês está no formato "AAAA-MM" com mês de 01 a 12.
-
-    Uma expressão regular (regex) é um "molde" de texto: aqui \d{4} significa
-    "quatro dígitos" e (0[1-9]|1[0-2]) significa "01 a 09 ou 10 a 12". Assim
-    "2026-10" passa, e "2026-13", "2026/10" ou "outubro" são recusados com um
-    erro claro em português.
-
-    None continua sendo aceito: significa "todo o histórico", ou seja, o
-    usuário não escolheu um mês.
-
-    Esta função é pública e sem estado de propósito, para que qualquer
-    contrato com mês de referência chame a MESMA regra em vez de copiar a
-    regex (cópia é defeito: um dia as duas cópias divergem).
-    """
-    if valor is None:
-        return None
-
-    if not MES_REFERENCIA_REGEX.fullmatch(valor):
-        raise ValueError(
-            'O mês deve estar no formato "AAAA-MM" (ex.: "2026-10"), '
-            "com o mês entre 01 e 12."
-        )
-    return valor
-
 
 class FeedbackGerarRequisicao(BaseModel):
     """Dados que o frontend envia para pedir um roteiro de feedback.
@@ -77,14 +45,22 @@ class FeedbackGerarRequisicao(BaseModel):
     @field_validator("mes_referencia")
     @classmethod
     def _validar_mes_referencia(cls, valor: str | None) -> str | None:
-        """Aplica a regra do mês na hora de montar o pedido de feedback.
+        """Confere se o mês está no formato "AAAA-MM" com mês de 01 a 12.
 
-        O @field_validator diz ao Pydantic para chamar este método quando o
-        campo "mes_referencia" chegar. A regra em si (regex e mensagem de
-        erro) mora em validar_formato_mes_referencia, para os outros
-        contratos que aceitam mês usarem exatamente a mesma checagem.
+        Usamos uma expressão regular (regex): um "molde" de texto em que
+        \\d{4} significa "quatro dígitos" e (0[1-9]|1[0-2]) significa "01 a
+        09 ou 10 a 12". Assim "2026-10" passa, e "2026-13", "2026/10" ou
+        "outubro" são recusados com erro claro.
         """
-        return validar_formato_mes_referencia(valor)
+        if valor is None:
+            return None
+
+        if not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", valor):
+            raise ValueError(
+                'O mês deve estar no formato "AAAA-MM" (ex.: "2026-10"), '
+                "com o mês entre 01 e 12."
+            )
+        return valor
 
 
 class FeedbackRoteiroDTO(BaseModel):
