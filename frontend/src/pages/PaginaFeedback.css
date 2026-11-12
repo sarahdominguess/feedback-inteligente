@@ -14,9 +14,8 @@
 }
 
 /*
- * A aba Feedback usa toda a largura da coluna central. A área central não
- * tem limite de leitura (o antigo limite de 400px era só do aviso
- * provisório); esta classe deixa a intenção explícita e garante que a
+ * A aba Feedback usa toda a largura da coluna central: não há limite de
+ * leitura próprio. Esta classe deixa a intenção explícita e garante que a
  * própria página não aplique um max-width de leitura. As outras abas não
  * recebem esta classe.
  */
@@ -32,7 +31,7 @@
   gap: var(--espaco-lg);
 }
 
-/* Separador discreto entre "Gerar roteiro" e "Roteiros já preparados". */
+/* Separador discreto entre "Gerar feedback" e "Roteiros já preparados". */
 .pagina-feedback__secao + .pagina-feedback__secao {
   padding-top: var(--espaco-secao);
   border-top: 1px solid var(--cor-borda);
@@ -96,16 +95,6 @@
 .pagina-feedback__select:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-/* Aviso de custo/tempo: caixa com borda para se separar do fundo. */
-.pagina-feedback__aviso {
-  margin: 0;
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-md);
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
 }
 
 /* Área dos estados da geração (aria-live fica no JSX). */

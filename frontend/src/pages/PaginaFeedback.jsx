@@ -26,8 +26,8 @@ import './PaginaFeedback.css';
  * Não recebe props: lê do contexto o vendedor selecionado, o histórico
  * (estado.detalhes) e o roteiro daquele vendedor (estado.feedbacks[id]).
  *
- * Devolve dois blocos: "Gerar roteiro de feedback" (seletor, botão, aviso e
- * resultado) e "Roteiros já preparados".
+ * Devolve dois blocos: "Gerar feedback" (seletor, botão e resultado) e
+ * "Roteiros já preparados".
  *
  * Exemplo de uso: <PaginaFeedback key={vendedorId} />
  */
@@ -137,13 +137,13 @@ export function PaginaFeedback() {
 
   return (
     <div className="pagina-feedback pagina-feedback--expandida">
-      {/* ---------- Gerar roteiro ---------- */}
+      {/* ---------- Gerar feedback ---------- */}
       <section
         className="pagina-feedback__secao"
         aria-labelledby="titulo-gerar"
       >
         <h2 id="titulo-gerar" className="pagina-feedback__titulo">
-          Gerar roteiro de feedback
+          Gerar feedback
         </h2>
 
         <div className="pagina-feedback__controles">
@@ -186,15 +186,9 @@ export function PaginaFeedback() {
             onClick={aoGerar}
             disabled={gerando}
           >
-            Gerar roteiro
+            Gerar feedback
           </button>
         </div>
-
-        {/* Aviso fixo: custo, tempo e responsabilidade de quem revisa. */}
-        <p className="pagina-feedback__aviso">
-          A geração usa IA, consome créditos e pode levar até alguns minutos.
-          Revise tudo antes de usar: você continua sendo o dono da conversa.
-        </p>
 
         {/*
          * Área de resultado com aria-live="polite": o leitor de tela avisa
@@ -205,13 +199,13 @@ export function PaginaFeedback() {
           {statusFeedback === STATUS.OCIOSO && (
             <EstadoVazio
               titulo="Nenhum roteiro gerado ainda"
-              descricao="Escolha o período e clique em Gerar roteiro. O rascunho trará pontos positivos, pontos de melhoria, possíveis motivos e um roteiro de conversa, para você revisar."
+              descricao="Escolha o período e clique em Gerar feedback. O rascunho trará pontos positivos, pontos de melhoria, possíveis motivos e um roteiro de conversa, para você revisar."
             />
           )}
 
           {statusFeedback === STATUS.CARREGANDO && (
             <EstadoCarregando
-              titulo="Preparando o roteiro…"
+              titulo="Preparando o feedback…"
               descricao="Isso pode levar de 10 segundos a alguns minutos. Não precisa clicar de novo."
               linhas={4}
               variante="cartao"

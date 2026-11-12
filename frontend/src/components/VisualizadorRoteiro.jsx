@@ -138,7 +138,7 @@ export function VisualizadorRoteiro({
     <div className="visualizador-roteiro">
       <header className="visualizador-roteiro__cabecalho">
         {/*
-         * h3 porque a página já tem um h2 ("Gerar roteiro de feedback");
+         * h3 porque a página já tem um h2 ("Gerar feedback");
          * as seções internas usam h4. A ordem h2 → h3 → h4 fica coerente.
          */}
         <h3 className="visualizador-roteiro__titulo">
