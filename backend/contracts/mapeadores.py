@@ -12,6 +12,10 @@ métodos do próprio domínio.
 
 from config import DIAS_MINIMOS_MES_COMPLETO
 from contracts.feedback import FeedbackGerarResposta, FeedbackRoteiroDTO
+from contracts.regional import (
+    FeedbackGerenteGeradoDTO,
+    FeedbackRegionalGerarResposta,
+)
 from contracts.metricas import (
     MetricaComparadaDTO,
     MetricasDTO,
@@ -23,6 +27,7 @@ from domain.comparativo_time import ComparativoTime
 from domain.excecoes import DadosIndisponiveisError
 from domain.feedback_roteiro import FeedbackRoteiro
 from domain.registro_feedback import RegistroFeedback
+from domain.registro_feedback_gerente import RegistroFeedbackGerente
 from domain.vendedor import Vendedor
 
 
@@ -120,16 +125,19 @@ def roteiro_de(roteiro: FeedbackRoteiro) -> FeedbackRoteiroDTO:
     return FeedbackRoteiroDTO(**roteiro.para_dict())
 
 
-def roteiro_do_registro(registro: RegistroFeedback) -> FeedbackRoteiroDTO:
+def roteiro_do_registro(
+    registro: RegistroFeedback | RegistroFeedbackGerente,
+) -> FeedbackRoteiroDTO:
     """Reconstrói o DTO do roteiro a partir do dicionário gravado.
 
-    Recebe o RegistroFeedback (o "registro" é a marca, no arquivo, de que um
-    roteiro existiu) e devolve o FeedbackRoteiroDTO, que é o formato que a API
-    entrega.
+    Recebe o registro do vendedor OU o registro do gerente (os dois guardam o
+    roteiro no MESMO formato de dicionário) e devolve o FeedbackRoteiroDTO,
+    que é o formato que a API entrega.
 
-    Por que esta função existe: a resposta do POST /api/feedback/gerar e os
-    roteiros antigos do histórico precisam do MESMO formato. Uma conversão só
-    evita duas versões que podem divergir com o tempo.
+    Por que esta função existe: a resposta do POST /api/feedback/gerar, os
+    roteiros antigos do histórico e o roteiro do gerente precisam do MESMO
+    formato. Uma conversão só evita duas versões que podem divergir com o
+    tempo.
 
     Se o dicionário gravado estiver num formato que o domínio não aceita
     (arquivo editado à mão, por exemplo), levantamos DadosIndisponiveisError:
@@ -185,6 +193,53 @@ def resposta_de_feedback(registro: RegistroFeedback) -> FeedbackGerarResposta:
         feedback_id=registro.feedback_id,
         vendedor_id=registro.vendedor_id,
         vendedor_nome=registro.vendedor_nome,
+        mes_referencia=registro.mes_referencia,
+        gerado_em=registro.gerado_em,
+        roteiro=roteiro_do_registro(registro),
+    )
+
+
+def feedback_gerente_de(
+    registro: RegistroFeedbackGerente,
+) -> FeedbackGerenteGeradoDTO:
+    """Monta um roteiro preparado para o GERENTE, com o conteúdo.
+
+    Recebe o RegistroFeedbackGerente gravado pelo serviço e devolve o
+    identificador, o mês de referência, o horário e o CONTEÚDO do roteiro (as
+    quatro listas). É o item que aparece em "Roteiros já preparados" na visão
+    da regional.
+
+    "Preparado" significa que o roteiro foi GERADO; não sabemos se a conversa
+    com o gerente aconteceu.
+
+    Exemplo: feedback_gerente_de(registro).roteiro.pontos_positivos
+    """
+    return FeedbackGerenteGeradoDTO(
+        feedback_id=registro.feedback_id,
+        mes_referencia=registro.mes_referencia,
+        gerado_em=registro.gerado_em,
+        roteiro=roteiro_do_registro(registro),
+    )
+
+
+def resposta_regional_de(
+    registro: RegistroFeedbackGerente,
+) -> FeedbackRegionalGerarResposta:
+    """Monta a resposta da geração de feedback da regional para o gerente.
+
+    Recebe o RegistroFeedbackGerente que acabou de ser salvo e devolve a
+    identidade da loja e do gerente, o id, o mês, o horário e o roteiro em
+    quatro listas. O roteiro é reconstruído com roteiro_do_registro, a MESMA
+    conversão usada pelos roteiros antigos da lista.
+
+    Exemplo: resposta_regional_de(registro).roteiro.roteiro_conversa
+    """
+    return FeedbackRegionalGerarResposta(
+        feedback_id=registro.feedback_id,
+        loja_id=registro.loja_id,
+        loja_nome=registro.loja_nome,
+        gerente_id=registro.gerente_id,
+        gerente_nome=registro.gerente_nome,
         mes_referencia=registro.mes_referencia,
         gerado_em=registro.gerado_em,
         roteiro=roteiro_do_registro(registro),
