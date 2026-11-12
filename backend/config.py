@@ -33,6 +33,19 @@ ARQUIVO_METAS_LOJA = "metas_loja.csv"
 # primeira gravação e NÃO vai para o git (é dado de execução, não código).
 REGISTRO_FEEDBACKS_ARQUIVO = DATA_DIR / "registro_feedbacks.json"
 
+# Arquivo local onde ficam as anotações NOVAS escritas pelo gerente no site.
+# As anotações originais continuam no CSV (anotacoes_gerente.csv); estas ficam
+# à parte para não mexer nos dados de origem. "JSON" é um arquivo de texto com
+# dados organizados em pares nome/valor. Como o registro de feedbacks, ele é
+# criado sozinho na primeira gravação e NÃO vai para o git.
+ANOTACOES_NOVAS_ARQUIVO = DATA_DIR / "anotacoes_novas.json"
+
+# Limite de caracteres de uma anotação nova. Existe por dois motivos: o texto
+# precisa caber na tela sem virar um paredão, e o prompt enviado à IA tem
+# tamanho limitado — uma anotação gigante empurraria os números de venda para
+# fora do que o modelo consegue ler. A regra fica aqui, num lugar só.
+ANOTACAO_TEXTO_MAXIMO = 1000
+
 # Identificação da loja do desafio. O arquivo vendedores.csv não tem coluna de
 # loja, então esse dado vem do LEIAME do desafio. Todos os funcionários do CSV
 # pertencem a esta loja.

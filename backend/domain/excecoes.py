@@ -67,3 +67,18 @@ class LLMRespostaInvalidaError(DominioError):
     Acontece quando o texto vem vazio, cortado (por falta de tokens), não é
     um JSON válido ou não passou nas validações de qualidade do roteiro.
     """
+
+
+class AnotacaoInvalidaError(DominioError):
+    """Erro para quando uma anotação nova não pode ser aceita.
+
+    Acontece quando o texto está vazio (ou só com espaços), quando passa do
+    limite de ANOTACAO_TEXTO_MAXIMO definido no config, quando não se sabe
+    sobre quem é a anotação ou quando a data informada não é uma data válida.
+
+    A mensagem é escrita para IR PARA O USUÁRIO: em português, sem termos
+    técnicos e dizendo o que ele pode fazer para resolver.
+
+    Exemplo:
+        raise AnotacaoInvalidaError("Escreva alguma coisa antes de salvar.")
+    """

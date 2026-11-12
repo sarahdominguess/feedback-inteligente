@@ -28,3 +28,6 @@ templates/
 
 # registro local de roteiros gerados (dado de execução, não código)
 backend/data/registro_feedbacks.json
+
+# anotações novas escritas pelo gerente no site (dado de execução, não código)
+backend/data/anotacoes_novas.json
