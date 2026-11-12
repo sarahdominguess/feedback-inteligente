@@ -103,6 +103,7 @@ créditos** e podem levar de 10 a 60 segundos. As demais são leves.
 | GET | `/health` | Confirma que o servidor está no ar. |
 | GET | `/api/vendedores/{loja_id}` | Lista os vendedores da loja com métricas e comparativo. Aceita `?mes=AAAA-MM`. |
 | GET | `/api/vendedores/{vendedor_id}/historico` | Histórico de um vendedor: resumo mensal, anotações e roteiros já preparados. |
+| POST | `/api/vendedores/{vendedor_id}/anotacoes` | Grava uma anotação nova do gerente sobre o vendedor. Corpo: `texto`. A data é a de hoje, definida pelo servidor. |
 | POST | `/api/feedback/gerar` | Gera o roteiro com a IA e grava o registro. Corpo: `vendedor_id` e, opcional, `mes_referencia`. |
 | GET | `/api/regional/desempenho-gerente` | Visão da regional: resultado da loja mês a mês, cobertura dos roteiros e anotações. |
 
@@ -133,6 +134,15 @@ geração, **não é versionado** e guarda os roteiros gerados (id, mês, horár
 conteúdo). Vocabulário importante: **roteiro preparado não é feedback
 realizado** — o sistema só sabe que o roteiro foi gerado; se a conversa
 aconteceu, é o gerente quem sabe.
+
+O arquivo `backend/data/anotacoes_novas.json` é criado sozinho na primeira
+anotação escrita pelo site, **não é versionado** e guarda essas anotações
+novas. As anotações originais continuam no CSV
+(`backend/data/anotacoes_gerente.csv`), que o programa **não altera**: o
+arquivo novo é um caderno à parte, que se soma ao CSV na hora de ler. Por
+isso, apagar `anotacoes_novas.json` apaga só o que foi escrito pelo site — as
+anotações do CSV continuam lá. As anotações novas aparecem no histórico do
+vendedor, no prompt enviado à IA e na contagem da visão regional.
 
 ## Frontend
 
@@ -166,12 +176,27 @@ Ordem para subir tudo:
 2. Frontend (terminal 2), de dentro de `frontend/`: `npm run dev`.
 3. Abra http://localhost:5173.
 
-Em http://localhost:5173 o app abre na visão do gerente: a barra lateral lista
-a equipe da loja (a Bianca já vem selecionada) e, na área central, as abas
-**Anotações**, **Dados** e **Feedback** mostram o histórico da pessoa. O botão
-**Gerar roteiro** usa IA, consome créditos e pode levar de 10 segundos a alguns
-minutos. No cabeçalho, o alternador **Regional** mostra a visão executiva da
-loja: resultado mês a mês e acompanhamento dos feedbacks preparados.
+Em http://localhost:5173 o app abre na visão do gerente, já na aba
+**Feedback**, com a Bianca selecionada. Na barra lateral ficam as abas em fila
+(**Feedback**, **Anotações**, **Dados**) e, embaixo delas, o card do
+colaborador escolhido com uma seta ao lado do nome: a seta abre a lista dos
+outros colaboradores da loja, para trocar de pessoa.
+
+Na área central:
+
+- **Feedback**: o botão **Gerar feedback** usa IA, consome créditos e pode
+  levar de 10 segundos a alguns minutos. O resultado aparece em quatro cards
+  de largura total, um embaixo do outro: Pontos positivos, Pontos de melhoria,
+  Possíveis motivos e Roteiro de conversa sugerido.
+- **Anotações**: em formato de chat. O histórico aparece como mensagens, da
+  mais antiga para a mais nova, e o campo embaixo grava uma anotação nova
+  (Enter envia; Shift+Enter quebra linha). As anotações sobre o time ficam num
+  bloco recolhível.
+- **Dados**: indicadores da pessoa e comparativo com o time.
+
+No cabeçalho, o alternador **Regional** mostra a visão executiva da loja:
+resultado mês a mês, cobertura dos roteiros preparados e as anotações da
+regional.
 
 Comandos úteis, de dentro de `frontend/`:
 
