@@ -8,7 +8,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { ordenarAnotacoes } from './ordenarAnotacoes.js';
+import {
+  ordenarAnotacoes,
+  ordenarDaMaisAntigaParaMaisRecente,
+} from './ordenarAnotacoes.js';
 
 test('lista vazia continua vazia', () => {
   // Sem anotações não há o que ordenar; a função devolve uma lista vazia.
@@ -69,4 +72,61 @@ test('entrada que não é lista devolve lista vazia', () => {
   assert.deepEqual(ordenarAnotacoes(null), []);
   assert.deepEqual(ordenarAnotacoes(undefined), []);
   assert.deepEqual(ordenarAnotacoes({}), []);
+});
+
+// ---------------------------------------------------------------------------
+// Ordem de chat: da mais antiga para a mais recente
+// ---------------------------------------------------------------------------
+
+test('ordem de chat: a mais antiga vence, não importa como veio a lista', () => {
+  // A entrada está fora de ordem de propósito; a saída deve começar em
+  // agosto e terminar em outubro, como uma conversa de cima para baixo.
+  const entrada = [
+    { data: '2026-09-02', texto: 'setembro' },
+    { data: '2026-10-08', texto: 'outubro' },
+    { data: '2026-08-06', texto: 'agosto' },
+  ];
+
+  const resultado = ordenarDaMaisAntigaParaMaisRecente(entrada);
+
+  assert.deepEqual(
+    resultado.map((anotacao) => anotacao.data),
+    ['2026-08-06', '2026-09-02', '2026-10-08'],
+  );
+});
+
+test('ordem de chat: datas iguais mantêm a ordem em que foram escritas', () => {
+  // "Ordenação estável": no empate de datas, vale a posição original.
+  const entrada = [
+    { data: '2026-10-01', texto: 'primeira escrita' },
+    { data: '2026-10-01', texto: 'segunda escrita' },
+    { data: '2026-10-01', texto: 'terceira escrita' },
+  ];
+
+  const resultado = ordenarDaMaisAntigaParaMaisRecente(entrada);
+
+  assert.deepEqual(
+    resultado.map((anotacao) => anotacao.texto),
+    ['primeira escrita', 'segunda escrita', 'terceira escrita'],
+  );
+});
+
+test('ordem de chat: não altera a lista recebida e devolve uma lista nova', () => {
+  const entrada = [
+    { data: '2026-10-08', texto: 'mais recente' },
+    { data: '2026-08-06', texto: 'mais antiga' },
+  ];
+  const copiaDaEntrada = structuredClone(entrada);
+
+  const resultado = ordenarDaMaisAntigaParaMaisRecente(entrada);
+
+  assert.deepEqual(entrada, copiaDaEntrada);
+  assert.notEqual(resultado, entrada);
+});
+
+test('ordem de chat: entrada que não é lista devolve lista vazia', () => {
+  assert.deepEqual(ordenarDaMaisAntigaParaMaisRecente(null), []);
+  assert.deepEqual(ordenarDaMaisAntigaParaMaisRecente(undefined), []);
+  assert.deepEqual(ordenarDaMaisAntigaParaMaisRecente({}), []);
+  assert.deepEqual(ordenarDaMaisAntigaParaMaisRecente([]), []);
 });
