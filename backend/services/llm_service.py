@@ -37,6 +37,7 @@ from domain.excecoes import (
 from domain.feedback_roteiro import FeedbackRoteiro
 from services.data_loader import DataLoader
 from services.prompt_feedback import montar_mensagens
+from services.prompt_feedback_regional import montar_mensagens_regional
 from services.validador_feedback import validar_roteiro
 
 
@@ -310,6 +311,98 @@ class LLMService:
                 "tarde."
             ) from erro
 
+    def _gerar_roteiro_validado(
+        self,
+        cliente,
+        mensagens: list[dict],
+        nome_permitido: str,
+        nomes_bloqueados: list[str],
+    ) -> FeedbackRoteiro:
+        """Executa o ciclo comum: chamada, validação de qualidade e correção.
+
+        Recebe o cliente (real ou fake), as mensagens já montadas, o nome que
+        PODE aparecer no roteiro (a pessoa avaliada) e os nomes que NÃO podem
+        (colegas ou vendedores). Devolve o roteiro aprovado.
+
+        Por que existe: o feedback do vendedor e o do gerente usam o MESMO
+        caminho de API (modo JSON, limites, interpretação, nova tentativa e
+        exceções). A única diferença está em quem é avaliado e em quais nomes
+        podem aparecer. Um caminho só evita que os dois se comportem de
+        formas diferentes com o tempo.
+        """
+        modelo = self._modelo_efetivo()
+        thinking = self._thinking_efetivo()
+
+        # Parâmetros pedidos à API. response_format "json_object" é o "modo
+        # JSON": o provedor se compromete a devolver um JSON válido.
+        parametros = {
+            "model": modelo,
+            "messages": mensagens,
+            "response_format": {"type": "json_object"},
+            "max_tokens": LLM_MAX_TOKENS,
+            "temperature": LLM_TEMPERATURA,
+        }
+
+        # O thinking ("raciocínio interno") vai em extra_body porque é um
+        # parâmetro específico do provedor, fora do padrão da SDK.
+        # Com thinking ligado, a temperatura não faz efeito; mantemos o valor
+        # por simplicidade e documentamos isso aqui.
+        # "omitir" não envia o parâmetro e deixa o padrão do provedor.
+        if thinking != "omitir":
+            parametros["extra_body"] = {"thinking": {"type": thinking}}
+
+        # Primeira tentativa: chama a API e converte a resposta.
+        resposta = self._chamar_api(cliente, parametros)
+        roteiro = self._interpretar_resposta(resposta)
+
+        # Valida o conteúdo. Lista vazia de problemas = aprovado.
+        problemas = validar_roteiro(roteiro, nome_permitido, nomes_bloqueados)
+
+        if not problemas:
+            return roteiro
+
+        # Reprovou: fazemos UMA única nova tentativa. Cada chamada custa
+        # dinheiro e faz a pessoa esperar; insistir muitas vezes não compensa.
+        conteudo_anterior = self._texto_da_resposta(resposta)
+        mensagens_correcao = list(mensagens) + [
+            {"role": "assistant", "content": conteudo_anterior},
+            {
+                "role": "user",
+                "content": self._mensagem_de_correcao(problemas),
+            },
+        ]
+
+        parametros_correcao = dict(parametros)
+        parametros_correcao["messages"] = mensagens_correcao
+
+        resposta_correcao = self._chamar_api(cliente, parametros_correcao)
+
+        try:
+            roteiro_corrigido = self._interpretar_resposta(resposta_correcao)
+        except LLMRespostaInvalidaError as erro:
+            # A segunda resposta nem pôde ser lida (vazia, cortada ou sem
+            # JSON). Não repetimos o texto da IA; mostramos os problemas que
+            # motivaram a correção.
+            raise LLMRespostaInvalidaError(
+                "A IA não conseguiu gerar um roteiro válido após uma "
+                "correção. Problemas da primeira resposta: "
+                f"{'; '.join(problemas)}. A segunda resposta também não pôde "
+                "ser usada."
+            ) from erro
+
+        problemas_corrigidos = validar_roteiro(
+            roteiro_corrigido, nome_permitido, nomes_bloqueados
+        )
+
+        if problemas_corrigidos:
+            raise LLMRespostaInvalidaError(
+                "A IA não conseguiu gerar um roteiro válido após duas "
+                "tentativas. Problemas da última resposta: "
+                f"{'; '.join(problemas_corrigidos)}"
+            )
+
+        return roteiro_corrigido
+
     def gerar_roteiro_feedback(
         self, vendedor_id: str, mes_referencia: str | None = None
     ) -> FeedbackRoteiro:
@@ -349,27 +442,8 @@ class LLMService:
             mes_referencia=mes_referencia,
         )
 
-        modelo = self._modelo_efetivo()
-        thinking = self._thinking_efetivo()
-
-        # Parâmetros pedidos à API. response_format "json_object" é o "modo
-        # JSON": o provedor se compromete a devolver um JSON válido.
-        parametros = {
-            "model": modelo,
-            "messages": mensagens,
-            "response_format": {"type": "json_object"},
-            "max_tokens": LLM_MAX_TOKENS,
-            "temperature": LLM_TEMPERATURA,
-        }
-
-        # O thinking ("raciocínio interno") vai em extra_body porque é um
-        # parâmetro específico do provedor, fora do padrão da SDK.
-        # Com thinking ligado, a temperatura não faz efeito; mantemos o valor
-        # por simplicidade e documentamos isso aqui.
-        # "omitir" não envia o parâmetro e deixa o padrão do provedor.
-        if thinking != "omitir":
-            parametros["extra_body"] = {"thinking": {"type": thinking}}
-
+        # O cliente é criado antes da lista de colegas, preservando a ordem
+        # original: sem chave configurada, o erro aparece sem ler os CSVs.
         cliente = self._obter_cliente()
 
         # Nomes de todos os colegas, exceto o próprio vendedor. A validação
@@ -380,54 +454,52 @@ class LLMService:
             if colega.vendedor_id != vendedor_id
         ]
 
-        # Primeira tentativa: chama a API e converte a resposta.
-        resposta = self._chamar_api(cliente, parametros)
-        roteiro = self._interpretar_resposta(resposta)
-
-        # Valida o conteúdo. Lista vazia de problemas = aprovado.
-        problemas = validar_roteiro(roteiro, vendedor.nome, nomes_colegas)
-
-        if not problemas:
-            return roteiro
-
-        # Reprovou: fazemos UMA única nova tentativa. Cada chamada custa
-        # dinheiro e faz o gerente esperar; insistir muitas vezes não compensa.
-        conteudo_anterior = self._texto_da_resposta(resposta)
-        mensagens_correcao = list(mensagens) + [
-            {"role": "assistant", "content": conteudo_anterior},
-            {
-                "role": "user",
-                "content": self._mensagem_de_correcao(problemas),
-            },
-        ]
-
-        parametros_correcao = dict(parametros)
-        parametros_correcao["messages"] = mensagens_correcao
-
-        resposta_correcao = self._chamar_api(cliente, parametros_correcao)
-
-        try:
-            roteiro_corrigido = self._interpretar_resposta(resposta_correcao)
-        except LLMRespostaInvalidaError as erro:
-            # A segunda resposta nem pôde ser lida (vazia, cortada ou sem
-            # JSON). Não repetimos o texto da IA; mostramos os problemas que
-            # motivaram a correção.
-            raise LLMRespostaInvalidaError(
-                "A IA não conseguiu gerar um roteiro válido após uma "
-                "correção. Problemas da primeira resposta: "
-                f"{'; '.join(problemas)}. A segunda resposta também não pôde "
-                "ser usada."
-            ) from erro
-
-        problemas_corrigidos = validar_roteiro(
-            roteiro_corrigido, vendedor.nome, nomes_colegas
+        # Do restante (chamada, validação e correção) cuida o caminho comum.
+        return self._gerar_roteiro_validado(
+            cliente, mensagens, vendedor.nome, nomes_colegas
         )
 
-        if problemas_corrigidos:
-            raise LLMRespostaInvalidaError(
-                "A IA não conseguiu gerar um roteiro válido após duas "
-                "tentativas. Problemas da última resposta: "
-                f"{'; '.join(problemas_corrigidos)}"
-            )
+    def gerar_roteiro_feedback_gerente(
+        self, desempenho: dict, mes_referencia: str | None = None
+    ) -> FeedbackRoteiro:
+        """Gera o roteiro da regional para o gerente da loja.
 
-        return roteiro_corrigido
+        Recebe o dicionário devolvido por
+        ConsolidadoRegional.obter_desempenho_gerente() e, opcionalmente, o mês
+        de referência ("AAAA-MM"; None = todo o histórico).
+
+        Devolve um FeedbackRoteiro já validado pelas regras de qualidade. Se a
+        primeira resposta for reprovada, faz UMA nova tentativa pedindo a
+        correção; se a segunda também falhar, levanta
+        LLMRespostaInvalidaError.
+
+        Levanta ValueError quando o mês pedido não existe nos dados (o prompt
+        regional valida isso antes de qualquer chamada), LLMNaoConfiguradoError
+        se a chave faltar ou for recusada, LLMIndisponivelError em falhas
+        externas e LLMRespostaInvalidaError quando a resposta não serve.
+        """
+        # 1) Monta as mensagens sem tocar em rede. O prompt regional já avisa
+        # sobre a meta da loja, o mês parcial e o vocabulário "preparado".
+        mensagens = montar_mensagens_regional(desempenho, mes_referencia)
+
+        # 2) O nome do gerente é PERMITIDO (o roteiro é sobre ele). Os nomes
+        # dos vendedores são BLOQUEADOS: a IA não deve expor nem comparar
+        # pessoas, e o validador já sabe procurar nomes exatos.
+        gerente_nome = desempenho.get("gerente_nome") or ""
+        vendedores = (
+            desempenho.get("acompanhamento_feedback", {}).get(
+                "vendedores", []
+            )
+        )
+        nomes_vendedores = [
+            vendedor.get("nome")
+            for vendedor in vendedores
+            if isinstance(vendedor.get("nome"), str) and vendedor.get("nome")
+        ]
+
+        cliente = self._obter_cliente()
+
+        # 3) Mesmo caminho comum: modo JSON, validação e nova tentativa.
+        return self._gerar_roteiro_validado(
+            cliente, mensagens, gerente_nome, nomes_vendedores
+        )
