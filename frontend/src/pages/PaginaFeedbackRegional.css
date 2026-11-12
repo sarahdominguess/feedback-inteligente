@@ -1,0 +1,115 @@
+/*
+ * Estilos da aba Feedback da visão regional.
+ *
+ * Cópia própria do CSS da aba do gerente (PaginaFeedback), com prefixo
+ * "pagina-feedback-regional": as classes não são compartilhadas, então a
+ * página antiga pode mudar sem quebrar esta tela.
+ *
+ * A página fica dentro do cartão claro da área central, com texto tinta sobre
+ * superfície suave (contraste ≈ 14:1). O roteiro gerado usa o
+ * VisualizadorRoteiro, que empilha os quatro cards em largura total.
+ */
+
+/* Coluna com os dois blocos da página. */
+.pagina-feedback-regional {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+}
+
+/* Cada bloco: título e conteúdo. */
+.pagina-feedback-regional__secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-lg);
+}
+
+/* Separador discreto entre "Gerar feedback" e "Roteiros já preparados". */
+.pagina-feedback-regional__secao + .pagina-feedback-regional__secao {
+  padding-top: var(--espaco-secao);
+  border-top: 1px solid var(--cor-borda);
+}
+
+/* Título de bloco: 22px, um degrau acima do texto comum. */
+.pagina-feedback-regional__titulo {
+  margin: 0;
+  font-size: var(--texto-display-sm);
+  font-weight: var(--peso-medio);
+}
+
+/* ----------------------------------------------------------------------
+ * Seletor e botão
+ *
+ * Em telas largas ficam na mesma linha; quando falta espaço, o botão desce.
+ * align-items: flex-end alinha o botão com a base do select (o label ocupa
+ * uma linha acima).
+ * -------------------------------------------------------------------- */
+
+.pagina-feedback-regional__controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espaco-base);
+}
+
+/* Campo = label + select, um embaixo do outro. */
+.pagina-feedback-regional__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+}
+
+/* Rótulo do select, ligado a ele por htmlFor/id. */
+.pagina-feedback-regional__rotulo {
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+}
+
+/*
+ * Select com 44px de altura (alvo de toque), fundo claro e texto tinta.
+ * A largura mínima evita que meses por extenso fiquem espremidos.
+ */
+.pagina-feedback-regional__select {
+  min-width: 220px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: var(--espaco-sm) var(--espaco-lg);
+  /* Borda de controle (~10:1): o select fica sobre um cartão da mesma cor,
+     então a borda é o que delimita o campo. */
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  font-family: inherit;
+  font-size: var(--texto-entrada);
+}
+
+/* Durante a geração o select fica apagado, como os botões desabilitados. */
+.pagina-feedback-regional__select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Área dos estados da geração (aria-live fica no JSX). */
+.pagina-feedback-regional__resultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+}
+
+/* ----------------------------------------------------------------------
+ * Roteiros já preparados
+ * -------------------------------------------------------------------- */
+
+/* Explicação de que "preparado" não é "realizado". */
+.pagina-feedback-regional__explicacao {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+/*
+ * A lista de roteiros preparados tem CSS próprio, em
+ * components/ListaRoteirosPreparados.css.
+ */
