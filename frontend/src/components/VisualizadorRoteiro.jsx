@@ -53,14 +53,15 @@ const SECOES = {
 /**
  * Desenha uma seção do roteiro.
  *
- * Recebe a chave da seção e o objeto com as quatro listas. Devolve a seção
- * com título, ícone, legenda (quando existe) e a lista.
+ * Recebe a chave da seção, o objeto com as quatro listas e a TAG do título
+ * ("h3" ou "h4"): quem usa o componente decide o nível, para a página não
+ * pular de um h2 direto para um h4 quando o cabeçalho está escondido.
  *
  * A lista do roteiro de conversa é um <ol> (lista numerada semântica): o
  * número não é enfeite, ele indica a ordem da conversa — abertura, perguntas
  * e combinados. As demais são <ul>, porque a ordem não importa.
  */
-function renderizarSecao(chave, roteiro) {
+function renderizarSecao(chave, roteiro, TagTitulo) {
   const { titulo, Icone, tom, legenda, numerada } = SECOES[chave];
 
   /*
@@ -87,7 +88,9 @@ function renderizarSecao(chave, roteiro) {
           <Icone />
         </span>
 
-        <h4 className="visualizador-roteiro__titulo-secao">{titulo}</h4>
+        <TagTitulo className="visualizador-roteiro__titulo-secao">
+          {titulo}
+        </TagTitulo>
       </div>
 
       {legenda && (
@@ -116,9 +119,16 @@ function renderizarSecao(chave, roteiro) {
  *   vendedorNome: nome de quem recebe o feedback.
  *   mesReferencia: "AAAA-MM" ou null quando foi todo o histórico.
  *   geradoEm: data e hora em texto ISO, como a API manda.
+ *   ocultarCabecalho: opcional (padrão false). Quando true, esconde o bloco
+ *     com "Roteiro para…", período e "Gerado em…" — usado dentro da lista de
+ *     roteiros preparados, onde o item já mostra essas informações.
  *
- * Devolve o cabeçalho, a nota do método SBI e as quatro seções empilhadas,
- * cada uma ocupando toda a largura disponível.
+ * Devolve o cabeçalho (quando não escondido), a nota do método SBI e as
+ * quatro seções empilhadas, cada uma ocupando toda a largura disponível.
+ *
+ * Hierarquia de títulos: com o cabeçalho visível, o título é h3 e as seções
+ * são h4. Com ocultarCabecalho, as seções sobem para h3 (a página já tem um
+ * h2 no bloco "Roteiros já preparados"), para não pular do h2 direto ao h4.
  *
  * Exemplo:
  *   <VisualizadorRoteiro
@@ -133,23 +143,29 @@ export function VisualizadorRoteiro({
   vendedorNome,
   mesReferencia,
   geradoEm,
+  ocultarCabecalho = false,
 }) {
+  // A tag do título das seções muda junto com o cabeçalho (explicado acima).
+  const TagTituloSecao = ocultarCabecalho ? 'h3' : 'h4';
+
   return (
     <div className="visualizador-roteiro">
-      <header className="visualizador-roteiro__cabecalho">
-        {/*
-         * h3 porque a página já tem um h2 ("Gerar feedback");
-         * as seções internas usam h4. A ordem h2 → h3 → h4 fica coerente.
-         */}
-        <h3 className="visualizador-roteiro__titulo">
-          Roteiro para {vendedorNome}
-        </h3>
+      {!ocultarCabecalho && (
+        <header className="visualizador-roteiro__cabecalho">
+          {/*
+           * h3 porque a página já tem um h2 ("Gerar feedback");
+           * as seções internas usam h4. A ordem h2 → h3 → h4 fica coerente.
+           */}
+          <h3 className="visualizador-roteiro__titulo">
+            Roteiro para {vendedorNome}
+          </h3>
 
-        <p className="visualizador-roteiro__meta">
-          {rotuloPeriodo(mesReferencia)} · Gerado em{' '}
-          {formatarDataHora(geradoEm)}
-        </p>
-      </header>
+          <p className="visualizador-roteiro__meta">
+            {rotuloPeriodo(mesReferencia)} · Gerado em{' '}
+            {formatarDataHora(geradoEm)}
+          </p>
+        </header>
+      )}
 
       {/*
        * Nota fixa e curta. Não promete nada além do método usado na geração:
@@ -166,10 +182,10 @@ export function VisualizadorRoteiro({
        * positivos, pontos de melhoria, possíveis motivos e roteiro.
        */}
       <div className="visualizador-roteiro__secoes">
-        {renderizarSecao('pontos_positivos', roteiro)}
-        {renderizarSecao('pontos_melhoria', roteiro)}
-        {renderizarSecao('possiveis_motivos', roteiro)}
-        {renderizarSecao('roteiro_conversa', roteiro)}
+        {renderizarSecao('pontos_positivos', roteiro, TagTituloSecao)}
+        {renderizarSecao('pontos_melhoria', roteiro, TagTituloSecao)}
+        {renderizarSecao('possiveis_motivos', roteiro, TagTituloSecao)}
+        {renderizarSecao('roteiro_conversa', roteiro, TagTituloSecao)}
       </div>
     </div>
   );

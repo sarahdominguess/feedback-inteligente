@@ -12,10 +12,9 @@ import { useApp } from '../context/useApp.js';
 import { EstadoCarregando } from '../components/EstadoCarregando.jsx';
 import { EstadoErro } from '../components/EstadoErro.jsx';
 import { EstadoVazio } from '../components/EstadoVazio.jsx';
+import { ListaRoteirosPreparados } from '../components/ListaRoteirosPreparados.jsx';
 import { VisualizadorRoteiro } from '../components/VisualizadorRoteiro.jsx';
-import { formatarDataHora } from '../utilitarios/formatadores.js';
 import { montarOpcoesDePeriodo } from '../utilitarios/opcoesDePeriodo.js';
-import { rotuloPeriodo } from '../utilitarios/periodoDoRoteiro.js';
 
 // Importa o CSS desta página.
 import './PaginaFeedback.css';
@@ -254,18 +253,14 @@ export function PaginaFeedback() {
             descricao="Ainda não há rascunhos gerados para esta pessoa."
           />
         ) : (
-          <ul className="pagina-feedback__preparados">
-            {preparados.map((item) => (
-              <li key={item.feedback_id} className="pagina-feedback__preparado">
-                <span className="pagina-feedback__preparado-periodo">
-                  {rotuloPeriodo(item.mes_referencia)}
-                </span>
-                <span className="pagina-feedback__preparado-data">
-                  {formatarDataHora(item.gerado_em)}
-                </span>
-              </li>
-            ))}
-          </ul>
+          /*
+           * A lista cuida do próprio estado de abrir/fechar (acordeão):
+           * a página só entrega os dados e o nome de quem recebe o roteiro.
+           */
+          <ListaRoteirosPreparados
+            roteiros={preparados}
+            vendedorNome={detalhes.nome}
+          />
         )}
       </section>
     </div>

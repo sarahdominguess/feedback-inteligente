@@ -105,34 +105,8 @@
   color: var(--cor-texto-suave);
 }
 
-/* Lista sem marcadores; cada roteiro preparado é uma linha com borda. */
-.pagina-feedback__preparados {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espaco-base);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pagina-feedback__preparado {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--espaco-base);
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-md);
-}
-
-/* Período do roteiro preparado. */
-.pagina-feedback__preparado-periodo {
-  font-weight: var(--peso-medio);
-}
-
-/* Data e hora em texto de apoio, menor. */
-.pagina-feedback__preparado-data {
-  font-size: var(--texto-rotulo);
-  color: var(--cor-texto-suave);
-}
+/*
+ * A lista de roteiros preparados tem CSS próprio, em
+ * components/ListaRoteirosPreparados.css (um componente por arquivo, com o
+ * estilo ao lado).
+ */

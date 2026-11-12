@@ -1,0 +1,138 @@
+/*
+ * Estilos da lista de roteiros preparados.
+ *
+ * Cada item é um cartão claro dentro da aba Feedback. O item aberto ganha
+ * borda escura e uma faixa de destaque (não só cor de fundo), para o estado
+ * ficar claro também em telas com pouco contraste. Só tokens do tema.
+ */
+
+/* Lista sem marcadores e sem recuo do navegador. */
+.lista-roteiros-preparados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * Um roteiro por cartão. A borda de controle (~10:1 sobre a superfície)
+ * delimita a área; o raio vem dos tokens.
+ */
+.lista-roteiros-preparados__item {
+  padding: var(--espaco-lg);
+  /* Faixa de destaque à esquerda: só aparece quando o item está aberto. */
+  border: 1px solid var(--cor-borda);
+  border-left-width: 4px;
+  border-left-color: var(--cor-borda);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/*
+ * Item aberto: borda escura + faixa escura à esquerda. Dois sinais além da
+ * cor de fundo, para o destaque não depender só de cor.
+ */
+.lista-roteiros-preparados__item--aberto {
+  border-color: var(--cor-borda-controle);
+  border-left-color: var(--cor-tinta);
+}
+
+/* Linha do cabeçalho: texto à esquerda, seta à direita. */
+.lista-roteiros-preparados__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-lg);
+}
+
+/* Bloco de texto: período em cima, data embaixo. */
+.lista-roteiros-preparados__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  /* min-width: 0 permite que o texto encolha em vez de estourar a largura. */
+  min-width: 0;
+}
+
+/* Período do roteiro: um degrau acima do texto comum. */
+.lista-roteiros-preparados__titulo {
+  font-size: var(--texto-corpo);
+  font-weight: var(--peso-forte);
+  overflow-wrap: anywhere;
+}
+
+/* Data e hora em texto de apoio (contraste ≈ 10:1 sobre a superfície). */
+.lista-roteiros-preparados__descricao {
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}
+
+/*
+ * Botão da seta: só o ícone, com área de toque de 44x44px (mínimo do
+ * DESIGN.md). O foco do teclado vem da regra global :focus-visible.
+ */
+.lista-roteiros-preparados__seta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover: fundo clareia e a borda escurece, deixando claro que é clicável. */
+.lista-roteiros-preparados__seta:hover:not(:disabled) {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria-ativa);
+}
+
+/*
+ * Botão desabilitado (roteiro antigo sem conteúdo): opacidade menor e cursor
+ * de "não permitido", como os outros botões do app.
+ */
+.lista-roteiros-preparados__seta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Tamanho do desenho da seta: 16px, igual ao texto de corpo. */
+.lista-roteiros-preparados__seta svg {
+  width: var(--texto-corpo);
+  height: var(--texto-corpo);
+}
+
+/* Aviso de roteiro antigo sem conteúdo, abaixo do cabeçalho. */
+.lista-roteiros-preparados__sem-conteudo {
+  margin: var(--espaco-base) 0 0 0;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}
+
+/*
+ * Conteúdo aberto: separado do cabeçalho por uma linha discreta e um espaço,
+ * para o roteiro não parecer colado no título.
+ */
+.lista-roteiros-preparados__conteudo {
+  margin-top: var(--espaco-secao);
+  padding-top: var(--espaco-secao);
+  border-top: 1px solid var(--cor-borda);
+}
+
+/* Em telas estreitas, o cabeçalho pode quebrar em duas linhas. */
+@media (max-width: 480px) {
+  .lista-roteiros-preparados__cabecalho {
+    flex-wrap: wrap;
+  }
+}
