@@ -33,12 +33,30 @@ ARQUIVO_METAS_LOJA = "metas_loja.csv"
 # primeira gravação e NÃO vai para o git (é dado de execução, não código).
 REGISTRO_FEEDBACKS_ARQUIVO = DATA_DIR / "registro_feedbacks.json"
 
+# Arquivo local dos roteiros gerados para o GERENTE da loja (visão da regional).
+# Fica separado de registro_feedbacks.json de propósito: um arquivo guarda as
+# conversas com os vendedores (que alimentam a cobertura do time) e o outro, a
+# preparação da conversa da regional com o gerente da loja. São registros de
+# naturezas diferentes; num arquivo só, ficaria confuso saber o que cada item
+# representa. Como os demais registros, é criado sozinho na primeira gravação e
+# NÃO vai para o git (é dado de execução, não código).
+REGISTRO_FEEDBACKS_REGIONAL_ARQUIVO = (
+    DATA_DIR / "registro_feedbacks_regional.json"
+)
+
 # Arquivo local onde ficam as anotações NOVAS escritas pelo gerente no site.
 # As anotações originais continuam no CSV (anotacoes_gerente.csv); estas ficam
 # à parte para não mexer nos dados de origem. "JSON" é um arquivo de texto com
 # dados organizados em pares nome/valor. Como o registro de feedbacks, ele é
 # criado sozinho na primeira gravação e NÃO vai para o git.
 ANOTACOES_NOVAS_ARQUIVO = DATA_DIR / "anotacoes_novas.json"
+
+# Arquivo local onde ficam as anotações NOVAS escritas pela gerente regional no
+# site. Mesma ideia das anotações do gerente: o CSV (anotacoes_regional.csv)
+# continua sendo o dado de origem e nunca é alterado; o que for digitado na
+# interface fica neste arquivo à parte, criado sozinho na primeira gravação e
+# NÃO versionado (é dado de execução, não código).
+ANOTACOES_REGIONAL_NOVAS_ARQUIVO = DATA_DIR / "anotacoes_regional_novas.json"
 
 # Limite de caracteres de uma anotação nova. Existe por dois motivos: o texto
 # precisa caber na tela sem virar um paredão, e o prompt enviado à IA tem
@@ -51,6 +69,13 @@ ANOTACAO_TEXTO_MAXIMO = 1000
 # pertencem a esta loja.
 LOJA_ID = "L004"
 LOJA_NOME = "Aurora Shopping Centro"
+
+# Nome da gerente regional. O projeto NÃO tem login: quem usa a visão regional
+# é sempre a Patrícia, então o nome fica fixo aqui em vez de vir da tela. Se
+# viesse do navegador, qualquer pessoa poderia se passar por outra ao gravar
+# uma anotação. Quando existir login de verdade, este valor passa a vir da
+# sessão da pessoa autenticada.
+REGIONAL_NOME = "Patrícia Lemos"
 
 # Texto que aparece na coluna "sobre" das anotações quando o gerente escreve
 # sobre o time inteiro, e não sobre uma pessoa específica.

@@ -31,3 +31,9 @@ backend/data/registro_feedbacks.json
 
 # anotações novas escritas pelo gerente no site (dado de execução, não código)
 backend/data/anotacoes_novas.json
+
+# roteiros da regional para o gerente da loja (dado de execução, não código)
+backend/data/registro_feedbacks_regional.json
+
+# anotações novas escritas pela gerente regional no site (dado de execução)
+backend/data/anotacoes_regional_novas.json
