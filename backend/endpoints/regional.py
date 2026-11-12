@@ -9,21 +9,25 @@ from fastapi import APIRouter, Depends, Path
 
 from config import LOJA_ID, REGIONAL_NOME
 from contracts.erros import ErroResposta
-from contracts.mapeadores import feedback_gerente_de
+from contracts.mapeadores import feedback_gerente_de, resposta_regional_de
 from contracts.regional import (
     AnotacaoRegionalDTO,
     AnotacaoRegionalNovaRequisicao,
     DesempenhoGerenteResposta,
+    FeedbackRegionalGerarRequisicao,
+    FeedbackRegionalGerarResposta,
     HistoricoLojaResposta,
     ListaLojasResposta,
 )
 from domain.excecoes import LojaNaoEncontradaError
 from endpoints.dependencias import (
     obter_consolidado_regional,
+    obter_llm_service,
     obter_registro_anotacoes_regional,
     obter_registro_feedbacks_regional,
 )
 from services.consolidado_regional import ConsolidadoRegional
+from services.llm_service import LLMService
 from services.registro_anotacoes_regional import (
     RegistroAnotacoesRegionalService,
 )
@@ -213,3 +217,88 @@ def registrar_anotacao_da_loja(
         autora=anotacao.autora,
         texto=anotacao.texto,
     )
+
+
+@router.post(
+    "/regional/feedback/gerar",
+    response_model=FeedbackRegionalGerarResposta,
+    responses={
+        400: {
+            "model": ErroResposta,
+            "description": "Dados da requisição inválidos (ex.: mês errado).",
+        },
+        404: {
+            "model": ErroResposta,
+            "description": "Loja não encontrada.",
+        },
+        500: {
+            "model": ErroResposta,
+            "description": "IA não configurada ou falha ao gravar o registro.",
+        },
+        502: {
+            "model": ErroResposta,
+            "description": "A IA respondeu algo que não serve (JSON inválido).",
+        },
+        503: {
+            "model": ErroResposta,
+            "description": "Serviço de IA indisponível (tente mais tarde).",
+        },
+    },
+)
+def gerar_feedback_do_gerente(
+    requisicao: FeedbackRegionalGerarRequisicao,
+    consolidado: ConsolidadoRegional = Depends(obter_consolidado_regional),
+    llm: LLMService = Depends(obter_llm_service),
+    registro: RegistroFeedbackRegionalService = Depends(
+        obter_registro_feedbacks_regional
+    ),
+) -> FeedbackRegionalGerarResposta:
+    """Gera o roteiro da regional para o gerente e grava o registro.
+
+    Função `def` (e não `async def`) de propósito: a chamada à IA pode levar
+    segundos. O FastAPI executa funções normais numa thread separada (o
+    "pool de threads"), então o servidor continua atendendo outros pedidos
+    enquanto esta espera. Se fosse `async def` com chamada bloqueante, o
+    servidor inteiro ficaria parado durante a espera.
+
+    Fluxo:
+    1) valida a loja (desconhecida => 404, sem chamar a IA);
+    2) obtém o consolidado já calculado (nenhuma conta na rota);
+    3) pede o roteiro à IA;
+    4) SÓ se o roteiro veio válido, grava no registro da regional;
+    5) devolve a resposta no formato da API.
+
+    Se a IA falhar, nada é gravado e o erro sobe para o tratador global
+    (500/502/503 com mensagem em português).
+
+    Exemplo: POST /api/regional/feedback/gerar
+    {"loja_id": "L004", "mes_referencia": "2026-10"}
+    """
+    # 1) Valida a loja antes de gastar uma chamada de IA.
+    if requisicao.loja_id.strip().upper() != LOJA_ID.upper():
+        raise LojaNaoEncontradaError(
+            f"Loja '{requisicao.loja_id}' não encontrada."
+        )
+
+    # 2) Dados já calculados pelo consolidado (o prompt regional usa esse
+    #    mesmo dicionário; a rota não monta prompt nem métrica).
+    desempenho = consolidado.obter_desempenho_gerente()
+
+    # 3) Pede o roteiro. Erros da IA sobem daqui SEM nada ser gravado.
+    roteiro = llm.gerar_roteiro_feedback_gerente(
+        desempenho, requisicao.mes_referencia
+    )
+
+    # 4) Grava só depois de o roteiro estar validado pelo LLMService. Se a
+    #    gravação falhar, o erro também sobe (melhor avisar do que esconder).
+    registro_gravado = registro.registrar(
+        loja_id=desempenho["loja_id"],
+        loja_nome=desempenho["loja_nome"],
+        gerente_id=desempenho["gerente_id"],
+        gerente_nome=desempenho["gerente_nome"],
+        mes_referencia=requisicao.mes_referencia,
+        roteiro=roteiro,
+    )
+
+    # 5) Mesma conversão usada pelos roteiros antigos do histórico.
+    return resposta_regional_de(registro_gravado)
