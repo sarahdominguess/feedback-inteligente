@@ -136,7 +136,7 @@ export function PaginaFeedback() {
   }
 
   return (
-    <div className="pagina-feedback pagina-feedback--expandida">
+    <div className="pagina-feedback">
       {/* ---------- Gerar feedback ---------- */}
       <section
         className="pagina-feedback__secao"

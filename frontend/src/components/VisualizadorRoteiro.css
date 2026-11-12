@@ -46,29 +46,18 @@
 }
 
 /* ----------------------------------------------------------------------
- * Grade de seções
+ * Seções empilhadas
  *
- * Uma coluna por padrão; duas a partir de 1024px de largura de tela.
- * minmax(0, 1fr) permite que as colunas encolham sem estourar o espaço.
+ * As quatro seções ficam uma embaixo da outra, cada uma ocupando a largura
+ * toda do container. O espaço entre elas vem do gap (um token), então não
+ * é preciso margem em cada card.
  * -------------------------------------------------------------------- */
 
-.visualizador-roteiro__grade {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--espaco-secao);
-}
-
-@media (min-width: 1024px) {
-  .visualizador-roteiro__grade {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Cada metade é uma coluna com as suas seções empilhadas. */
-.visualizador-roteiro__coluna {
+.visualizador-roteiro__secoes {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-secao);
+  /* min-width: 0 deixa o container encolher em vez de estourar a largura. */
   min-width: 0;
 }
 
@@ -80,11 +69,20 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-base);
+  /* Ocupa a largura toda do container de seções. */
+  width: 100%;
+  /* Deixa o card encolher dentro do flex, sem estourar a largura. */
+  min-width: 0;
   padding: var(--espaco-secao);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-lg);
   background-color: var(--cor-superficie-suave);
   color: var(--cor-tinta);
+  /*
+   * Texto longo (uma palavra sem espaços, uma URL colada) quebra a linha em
+   * vez de vazar do card. A propriedade é herdada pelos textos de dentro.
+   */
+  overflow-wrap: anywhere;
 }
 
 /*

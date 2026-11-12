@@ -117,8 +117,8 @@ function renderizarSecao(chave, roteiro) {
  *   mesReferencia: "AAAA-MM" ou null quando foi todo o histórico.
  *   geradoEm: data e hora em texto ISO, como a API manda.
  *
- * Devolve o cabeçalho, a nota do método SBI e as quatro seções em duas
- * colunas a partir de 1024px (uma coluna em telas estreitas).
+ * Devolve o cabeçalho, a nota do método SBI e as quatro seções empilhadas,
+ * cada uma ocupando toda a largura disponível.
  *
  * Exemplo:
  *   <VisualizadorRoteiro
@@ -161,20 +161,15 @@ export function VisualizadorRoteiro({
       </p>
 
       {/*
-       * Duas colunas a partir de 1024px: positivos e melhoria à esquerda;
-       * possíveis motivos e roteiro à direita. Em telas estreitas, a grade
-       * tem uma coluna só e as seções empilham na ordem do JSX.
+       * As quatro seções ficam empilhadas, uma embaixo da outra, cada uma na
+       * largura toda da área central. A ordem é a do conteúdo gerado: pontos
+       * positivos, pontos de melhoria, possíveis motivos e roteiro.
        */}
-      <div className="visualizador-roteiro__grade">
-        <div className="visualizador-roteiro__coluna">
-          {renderizarSecao('pontos_positivos', roteiro)}
-          {renderizarSecao('pontos_melhoria', roteiro)}
-        </div>
-
-        <div className="visualizador-roteiro__coluna">
-          {renderizarSecao('possiveis_motivos', roteiro)}
-          {renderizarSecao('roteiro_conversa', roteiro)}
-        </div>
+      <div className="visualizador-roteiro__secoes">
+        {renderizarSecao('pontos_positivos', roteiro)}
+        {renderizarSecao('pontos_melhoria', roteiro)}
+        {renderizarSecao('possiveis_motivos', roteiro)}
+        {renderizarSecao('roteiro_conversa', roteiro)}
       </div>
     </div>
   );

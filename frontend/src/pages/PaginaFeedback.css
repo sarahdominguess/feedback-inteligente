@@ -3,7 +3,7 @@
  *
  * A página fica dentro do cartão claro da área central, com texto tinta sobre
  * superfície suave (contraste ≈ 14:1). O roteiro gerado usa o
- * VisualizadorRoteiro, que fica em duas colunas em telas largas.
+ * VisualizadorRoteiro, que empilha os quatro cards em largura total.
  */
 
 /* Coluna com os dois blocos da página. */
@@ -11,17 +11,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-secao);
-}
-
-/*
- * A aba Feedback usa toda a largura da coluna central: não há limite de
- * leitura próprio. Esta classe deixa a intenção explícita e garante que a
- * própria página não aplique um max-width de leitura. As outras abas não
- * recebem esta classe.
- */
-.pagina-feedback--expandida {
-  width: 100%;
-  max-width: none;
 }
 
 /* Cada bloco: título e conteúdo. */
