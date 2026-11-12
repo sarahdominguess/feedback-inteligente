@@ -25,6 +25,9 @@ from services.consolidado_regional import ConsolidadoRegional
 from services.data_loader import DataLoader
 from services.llm_service import LLMService
 from services.registro_anotacoes import RegistroAnotacoesService
+from services.registro_anotacoes_regional import (
+    RegistroAnotacoesRegionalService,
+)
 from services.registro_feedback import RegistroFeedbackService
 
 
@@ -38,9 +41,14 @@ def obter_data_loader() -> DataLoader:
 
     O DataLoader recebe o serviço das anotações novas para que o histórico,
     o prompt da IA e a visão regional enxerguem o que o gerente escreveu na
-    interface, sem alterar os CSVs de origem.
+    interface, sem alterar os CSVs de origem. O serviço da regional entra do
+    mesmo jeito, para as anotações que a Patrícia escrever também aparecerem
+    na visão dela.
     """
-    return DataLoader(registro_anotacoes=obter_registro_anotacoes())
+    return DataLoader(
+        registro_anotacoes=obter_registro_anotacoes(),
+        registro_anotacoes_regional=obter_registro_anotacoes_regional(),
+    )
 
 
 @lru_cache(maxsize=1)
@@ -52,6 +60,18 @@ def obter_registro_anotacoes() -> RegistroAnotacoesService:
     do outro.
     """
     return RegistroAnotacoesService()
+
+
+@lru_cache(maxsize=1)
+def obter_registro_anotacoes_regional() -> RegistroAnotacoesRegionalService:
+    """Devolve o serviço das anotações novas da regional, compartilhado.
+
+    Mesma razão do serviço do gerente: uma instância só garante o mesmo
+    arquivo e o mesmo cadeado (lock) para todas as gravações. Sem isso, dois
+    pedidos simultâneos poderiam usar cadeados diferentes e um apagaria a
+    anotação do outro.
+    """
+    return RegistroAnotacoesRegionalService()
 
 
 @lru_cache(maxsize=1)
