@@ -54,6 +54,25 @@ export const TIPOS = {
   REGIONAL_SUCESSO: 'regional/sucesso',
   REGIONAL_ERRO: 'regional/erro',
 
+  // Visão da regional POR LOJA (Etapa 8).
+  LOJAS_CARREGANDO: 'lojas/carregando',
+  LOJAS_SUCESSO: 'lojas/sucesso',
+  LOJAS_ERRO: 'lojas/erro',
+
+  SELECIONAR_LOJA: 'loja/selecionar',
+
+  DETALHES_LOJA_CARREGANDO: 'detalhes-loja/carregando',
+  DETALHES_LOJA_SUCESSO: 'detalhes-loja/sucesso',
+  DETALHES_LOJA_ERRO: 'detalhes-loja/erro',
+
+  FEEDBACK_REGIONAL_CARREGANDO: 'feedback-regional/carregando',
+  FEEDBACK_REGIONAL_SUCESSO: 'feedback-regional/sucesso',
+  FEEDBACK_REGIONAL_ERRO: 'feedback-regional/erro',
+
+  ANOTACAO_REGIONAL_ENVIANDO: 'anotacao-regional/enviando',
+  ANOTACAO_REGIONAL_SUCESSO: 'anotacao-regional/sucesso',
+  ANOTACAO_REGIONAL_ERRO: 'anotacao-regional/erro',
+
   MUDAR_ABA: 'aba/mudar',
   MUDAR_VISAO: 'visao/mudar',
 };
@@ -110,6 +129,24 @@ export function criarEstadoInicial() {
 
     // Consolidado da visão da regional.
     regional: { status: STATUS.OCIOSO, dados: null, erro: null },
+
+    // ----- Visão da regional POR LOJA (Etapa 8) --------------------------
+    // Lista de lojas que a regional pode acompanhar (hoje só a L004).
+    lojas: { status: STATUS.OCIOSO, dados: [], erro: null },
+
+    // Qual loja está escolhida no seletor da barra lateral.
+    lojaSelecionadaId: null,
+
+    // Histórico da loja escolhida (consolidado + roteiros do gerente).
+    detalhesLoja: { status: STATUS.OCIOSO, dados: null, erro: null },
+
+    // Roteiros do gerente por loja: { [loja_id]: { status, dados, erro } }.
+    // Fica separado de "feedbacks" (que é por vendedor) para não misturar as
+    // duas gerações, que usam registros e prompts diferentes no backend.
+    feedbacksRegional: {},
+
+    // Situação do envio de uma anotação nova da regional (aba Anotações).
+    novaAnotacaoRegional: { status: STATUS.OCIOSO, erro: null },
   };
 }
 
@@ -208,6 +245,92 @@ function incluirPreparadoNoHistorico(estado, vendedorId, dados) {
         ...detalhes.dados,
         // Lista NOVA: o estado antigo nunca é alterado. O item novo entra na
         // frente porque a lista mostra o mais recente primeiro.
+        feedbacks_preparados: incluirNoInicio(
+          detalhes.dados.feedbacks_preparados,
+          item,
+        ),
+      },
+    },
+  };
+}
+
+/**
+ * Diz se a ação é da loja que está selecionada AGORA.
+ *
+ * Mesma proteção de "resposta antiga" usada para vendedor: quando a pessoa
+ * troca de loja no seletor, a resposta da loja anterior não pode sobrescrever
+ * a tela da nova.
+ */
+function ehDaLojaSelecionada(estado, lojaId) {
+  return (
+    typeof lojaId === 'string' && lojaId === estado.lojaSelecionadaId
+  );
+}
+
+/**
+ * Atualiza a entrada de uma loja no mapa de roteiros do gerente.
+ *
+ * Recebe o estado, o código da loja e os campos que mudaram. Devolve um estado
+ * NOVO com o mapa copiado; os outros registros continuam intactos.
+ */
+function atualizarFeedbackRegional(estado, lojaId, entrada) {
+  if (typeof lojaId !== 'string' || lojaId === '') {
+    return estado;
+  }
+
+  const anterior = estado.feedbacksRegional[lojaId];
+  return {
+    ...estado,
+    feedbacksRegional: {
+      ...estado.feedbacksRegional,
+      [lojaId]: {
+        // Campos não informados mantêm o valor anterior; "dados" preserva o
+        // roteiro já exibido enquanto uma nova geração está em andamento.
+        ...anterior,
+        ...entrada,
+      },
+    },
+  };
+}
+
+/**
+ * Põe um roteiro do gerente no topo de "Roteiros já preparados" da loja.
+ *
+ * Recebe o estado, o código da loja e a resposta da geração. Devolve o estado
+ * com detalhesLoja atualizados ou o MESMO estado quando:
+ *
+ * 1) o histórico da loja ainda não foi carregado (não há lista);
+ * 2) a resposta é de OUTRA loja (troca no seletor no meio da geração);
+ * 3) a resposta não permite montar um item válido (sem feedback_id ou sem as
+ *    quatro listas).
+ *
+ * O roteiro continua guardado em estado.feedbacksRegional[lojaId] nos três
+ * casos; a lista do histórico espera a próxima carga para aparecer.
+ */
+function incluirPreparadoNoHistoricoDaLoja(estado, lojaId, dados) {
+  const detalhes = estado.detalhesLoja;
+
+  if (detalhes.status !== STATUS.SUCESSO || !detalhes.dados) {
+    return estado;
+  }
+
+  if (detalhes.dados.loja_id !== lojaId) {
+    return estado;
+  }
+
+  const item = itemPreparadoDeResposta(dados);
+
+  if (item === null) {
+    return estado;
+  }
+
+  return {
+    ...estado,
+    detalhesLoja: {
+      ...detalhes,
+      dados: {
+        ...detalhes.dados,
+        // Lista NOVA e item no início: o histórico mostra o mais novo antes.
         feedbacks_preparados: incluirNoInicio(
           detalhes.dados.feedbacks_preparados,
           item,
@@ -445,6 +568,178 @@ export function appReducer(estado, acao) {
         ...estado,
         regional: {
           ...estado.regional,
+          status: STATUS.ERRO,
+          erro: mensagemDeErro(acao.erro),
+        },
+      };
+
+    // ----- Visão da regional POR LOJA (Etapa 8) --------------------------
+    case TIPOS.LOJAS_CARREGANDO:
+      return {
+        ...estado,
+        lojas: {
+          ...estado.lojas,
+          status: STATUS.CARREGANDO,
+          erro: null,
+        },
+      };
+
+    case TIPOS.LOJAS_SUCESSO:
+      return {
+        ...estado,
+        lojas: {
+          status: STATUS.SUCESSO,
+          dados: Array.isArray(acao.dados) ? acao.dados : [],
+          erro: null,
+        },
+      };
+
+    case TIPOS.LOJAS_ERRO:
+      return {
+        ...estado,
+        lojas: {
+          ...estado.lojas,
+          status: STATUS.ERRO,
+          erro: mensagemDeErro(acao.erro),
+        },
+      };
+
+    case TIPOS.SELECIONAR_LOJA:
+      // Trocar de loja reinicia o histórico e o envio de anotação. Os
+      // roteiros já gerados continuam no mapa por loja, como acontece com os
+      // feedbacks por vendedor.
+      return {
+        ...estado,
+        lojaSelecionadaId: acao.lojaId ?? null,
+        detalhesLoja: { status: STATUS.OCIOSO, dados: null, erro: null },
+        novaAnotacaoRegional: { status: STATUS.OCIOSO, erro: null },
+      };
+
+    case TIPOS.DETALHES_LOJA_CARREGANDO:
+      // Resposta atrasada de outra loja: ignora sem criar estado novo.
+      if (!ehDaLojaSelecionada(estado, acao.lojaId)) {
+        return estado;
+      }
+      return {
+        ...estado,
+        detalhesLoja: {
+          ...estado.detalhesLoja,
+          status: STATUS.CARREGANDO,
+          erro: null,
+        },
+      };
+
+    case TIPOS.DETALHES_LOJA_SUCESSO:
+      if (!ehDaLojaSelecionada(estado, acao.lojaId)) {
+        return estado;
+      }
+      return {
+        ...estado,
+        detalhesLoja: {
+          status: STATUS.SUCESSO,
+          dados: acao.dados ?? null,
+          erro: null,
+        },
+      };
+
+    case TIPOS.DETALHES_LOJA_ERRO:
+      if (!ehDaLojaSelecionada(estado, acao.lojaId)) {
+        return estado;
+      }
+      return {
+        ...estado,
+        detalhesLoja: {
+          ...estado.detalhesLoja,
+          status: STATUS.ERRO,
+          erro: mensagemDeErro(acao.erro),
+        },
+      };
+
+    case TIPOS.FEEDBACK_REGIONAL_CARREGANDO:
+      return atualizarFeedbackRegional(estado, acao.lojaId, {
+        status: STATUS.CARREGANDO,
+        erro: null,
+      });
+
+    case TIPOS.FEEDBACK_REGIONAL_SUCESSO: {
+      // O roteiro do gerente fica guardado por loja...
+      const comFeedback = atualizarFeedbackRegional(estado, acao.lojaId, {
+        status: STATUS.SUCESSO,
+        dados: acao.dados ?? null,
+        erro: null,
+      });
+
+      // ...e entra no topo da lista quando o histórico da MESMA loja está na
+      // tela (sem chamada HTTP extra, como no fluxo do vendedor).
+      return incluirPreparadoNoHistoricoDaLoja(
+        comFeedback,
+        acao.lojaId,
+        acao.dados,
+      );
+    }
+
+    case TIPOS.FEEDBACK_REGIONAL_ERRO:
+      return atualizarFeedbackRegional(estado, acao.lojaId, {
+        status: STATUS.ERRO,
+        erro: mensagemDeErro(acao.erro),
+      });
+
+    case TIPOS.ANOTACAO_REGIONAL_ENVIANDO:
+      // Limpa o erro anterior: uma falha velha não pode aparecer na tela
+      // enquanto a nova tentativa acontece.
+      return {
+        ...estado,
+        novaAnotacaoRegional: { status: STATUS.CARREGANDO, erro: null },
+      };
+
+    case TIPOS.ANOTACAO_REGIONAL_SUCESSO: {
+      // Resposta de outra loja: descartamos. A anotação já foi gravada no
+      // servidor e aparece quando aquele histórico for recarregado.
+      if (!ehDaLojaSelecionada(estado, acao.lojaId)) {
+        return estado;
+      }
+
+      const dados = estado.detalhesLoja.dados;
+      const anotacoes = Array.isArray(dados?.anotacoes_regional)
+        ? dados.anotacoes_regional
+        : null;
+
+      // Mesma decisão do fluxo do vendedor: a gravação aconteceu, então o
+      // envio é SUCESSO mesmo sem uma lista onde acrescentar.
+      const comSucesso = {
+        ...estado,
+        novaAnotacaoRegional: { status: STATUS.SUCESSO, erro: null },
+      };
+
+      if (
+        anotacoes === null ||
+        acao.dados === undefined ||
+        acao.dados === null
+      ) {
+        return comSucesso;
+      }
+
+      return {
+        ...comSucesso,
+        detalhesLoja: {
+          ...estado.detalhesLoja,
+          dados: {
+            ...dados,
+            // Lista NOVA e anotação no FIM: é a ordem cronológica que o
+            // histórico da loja usa.
+            anotacoes_regional: [...anotacoes, acao.dados],
+          },
+        },
+      };
+    }
+
+    case TIPOS.ANOTACAO_REGIONAL_ERRO:
+      if (!ehDaLojaSelecionada(estado, acao.lojaId)) {
+        return estado;
+      }
+      return {
+        ...estado,
+        novaAnotacaoRegional: {
           status: STATUS.ERRO,
           erro: mensagemDeErro(acao.erro),
         },

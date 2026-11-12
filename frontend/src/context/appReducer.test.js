@@ -27,6 +27,12 @@ test('estado inicial tem a forma combinada', () => {
     // O envio de anotação começa parado, sem erro.
     novaAnotacao: { status: STATUS.OCIOSO, erro: null },
     regional: { status: STATUS.OCIOSO, dados: null, erro: null },
+    // Estado novo da visão POR LOJA (Etapa 8).
+    lojas: { status: STATUS.OCIOSO, dados: [], erro: null },
+    lojaSelecionadaId: null,
+    detalhesLoja: { status: STATUS.OCIOSO, dados: null, erro: null },
+    feedbacksRegional: {},
+    novaAnotacaoRegional: { status: STATUS.OCIOSO, erro: null },
   });
 });
 
@@ -652,4 +658,335 @@ test('o estado anterior não é alterado ao incluir o roteiro novo', () => {
     proximo.detalhes.dados.feedbacks_preparados,
     estado.detalhes.dados.feedbacks_preparados,
   );
+});
+
+// ---------------------------------------------------------------------------
+// Visão da regional POR LOJA (Etapa 8)
+// ---------------------------------------------------------------------------
+
+/**
+ * Monta um estado com a loja L004 selecionada e o histórico carregado.
+ *
+ * Recebe as listas que o histórico da loja deve conter (anotações da regional
+ * e roteiros do gerente) e devolve o estado pronto.
+ */
+function estadoComLoja({ anotacoes = [], preparados = [] } = {}) {
+  let estado = criarEstadoInicial();
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_LOJA,
+    lojaId: 'L004',
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.DETALHES_LOJA_SUCESSO,
+    lojaId: 'L004',
+    dados: {
+      loja_id: 'L004',
+      loja_nome: 'Aurora Shopping Centro',
+      gerente_id: 'C0030',
+      gerente_nome: 'Diego Furtado',
+      anotacoes_regional: anotacoes,
+      feedbacks_preparados: preparados,
+    },
+  });
+
+  return estado;
+}
+
+/** Resposta da geração de feedback do gerente, no formato da API. */
+function respostaGeradaRegional(extra = {}) {
+  return {
+    feedback_id: 'novo-id-gerente',
+    loja_id: 'L004',
+    loja_nome: 'Aurora Shopping Centro',
+    gerente_id: 'C0030',
+    gerente_nome: 'Diego Furtado',
+    mes_referencia: '2026-10',
+    gerado_em: '2026-11-12T14:00:00Z',
+    roteiro: {
+      pontos_positivos: ['Loja organizada'],
+      pontos_melhoria: ['Delegar o caixa'],
+      possiveis_motivos: ['Pico no almoço'],
+      roteiro_conversa: ['Como foi a semana?'],
+    },
+    ...extra,
+  };
+}
+
+/** Anotação da regional no formato que a API devolve. */
+const ANOTACAO_REGIONAL_NOVA = {
+  data: '2026-11-12',
+  autora: 'Patrícia Lemos',
+  texto: 'visitar a loja na sexta',
+};
+
+test('lista de lojas: carregando, sucesso e erro', () => {
+  let estado = criarEstadoInicial();
+
+  estado = appReducer(estado, { tipo: TIPOS.LOJAS_CARREGANDO });
+  assert.equal(estado.lojas.status, STATUS.CARREGANDO);
+  assert.deepEqual(estado.lojas.dados, []);
+  assert.equal(estado.lojas.erro, null);
+
+  const lojas = [{ loja_id: 'L004', loja_nome: 'Aurora Shopping Centro' }];
+  estado = appReducer(estado, { tipo: TIPOS.LOJAS_SUCESSO, dados: lojas });
+  assert.equal(estado.lojas.status, STATUS.SUCESSO);
+  assert.deepEqual(estado.lojas.dados, lojas);
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.LOJAS_ERRO,
+    erro: new ErroApi('Não foi possível conectar ao servidor.', {
+      tipo: 'rede',
+    }),
+  });
+  assert.equal(estado.lojas.status, STATUS.ERRO);
+  // Só o texto vai para o estado, nunca o objeto de erro.
+  assert.equal(estado.lojas.erro, 'Não foi possível conectar ao servidor.');
+});
+
+test('detalhes da loja: carregando, sucesso e erro', () => {
+  let estado = criarEstadoInicial();
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_LOJA,
+    lojaId: 'L004',
+  });
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.DETALHES_LOJA_CARREGANDO,
+    lojaId: 'L004',
+  });
+  assert.equal(estado.detalhesLoja.status, STATUS.CARREGANDO);
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.DETALHES_LOJA_SUCESSO,
+    lojaId: 'L004',
+    dados: { loja_id: 'L004' },
+  });
+  assert.equal(estado.detalhesLoja.status, STATUS.SUCESSO);
+  assert.deepEqual(estado.detalhesLoja.dados, { loja_id: 'L004' });
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.DETALHES_LOJA_ERRO,
+    lojaId: 'L004',
+    erro: new ErroApi('Falhou.', { tipo: 'servidor' }),
+  });
+  assert.equal(estado.detalhesLoja.status, STATUS.ERRO);
+  assert.equal(estado.detalhesLoja.erro, 'Falhou.');
+});
+
+test('resposta de outra loja é ignorada (corrida no seletor)', () => {
+  // A pessoa trocou de loja no meio do pedido: a resposta antiga não pode
+  // sobrescrever a tela da loja nova.
+  let estado = criarEstadoInicial();
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_LOJA,
+    lojaId: 'L005',
+  });
+
+  const antes = structuredClone(estado);
+
+  const acoesAtrasadas = [
+    { tipo: TIPOS.DETALHES_LOJA_CARREGANDO, lojaId: 'L004' },
+    {
+      tipo: TIPOS.DETALHES_LOJA_SUCESSO,
+      lojaId: 'L004',
+      dados: { loja_id: 'L004' },
+    },
+    {
+      tipo: TIPOS.DETALHES_LOJA_ERRO,
+      lojaId: 'L004',
+      erro: new ErroApi('Falhou.', { tipo: 'rede' }),
+    },
+  ];
+
+  for (const acao of acoesAtrasadas) {
+    assert.equal(appReducer(estado, acao), estado);
+  }
+
+  assert.deepEqual(estado, antes);
+});
+
+test('trocar de loja limpa detalhes e envio, mas guarda os roteiros', () => {
+  let estado = estadoComLoja({
+    anotacoes: [ANOTACAO_REGIONAL_NOVA],
+    preparados: [{ feedback_id: 'antigo' }],
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_REGIONAL_ERRO,
+    lojaId: 'L004',
+    erro: new ErroApi('Falhou.', { tipo: 'rede' }),
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_REGIONAL_SUCESSO,
+    lojaId: 'L004',
+    dados: respostaGeradaRegional(),
+  });
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_LOJA,
+    lojaId: 'L005',
+  });
+
+  assert.equal(estado.lojaSelecionadaId, 'L005');
+  assert.deepEqual(estado.detalhesLoja, {
+    status: STATUS.OCIOSO,
+    dados: null,
+    erro: null,
+  });
+  assert.deepEqual(estado.novaAnotacaoRegional, {
+    status: STATUS.OCIOSO,
+    erro: null,
+  });
+  // O roteiro já gerado da L004 continua guardado no mapa dela.
+  assert.equal(
+    estado.feedbacksRegional.L004.dados.feedback_id,
+    'novo-id-gerente',
+  );
+});
+
+test('anotação da regional entra NO FIM do histórico da loja', () => {
+  const estado = estadoComLoja({
+    anotacoes: [
+      { data: '2026-10-01', autora: 'Patrícia Lemos', texto: 'antiga' },
+    ],
+  });
+  const antes = structuredClone(estado);
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_REGIONAL_SUCESSO,
+    lojaId: 'L004',
+    dados: ANOTACAO_REGIONAL_NOVA,
+  });
+
+  assert.equal(proximo.novaAnotacaoRegional.status, STATUS.SUCESSO);
+  assert.equal(
+    proximo.detalhesLoja.dados.anotacoes_regional.length,
+    2,
+  );
+  assert.equal(
+    proximo.detalhesLoja.dados.anotacoes_regional[0].texto,
+    'antiga',
+  );
+  assert.deepEqual(
+    proximo.detalhesLoja.dados.anotacoes_regional[1],
+    ANOTACAO_REGIONAL_NOVA,
+  );
+
+  // O estado anterior não muda e a lista é outro array.
+  assert.deepEqual(estado, antes);
+  assert.notEqual(
+    proximo.detalhesLoja.dados.anotacoes_regional,
+    estado.detalhesLoja.dados.anotacoes_regional,
+  );
+});
+
+test('anotação da regional de outra loja é ignorada', () => {
+  const estado = estadoComLoja();
+
+  const resultado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_REGIONAL_SUCESSO,
+    lojaId: 'L005',
+    dados: ANOTACAO_REGIONAL_NOVA,
+  });
+
+  assert.equal(resultado, estado);
+});
+
+test('feedback do gerente entra no INÍCIO e fica guardado por loja', () => {
+  const estado = estadoComLoja({
+    preparados: [{ feedback_id: 'antigo-1' }],
+  });
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_REGIONAL_SUCESSO,
+    lojaId: 'L004',
+    dados: respostaGeradaRegional(),
+  });
+
+  const preparados = proximo.detalhesLoja.dados.feedbacks_preparados;
+
+  assert.equal(preparados.length, 2);
+  assert.equal(preparados[0].feedback_id, 'novo-id-gerente');
+  assert.equal(preparados[1].feedback_id, 'antigo-1');
+  // O item novo tem só os quatro campos da lista.
+  assert.deepEqual(Object.keys(preparados[0]).sort(), [
+    'feedback_id',
+    'gerado_em',
+    'mes_referencia',
+    'roteiro',
+  ]);
+  // E a resposta completa fica guardada por loja.
+  assert.equal(
+    proximo.feedbacksRegional.L004.dados.feedback_id,
+    'novo-id-gerente',
+  );
+});
+
+test('feedback do gerente de outra loja não mexe nos detalhes da tela', () => {
+  const estado = estadoComLoja({
+    preparados: [{ feedback_id: 'antigo-1' }],
+  });
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_REGIONAL_SUCESSO,
+    lojaId: 'L005',
+    dados: respostaGeradaRegional({ feedback_id: 'de-outra-loja' }),
+  });
+
+  // Os detalhes da loja na tela continuam sendo os mesmos...
+  assert.equal(proximo.detalhesLoja, estado.detalhesLoja);
+  // ...mas o roteiro fica guardado no mapa da outra loja.
+  assert.equal(
+    proximo.feedbacksRegional.L005.dados.feedback_id,
+    'de-outra-loja',
+  );
+});
+
+test('envio de anotação da regional limpa o erro e guarda só o texto', () => {
+  let estado = estadoComLoja();
+  estado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_REGIONAL_ERRO,
+    lojaId: 'L004',
+    erro: new ErroApi('A anotação não foi salva.', { tipo: 'rede' }),
+  });
+  assert.equal(estado.novaAnotacaoRegional.status, STATUS.ERRO);
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_REGIONAL_ENVIANDO,
+  });
+  assert.equal(estado.novaAnotacaoRegional.status, STATUS.CARREGANDO);
+  assert.equal(estado.novaAnotacaoRegional.erro, null);
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_REGIONAL_ERRO,
+    lojaId: 'L004',
+    erro: new ErroApi('Falhou de novo.', { tipo: 'servidor' }),
+  });
+  assert.equal(typeof estado.novaAnotacaoRegional.erro, 'string');
+});
+
+test('as ações antigas continuam funcionando depois das novas', () => {
+  // Garantia de que os novos campos não quebraram o fluxo do gerente.
+  let estado = criarEstadoInicial();
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.VENDEDORES_SUCESSO,
+    dados: [{ vendedor_id: 'C0031' }],
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_VENDEDOR,
+    vendedorId: 'C0031',
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.DETALHES_SUCESSO,
+    vendedorId: 'C0031',
+    dados: { vendedor_id: 'C0031' },
+  });
+
+  assert.equal(estado.vendedores.status, STATUS.SUCESSO);
+  assert.equal(estado.vendedorSelecionadoId, 'C0031');
+  assert.equal(estado.detalhes.status, STATUS.SUCESSO);
+  // E o estado da regional por loja segue intocado.
+  assert.equal(estado.lojaSelecionadaId, null);
+  assert.deepEqual(estado.lojas.dados, []);
 });
