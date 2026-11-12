@@ -26,8 +26,7 @@ test('estado inicial tem a forma combinada', () => {
     feedbacks: {},
     // O envio de anotação começa parado, sem erro.
     novaAnotacao: { status: STATUS.OCIOSO, erro: null },
-    regional: { status: STATUS.OCIOSO, dados: null, erro: null },
-    // Estado novo da visão POR LOJA (Etapa 8).
+    // Estado da visão POR LOJA (Etapa 8).
     lojas: { status: STATUS.OCIOSO, dados: [], erro: null },
     lojaSelecionadaId: null,
     detalhesLoja: { status: STATUS.OCIOSO, dados: null, erro: null },

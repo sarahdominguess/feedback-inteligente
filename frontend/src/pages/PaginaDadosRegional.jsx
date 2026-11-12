@@ -5,7 +5,7 @@
  * mês e acompanhamento dos feedbacks do time. Nada é calculado aqui: os
  * números chegam prontos de GET /api/regional/lojas/{id}/historico.
  *
- * Diferenças em relação à página antiga (PaginaRegional):
+ * Diferenças em relação à página antiga da regional (removida na Etapa 8.7):
  * - lê estado.detalhesLoja, preenchido quando a loja é selecionada;
  * - NÃO busca dados sozinha (a seleção da loja já dispara o carregamento);
  * - NÃO mostra as anotações da regional (agora são a aba Anotações).

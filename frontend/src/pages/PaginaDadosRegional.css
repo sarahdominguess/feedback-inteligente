@@ -1,9 +1,8 @@
 /*
  * Estilos da aba Dados da visão regional.
  *
- * Cópia própria do CSS da página antiga (PaginaRegional), com prefixo
- * "pagina-dados-regional": as classes não são compartilhadas, então a remoção
- * da página antiga (Etapa 8.7) não quebra esta tela.
+ * CSS próprio, com prefixo "pagina-dados-regional": as classes não são
+ * compartilhadas com a página antiga da regional (removida na Etapa 8.7).
  *
  * A página fica dentro do cartão claro da área central, com texto tinta sobre
  * superfície suave (contraste ≈ 14:1). Só tokens de cor, espaço e raio.

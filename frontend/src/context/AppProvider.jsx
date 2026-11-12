@@ -20,7 +20,6 @@ import {
 } from '../services/vendedorService.js';
 import { gerarFeedback as gerarFeedbackDaApi } from '../services/feedbackService.js';
 import {
-  obterDesempenhoGerente,
   listarLojas,
   obterHistoricoLoja,
   registrarAnotacaoRegional,
@@ -38,7 +37,6 @@ const SERVICOS_REAIS = {
   obterVendedoresPorLoja,
   obterDetalhesVendedor,
   gerarFeedback: gerarFeedbackDaApi,
-  obterDesempenhoGerente,
   registrarAnotacao,
   listarLojas,
   obterHistoricoLoja,
@@ -66,7 +64,6 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
   // provocar nova renderização. Usamos para os canceladores (AbortController)
   // e para saber quais gerações já estão em andamento.
   const detalhesControlador = useRef(null);
-  const regionalControlador = useRef(null);
   const geracoes = useRef(new Map());
   // Controlador do envio de anotação em andamento (null = nenhum).
   const anotacaoControlador = useRef(null);
@@ -223,32 +220,6 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
     },
     [servicos],
   );
-
-  /**
-   * Carrega o consolidado da visão regional.
-   *
-   * Também cancela o pedido anterior, caso a pessoa peça de novo rápido.
-   */
-  const carregarRegional = useCallback(async () => {
-    regionalControlador.current?.abort();
-
-    const controlador = new AbortController();
-    regionalControlador.current = controlador;
-
-    despachar({ tipo: TIPOS.REGIONAL_CARREGANDO });
-
-    try {
-      const dados = await servicos.obterDesempenhoGerente({
-        signal: controlador.signal,
-      });
-      despachar({ tipo: TIPOS.REGIONAL_SUCESSO, dados });
-    } catch (erro) {
-      if (erroFoiCancelamento(erro)) {
-        return;
-      }
-      despachar({ tipo: TIPOS.REGIONAL_ERRO, erro });
-    }
-  }, [servicos]);
 
   /**
    * Carrega a lista de lojas que a regional pode acompanhar.
@@ -416,7 +387,6 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
 
     return () => {
       detalhesControlador.current?.abort();
-      regionalControlador.current?.abort();
       // Envio de anotação em andamento também é cancelado.
       anotacaoControlador.current?.abort();
 
@@ -446,7 +416,6 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
       selecionarVendedor,
       gerarFeedback,
       adicionarAnotacao,
-      carregarRegional,
       carregarLojas,
       selecionarLoja,
       adicionarAnotacaoRegional,
@@ -460,7 +429,6 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
       selecionarVendedor,
       gerarFeedback,
       adicionarAnotacao,
-      carregarRegional,
       carregarLojas,
       selecionarLoja,
       adicionarAnotacaoRegional,

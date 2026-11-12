@@ -50,10 +50,6 @@ export const TIPOS = {
   ANOTACAO_SUCESSO: 'anotacao/sucesso',
   ANOTACAO_ERRO: 'anotacao/erro',
 
-  REGIONAL_CARREGANDO: 'regional/carregando',
-  REGIONAL_SUCESSO: 'regional/sucesso',
-  REGIONAL_ERRO: 'regional/erro',
-
   // Visão da regional POR LOJA (Etapa 8).
   LOJAS_CARREGANDO: 'lojas/carregando',
   LOJAS_SUCESSO: 'lojas/sucesso',
@@ -126,9 +122,6 @@ export function criarEstadoInicial() {
     // É um pedaço separado porque descreve um ENVIO em andamento, e não o
     // histórico da pessoa: { status, erro }.
     novaAnotacao: { status: STATUS.OCIOSO, erro: null },
-
-    // Consolidado da visão da regional.
-    regional: { status: STATUS.OCIOSO, dados: null, erro: null },
 
     // ----- Visão da regional POR LOJA (Etapa 8) --------------------------
     // Lista de lojas que a regional pode acompanhar (hoje só a L004).
@@ -538,37 +531,6 @@ export function appReducer(estado, acao) {
         novaAnotacao: {
           status: STATUS.ERRO,
           // Só o texto da mensagem: nunca URL, cabeçalho ou objeto de erro.
-          erro: mensagemDeErro(acao.erro),
-        },
-      };
-
-    // ----- Visão regional -------------------------------------------------
-    case TIPOS.REGIONAL_CARREGANDO:
-      return {
-        ...estado,
-        regional: {
-          ...estado.regional,
-          status: STATUS.CARREGANDO,
-          erro: null,
-        },
-      };
-
-    case TIPOS.REGIONAL_SUCESSO:
-      return {
-        ...estado,
-        regional: {
-          status: STATUS.SUCESSO,
-          dados: acao.dados ?? null,
-          erro: null,
-        },
-      };
-
-    case TIPOS.REGIONAL_ERRO:
-      return {
-        ...estado,
-        regional: {
-          ...estado.regional,
-          status: STATUS.ERRO,
           erro: mensagemDeErro(acao.erro),
         },
       };
