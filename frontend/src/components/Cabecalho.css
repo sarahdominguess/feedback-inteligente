@@ -1,16 +1,18 @@
 /*
  * Estilos do cabeçalho.
  *
- * O cabeçalho fica direto sobre o roxo da página, então o texto é branco
- * (contraste ≈ 6,4:1, passa em AA). Os botões são claros para se destacarem
- * do fundo e usam texto tinta.
+ * Duas regiões na mesma faixa: à esquerda a identidade (título + subtítulo) e
+ * à direita a área do usuário (hoje com os botões de visão). O cabeçalho fica
+ * direto sobre o roxo da página, então o texto é branco (contraste ≈ 6,4:1,
+ * passa em AA). Os botões são claros para se destacarem do fundo e usam texto
+ * tinta.
  */
 
 /* ----------------------------------------------------------------------
  * Container
  *
- * flex-wrap permite que o alternador desça para a linha de baixo em telas
- * estreitas, sem precisar de uma regra extra de media query.
+ * flex-wrap permite que a área do usuário desça para a linha de baixo em
+ * telas estreitas, sem precisar de uma regra extra de media query.
  * -------------------------------------------------------------------- */
 
 .cabecalho {
@@ -30,11 +32,28 @@
   color: var(--cor-texto-sobre-fundo);
 }
 
-/* Identidade: título em cima, subtítulo embaixo. */
+/*
+ * Identidade: título em cima, subtítulo embaixo.
+ * min-width: 0 permite que o texto encolha e quebre linha em vez de empurrar
+ * a área do usuário para fora da tela em 360px.
+ */
 .cabecalho__identidade {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-sm);
+  min-width: 0;
+}
+
+/*
+ * Área do usuário, à direita.
+ *
+ * É um bloco separado para receber, na próxima fatia, o nome e o cargo de
+ * quem está usando o sistema. Hoje ela só alinha os botões de visão.
+ */
+.cabecalho__area-usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-lg);
 }
 
 /* h1 herda tamanho (36px) e peso (400) de estilos/base.css. */

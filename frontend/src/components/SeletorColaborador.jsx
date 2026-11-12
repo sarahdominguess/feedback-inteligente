@@ -32,18 +32,28 @@ import './SeletorColaborador.css';
 /**
  * Componente SeletorColaborador.
  *
- * Não recebe props: pega tudo do contexto com o useApp(). Lê:
+ * Do contexto (useApp) lê:
  *   estado.vendedores: { status, dados, erro } da lista da loja;
  *   estado.vendedorSelecionadoId: quem está escolhido agora;
  *   carregarVendedores(): busca a lista na API;
  *   selecionarVendedor(id): escolhe uma pessoa e busca o histórico dela.
  *
+ * Props (dados que o componente recebe de quem o usa):
+ *   recolhida: opcional (padrão false). Com true, mostra só o círculo com as
+ *     iniciais do colaborador — a barra lateral está recolhida e não há
+ *     espaço para nome, seta nem lista.
+ *   aoExpandir: opcional. Função chamada quando a pessoa clica no círculo com
+ *     a barra recolhida: em vez de abrir a lista, ela PEDE para a barra
+ *     expandir (quem manda na largura é a BarraLateral).
+ *
  * Devolve o card da pessoa escolhida (ou o aviso de carregando/erro/vazio) e,
  * quando a seta é acionada, a lista dos outros colaboradores logo abaixo.
+ * Recolhido, devolve só o círculo — mas continua montado, então o
+ * carregamento da lista e a seleção automática da Bianca seguem funcionando.
  *
- * Exemplo de uso: <SeletorColaborador />
+ * Exemplo de uso: <SeletorColaborador recolhida aoExpandir={abrir} />
  */
-export function SeletorColaborador() {
+export function SeletorColaborador({ recolhida = false, aoExpandir }) {
   const { estado, carregarVendedores, selecionarVendedor } = useApp();
 
   // Atalho para os três pedaços da lista que interessam aqui.
@@ -142,6 +152,28 @@ export function SeletorColaborador() {
   );
   const outros = outrosColaboradores(lista, estado.vendedorSelecionadoId);
 
+  /*
+   * Se a barra for recolhida com a lista aberta, a lista fecha.
+   *
+   * O ajuste é feito DURANTE a renderização — é o padrão que o próprio React
+   * recomenda para "corrigir um estado quando uma prop muda". Fazer isso num
+   * useEffect mostraria um desenho intermediário com a lista aberta num
+   * espaço de 64px.
+   *
+   * Como funciona: guardamos o valor anterior da prop. Quando ele muda,
+   * atualizamos o registro e, se a barra recolheu, fechamos a lista. O React
+   * refaz a renderização na hora, já com o estado certo.
+   */
+  const [recolhidaAnterior, setRecolhidaAnterior] = useState(recolhida);
+
+  if (recolhida !== recolhidaAnterior) {
+    setRecolhidaAnterior(recolhida);
+
+    if (recolhida) {
+      setAberto(false);
+    }
+  }
+
   /**
    * Abre ou fecha a lista de outros colaboradores.
    *
@@ -234,6 +266,44 @@ export function SeletorColaborador() {
   // Nome e cargo exibidos. Sem ninguém escolhido, o card convida a escolher.
   const nomeExibido = selecionado ? selecionado.nome : 'Escolher colaborador';
   const cargoExibido = selecionado ? selecionado.cargo : null;
+
+  /*
+   * Barra recolhida: só o círculo com as iniciais.
+   *
+   * Esta saída fica ANTES dos avisos de carregando/erro/vazio de propósito:
+   * recolhida, a barra tem 64px e qualquer texto quebraria o layout. Os
+   * avisos aparecem assim que a pessoa expande a barra.
+   *
+   * O componente continua montado, então os efeitos acima seguem carregando a
+   * lista e escolhendo a Bianca automaticamente.
+   */
+  if (recolhida) {
+    // Nome e cargo num rótulo só: é o que o leitor de tela fala no círculo.
+    const rotuloAcessivel = selecionado
+      ? `${selecionado.nome}, ${selecionado.cargo}`
+      : 'Escolher colaborador';
+
+    return (
+      <div className="seletor-colaborador seletor-colaborador--recolhido">
+        {/*
+         * O círculo é um botão: clicar nele NÃO abre a lista (não há espaço),
+         * e sim pede para a barra expandir, pela função recebida em
+         * aoExpandir. title repete o nome como dica ao passar o mouse.
+         */}
+        <button
+          type="button"
+          className="seletor-colaborador__avatar-botao"
+          aria-label={rotuloAcessivel}
+          title={nomeExibido}
+          onClick={() => aoExpandir?.()}
+        >
+          <span className="seletor-colaborador__avatar" aria-hidden="true">
+            {iniciaisDoNome(selecionado?.nome)}
+          </span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="seletor-colaborador">

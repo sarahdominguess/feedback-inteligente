@@ -1,10 +1,12 @@
 /*
  * Estilos da barra lateral.
  *
- * A lateral é uma faixa clara COLADA na borda esquerda da tela: sem margem,
- * sem cantos arredondados desse lado e com uma borda só à direita, que a
- * separa do conteúdo. Ela ocupa toda a altura do corpo (do fim do cabeçalho
- * ao começo do rodapé) por causa do alinhamento definido em App.css.
+ * A barra é uma faixa clara COLADA na borda esquerda da tela, com duas
+ * larguras: 260px expandida (ícone + texto) e 64px recolhida (só ícones). A
+ * troca é animada por uma transição curta de largura.
+ *
+ * Sem "overflow: hidden": os filhos já se adaptam à largura menor, e cortar o
+ * transbordo poderia esconder o contorno de foco do teclado.
  */
 
 /* ----------------------------------------------------------------------
@@ -15,11 +17,12 @@
   display: flex;
   flex-direction: column;
   /*
-   * Largura fixa de 260px: três abas curtas e o card de uma pessoa cabem
-   * bem. "flex: 0 0 260px" quer dizer: não cresce, não encolhe, começa com
-   * 260px (o tamanho inclui padding e borda por causa do box-sizing).
+   * Largura fixa: "flex: 0 0 auto" quer dizer que a barra não cresce nem
+   * encolhe — ela usa a largura que a regra "width" definir. A área central
+   * fica com "flex: 1" e ocupa todo o espaço que sobrar.
    */
-  flex: 0 0 260px;
+  flex: 0 0 auto;
+  width: 260px;
   /* Estica na vertical para acompanhar a altura do corpo. */
   align-self: stretch;
   padding: var(--espaco-secao);
@@ -29,6 +32,22 @@
   color: var(--cor-tinta);
   /* Permite encolher sem estourar a largura em telas estreitas. */
   min-width: 0;
+  /*
+   * "transition" anima a troca de largura. É só a largura: cores e espaços
+   * não mudam. Quem prefere menos movimento tem a transição desligada pela
+   * regra global de prefers-reduced-motion em estilos/base.css.
+   */
+  transition: width 200ms ease;
+}
+
+/*
+ * Recolhida: 64px é o suficiente para um ícone de 16px dentro de um botão de
+ * 44px, com um respiro pequeno nas laterais. O padding diminui para o
+ * conteúdo caber sem ser cortado.
+ */
+.barra-lateral--recolhida {
+  width: 64px;
+  padding: var(--espaco-base);
 }
 
 /*
@@ -48,19 +67,40 @@
 }
 
 /* ----------------------------------------------------------------------
- * Telas estreitas
+ * Botão de expandir/recolher (no topo da barra)
  *
- * O corpo do app passa a ser uma coluna (ver App.css), então a lateral
- * deixa de ter largura fixa, ocupa a largura toda e ganha uma borda embaixo
- * em vez da borda à direita.
+ * Só ícone, com 44x44px (alvo de toque do DESIGN.md). O foco do teclado vem
+ * da regra global :focus-visible.
  * -------------------------------------------------------------------- */
 
-@media (max-width: 767px) {
-  .barra-lateral {
-    /* Em coluna, o "flex-basis" viraria ALTURA: por isso voltamos ao auto. */
-    flex: 0 0 auto;
-    width: 100%;
-    border-right: 0;
-    border-bottom: 1px solid var(--cor-borda);
-  }
+.barra-lateral__alternar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
+  min-width: 44px;
+  min-height: 44px;
+  margin-bottom: var(--espaco-base);
+  padding: 0;
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover: fundo clareia e a borda escurece, deixando claro que é clicável. */
+.barra-lateral__alternar:hover {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria-ativa);
+}
+
+/* Tamanho do desenho do ícone: 16px, igual ao texto de corpo. */
+.barra-lateral__alternar svg {
+  width: var(--texto-corpo);
+  height: var(--texto-corpo);
 }

@@ -226,3 +226,39 @@
     animation: none;
   }
 }
+
+/* ----------------------------------------------------------------------
+ * Barra recolhida
+ *
+ * Só o círculo com as iniciais, centralizado. O círculo é um botão que pede
+ * para a barra expandir (não abre a lista: não há espaço).
+ * -------------------------------------------------------------------- */
+
+.seletor-colaborador--recolhido {
+  align-items: center;
+}
+
+/*
+ * Botão do círculo: 44x44px (alvo de toque do DESIGN.md), sem borda nem
+ * fundo próprios — o visual vem do avatar que fica dentro. O foco do teclado
+ * é desenhado pela regra global :focus-visible.
+ */
+.seletor-colaborador__avatar-botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-full);
+  background: none;
+  cursor: pointer;
+}
+
+/* Hover: o círculo clareia, deixando claro que é clicável. */
+.seletor-colaborador__avatar-botao:hover
+  .seletor-colaborador__avatar {
+  background-color: var(--cor-primaria-ativa);
+}

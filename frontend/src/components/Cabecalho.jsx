@@ -1,8 +1,10 @@
 /**
  * Cabeçalho fixo do app.
  *
- * Mostra o nome do produto, o subtítulo e o alternador entre as visões do
- * gerente e da regional. A visão ativa vem do estado do contexto.
+ * Em toda a largura: à esquerda a identidade do produto (título e subtítulo)
+ * e, à direita, a área do usuário — por enquanto com os botões que alternam
+ * entre as visões do gerente e da regional (o menu de usuário entra na
+ * próxima fatia). Em telas estreitas o conteúdo quebra em duas linhas.
  */
 
 import { VISOES } from '../constantes.js';
@@ -17,10 +19,9 @@ import './Cabecalho.css';
  * Não recebe props: lê do contexto com o useApp() a visão atual e a ação que
  * troca de visão. O estado é a única fonte de verdade — não há estado local.
  *
- * Observação sobre o nome da loja: a API devolve "loja_nome", mas o reducer
- * guarda apenas a lista de vendedores. Como o nome não está no estado, ele
- * NÃO é exibido aqui (não inventamos texto). Se um dia o estado passar a
- * guardar a loja, basta acrescentar a linha correspondente no JSX.
+ * O título é o único h1 da página e o subtítulo é fixo (não muda com a
+ * visão). A área do usuário fica à direita, num bloco próprio, para receber
+ * o menu de usuário sem mexer no resto do cabeçalho.
  *
  * Exemplo de uso: <Cabecalho />
  */
@@ -34,52 +35,59 @@ export function Cabecalho() {
 
   return (
     <header className="cabecalho">
-      {/* Bloco de identidade do produto: título e subtítulo. */}
+      {/* Identidade do produto: título e subtítulo, à esquerda. */}
       <div className="cabecalho__identidade">
         <h1 className="cabecalho__titulo">Feedback Inteligente</h1>
         <p className="cabecalho__subtitulo">
-          Co-piloto de feedback para a liderança da Rede Aurora
+          Assistente de IA para feedback
         </p>
       </div>
 
       {/*
-       * Alternador de visão. role="group" avisa ao leitor de tela que os dois
-       * botões formam um grupo; aria-label dá um nome a esse grupo.
+       * Área do usuário, à direita. Por enquanto guarda o alternador de
+       * visão; na próxima fatia ela passa a mostrar quem está usando o
+       * sistema (Diego ou Patrícia).
        */}
-      <div
-        className="cabecalho__visoes"
-        role="group"
-        aria-label="Escolher visão"
-      >
+      <div className="cabecalho__area-usuario">
         {/*
-         * aria-pressed="true" informa que a visão está ativa. O valor é
-         * booleano, então o React escreve "true"/"false" sozinho.
+         * Alternador de visão. role="group" avisa ao leitor de tela que os
+         * dois botões formam um grupo; aria-label dá um nome a esse grupo.
          */}
-        <button
-          type="button"
-          className={
-            gerenteAtivo
-              ? 'cabecalho__botao cabecalho__botao--ativo'
-              : 'cabecalho__botao'
-          }
-          aria-pressed={gerenteAtivo}
-          onClick={() => mudarVisao(VISOES.GERENTE)}
+        <div
+          className="cabecalho__visoes"
+          role="group"
+          aria-label="Escolher visão"
         >
-          Gerente
-        </button>
+          {/*
+           * aria-pressed="true" informa que a visão está ativa. O valor é
+           * booleano, então o React escreve "true"/"false" sozinho.
+           */}
+          <button
+            type="button"
+            className={
+              gerenteAtivo
+                ? 'cabecalho__botao cabecalho__botao--ativo'
+                : 'cabecalho__botao'
+            }
+            aria-pressed={gerenteAtivo}
+            onClick={() => mudarVisao(VISOES.GERENTE)}
+          >
+            Gerente
+          </button>
 
-        <button
-          type="button"
-          className={
-            regionalAtivo
-              ? 'cabecalho__botao cabecalho__botao--ativo'
-              : 'cabecalho__botao'
-          }
-          aria-pressed={regionalAtivo}
-          onClick={() => mudarVisao(VISOES.REGIONAL)}
-        >
-          Regional
-        </button>
+          <button
+            type="button"
+            className={
+              regionalAtivo
+                ? 'cabecalho__botao cabecalho__botao--ativo'
+                : 'cabecalho__botao'
+            }
+            aria-pressed={regionalAtivo}
+            onClick={() => mudarVisao(VISOES.REGIONAL)}
+          >
+            Regional
+          </button>
+        </div>
       </div>
     </header>
   );

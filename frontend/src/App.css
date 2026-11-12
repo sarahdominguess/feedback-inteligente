@@ -40,9 +40,9 @@
   align-items: stretch;
 }
 
-/* Telas estreitas: a lateral empilha acima do conteúdo. */
-@media (max-width: 767px) {
-  .app__corpo {
-    flex-direction: column;
-  }
-}
+/*
+ * Não há regra de empilhamento para telas estreitas: a barra lateral
+ * continua AO LADO do conteúdo em qualquer largura. No celular ela só começa
+ * recolhida (64px, só ícones — ver BarraLateral.jsx), para o conteúdo ficar
+ * com o resto da tela.
+ */

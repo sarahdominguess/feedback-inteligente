@@ -6,6 +6,9 @@
  * texto alinhados à esquerda e altura mínima de 44px (alvo de toque do
  * DESIGN.md). A aba ativa se destaca por fundo, peso da fonte e uma barra
  * escura à esquerda — nunca só pela cor.
+ *
+ * Com a barra lateral recolhida, cada aba mostra só o ícone, centralizado
+ * (o nome continua no DOM, escondido da tela — ver o JSX).
  */
 
 /* ----------------------------------------------------------------------
@@ -110,4 +113,18 @@
 .navegacao-abas__texto {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+/* ----------------------------------------------------------------------
+ * Barra recolhida: só o ícone, centralizado
+ *
+ * O padding lateral é zerado porque o espaço é curto (64px de barra, menos
+ * as bordas). A barra escura de 4px à esquerda continua marcando a aba ativa,
+ * então o destaque não depende só da cor de fundo.
+ * -------------------------------------------------------------------- */
+
+.navegacao-abas--recolhida .navegacao-abas__aba {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
 }

@@ -45,8 +45,15 @@ const ICONES_ABAS = {
 /**
  * Componente NavegacaoAbas.
  *
- * Não recebe props: lê do contexto a aba atual e a ação mudarAba. Também
- * confere a visão, porque as abas são exclusivas do gerente.
+ * Recebe uma prop opcional:
+ *   recolhida: quando true, cada aba mostra SÓ o ícone (a barra lateral está
+ *     recolhida). O nome continua no DOM, escondido da tela pela classe
+ *     ui-visualmente-oculto, e também vira "title" (a dica que aparece ao
+ *     passar o mouse). Assim leitores de tela e mouse continuam sabendo o
+ *     nome de cada aba.
+ *
+ * Também lê do contexto a aba atual e a ação mudarAba, e confere a visão,
+ * porque as abas são exclusivas do gerente.
  *
  * Devolve a lista vertical com três botões no papel de abas (role="tab"),
  * cada um com ícone e texto.
@@ -55,9 +62,9 @@ const ICONES_ABAS = {
  * papel de um elemento (aqui: lista de abas e cada aba). aria-selected diz
  * qual aba está aberta agora e aria-orientation avisa que a fila é vertical.
  *
- * Exemplo de uso: <NavegacaoAbas />
+ * Exemplo de uso: <NavegacaoAbas recolhida={false} />
  */
-export function NavegacaoAbas() {
+export function NavegacaoAbas({ recolhida = false }) {
   const { estado, mudarAba } = useApp();
 
   // useRef guarda a referência dos três botões para conseguir mover o foco
@@ -107,7 +114,11 @@ export function NavegacaoAbas() {
   return (
     // role="tablist" marca o conjunto de abas.
     <div
-      className="navegacao-abas"
+      className={
+        recolhida
+          ? 'navegacao-abas navegacao-abas--recolhida'
+          : 'navegacao-abas'
+      }
       role="tablist"
       // Avisa ao leitor de tela que a fila é vertical (↑/↓), e não lado a lado.
       aria-orientation="vertical"
@@ -138,6 +149,11 @@ export function NavegacaoAbas() {
             aria-selected={ativa}
             aria-controls={ID_PAINEL_ABAS}
             /*
+             * title: dica que aparece ao passar o mouse. Só faz sentido com a
+             * barra recolhida, quando o nome não está escrito na tela.
+             */
+            title={recolhida ? ROTULOS_ABAS[valor] : undefined}
+            /*
              * Roving tabindex: só a aba ativa entra na ordem do Tab (0); as
              * outras valem -1 e são alcançadas pelas setas. Isso evita que
              * o Tab pare em cada aba antes de chegar ao conteúdo.
@@ -159,8 +175,20 @@ export function NavegacaoAbas() {
               <Icone />
             </span>
 
-            {/* Nome da aba (texto visível). */}
-            <span className="navegacao-abas__texto">
+            {/*
+             * Nome da aba.
+             *
+             * Com a barra recolhida, o texto continua no DOM (escondido pela
+             * classe ui-visualmente-oculto): leitores de tela ainda o
+             * anunciam, e nada se perde de acessibilidade.
+             */}
+            <span
+              className={
+                recolhida
+                  ? 'ui-visualmente-oculto'
+                  : 'navegacao-abas__texto'
+              }
+            >
               {ROTULOS_ABAS[valor]}
             </span>
           </button>
