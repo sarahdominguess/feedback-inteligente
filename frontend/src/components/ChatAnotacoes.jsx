@@ -88,6 +88,10 @@ function balaoDeAnotacao(anotacao, indice) {
  * Props:
  *   titulo: texto visível do cabeçalho (ex.: "Anotações sobre Bianca Rocha").
  *   nome: nome usado no placeholder e no aviso de vazio.
+ *   placeholder: opcional; texto de exemplo do campo. Sem ele, o padrão é
+ *     "Escreva uma observação sobre {nome}…".
+ *   rotuloLog: opcional; nome acessível da região de mensagens. Sem ele, usa
+ *     o mesmo texto do título.
  *   anotacoes: lista de { data, texto } já vinda da API (ordem livre).
  *   aoEnviar(texto): função async que devolve true quando gravou.
  *   enviando: true enquanto o envio está em andamento.
@@ -114,6 +118,8 @@ function balaoDeAnotacao(anotacao, indice) {
 export function ChatAnotacoes({
   titulo,
   nome,
+  placeholder,
+  rotuloLog,
   anotacoes = [],
   aoEnviar,
   enviando = false,
@@ -144,6 +150,15 @@ export function ChatAnotacoes({
     () => (Array.isArray(anotacoes) ? anotacoes : []),
     [anotacoes],
   );
+
+  /*
+   * Texto de exemplo e rótulo acessível do log são personalizáveis pelas
+   * telas; sem eles, o componente mantém os textos originais (usados pelo
+   * gerente), então nada muda para quem não passa as props.
+   */
+  const textoPlaceholder =
+    placeholder ?? `Escreva uma observação sobre ${nome}…`;
+  const rotuloDoLog = rotuloLog ?? titulo;
 
   // --- Conversa: da mais antiga para a mais nova, agrupada por dia ---
   const grupos = agruparPorDia(
@@ -244,7 +259,7 @@ export function ChatAnotacoes({
           className="pagina-anotacoes__mensagens"
           role="log"
           aria-live="polite"
-          aria-label={titulo}
+          aria-label={rotuloDoLog}
         >
           {grupos.length === 0 ? (
             <EstadoVazio
@@ -296,7 +311,7 @@ export function ChatAnotacoes({
           id={idCampo}
           ref={campoRef}
           className="pagina-anotacoes__campo"
-          placeholder={`Escreva uma observação sobre ${nome}…`}
+          placeholder={textoPlaceholder}
           value={texto}
           onChange={(evento) => setTexto(evento.target.value)}
           onKeyDown={aoTeclarNoCampo}
