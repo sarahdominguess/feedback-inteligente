@@ -10,14 +10,22 @@ chamado de "realizado".
 
 Todas as razões financeiras trafegam como fração de 0 a 1 (0,5 = 50%),
 ausências viram null no JSON e valores NaN/infinito são recusados.
+
+Este arquivo também guarda os contratos da geração de feedback da regional
+PARA o gerente da loja: o pedido (com mês opcional) e a resposta (o roteiro
+gerado, mais quem foi avaliado e quando). O formato do roteiro em si é o
+mesmo do feedback do vendedor (FeedbackRoteiroDTO), reaproveitado aqui para o
+frontend usar os mesmos componentes nos dois casos.
 """
 
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from config import ANOTACAO_TEXTO_MAXIMO
+from contracts.feedback import FeedbackRoteiroDTO, validar_formato_mes_referencia
+from contracts.vendedores import FeedbackPreparadoDTO
 
 # Situação do acompanhamento: a pessoa já tem roteiro preparado ou não.
 SituacaoAcompanhamento = Literal["com_roteiro", "sem_roteiro"]
@@ -206,11 +214,84 @@ class AnotacaoRegionalDTO(BaseModel):
     )
 
 
+class FeedbackRegionalGerarRequisicao(BaseModel):
+    """Dados que o frontend envia para a regional gerar feedback ao gerente.
+
+    Recebe APENAS o mês de referência, e ele é opcional (None = todo o
+    histórico). Duas ausências são de propósito:
+
+    - o gerente avaliado NÃO vem do cliente: o servidor usa o gerente da loja
+      que a regional está acompanhando. Como o frontend não manda o nome,
+      ninguém consegue pedir um roteiro para a pessoa errada;
+    - as anotações e os números também não vêm do cliente: o servidor lê dos
+      arquivos de dados, para a IA nunca receber números inventados pela tela.
+
+    A validação do mês reaproveita a regra do feedback do vendedor, então
+    "2026-10" passa e "2026-13" é recusado do mesmo jeito nos dois contratos.
+    """
+
+    # str_strip_whitespace tira os espaços das pontas de todo texto recebido:
+    # " 2026-10 " vira "2026-10" antes da checagem do molde do mês.
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    mes_referencia: str | None = Field(
+        default=None,
+        description=(
+            'Mês no formato "AAAA-MM" (ex.: "2026-10"). Sem valor, usa todo '
+            "o histórico."
+        ),
+    )
+
+    @field_validator("mes_referencia")
+    @classmethod
+    def _validar_mes_referencia(cls, valor: str | None) -> str | None:
+        """Aplica o mesmo molde de mês usado no feedback do vendedor.
+
+        O @field_validator avisa o Pydantic para chamar este método quando o
+        campo "mes_referencia" chegar. A regra mora em
+        validar_formato_mes_referencia (contrato do feedback do vendedor),
+        para os dois contratos nunca divergirem.
+        """
+        return validar_formato_mes_referencia(valor)
+
+
+class FeedbackRegionalGerarResposta(BaseModel):
+    """Resposta da rota que gera o roteiro de feedback para o gerente da loja.
+
+    Leva junto quem foi avaliado (o gerente) e de qual loja, porque o roteiro
+    é sempre sobre uma dupla loja + gerente. O bloco "roteiro" usa o MESMO
+    formato da geração do vendedor (FeedbackRoteiroDTO), então a tela mostra
+    os dois com os mesmos componentes.
+    """
+
+    feedback_id: str = Field(
+        description="Identificador único do roteiro gerado."
+    )
+    loja_id: str = Field(description='Código da loja (ex.: "L004").')
+    loja_nome: str = Field(description="Nome da loja.")
+    gerente_id: str = Field(description='Código do gerente (ex.: "C0030").')
+    gerente_nome: str = Field(description="Nome completo do gerente avaliado.")
+    mes_referencia: str | None = Field(
+        default=None,
+        description=(
+            'Mês analisado no formato "AAAA-MM". None quando o roteiro '
+            "considerou todo o histórico."
+        ),
+    )
+    gerado_em: datetime = Field(
+        description="Data e hora em que o roteiro foi gerado (em UTC)."
+    )
+    roteiro: FeedbackRoteiroDTO = Field(
+        description="Conteúdo do roteiro, em quatro listas de textos."
+    )
+
+
 class DesempenhoGerenteResposta(BaseModel):
     """Resposta da visão executiva da regional para um gerente de loja.
 
-    Junta três blocos: o resultado mês a mês, o acompanhamento dos feedbacks
-    preparados e as anotações que a própria regional escreveu sobre a loja.
+    Junta quatro blocos: o resultado mês a mês, o acompanhamento dos feedbacks
+    preparados para o time, as anotações que a própria regional escreveu sobre
+    a loja e os roteiros que a regional já gerou PARA o gerente.
     """
 
     gerente_id: str = Field(description='Código do gerente (ex.: "C0030").')
@@ -243,4 +324,14 @@ class DesempenhoGerenteResposta(BaseModel):
         description=(
             "Anotações da regional sobre a loja, em ordem cronológica."
         )
+    )
+    # default_factory=list faz o campo valer [] quando o dado não vem: assim
+    # uma resposta montada antes deste campo existir continua sendo aceita, e
+    # cada resposta ganha a SUA própria lista (nunca uma lista compartilhada).
+    feedbacks_preparados: list[FeedbackPreparadoDTO] = Field(
+        default_factory=list,
+        description=(
+            "Roteiros de feedback já gerados pela regional para o gerente da "
+            "loja. Não significa que a conversa aconteceu."
+        ),
     )

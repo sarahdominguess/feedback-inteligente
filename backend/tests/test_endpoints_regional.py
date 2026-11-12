@@ -95,6 +95,7 @@ class TestDesempenhoRegional(unittest.TestCase):
                 "resultado_loja",
                 "acompanhamento_feedback",
                 "anotacoes_regional",
+                "feedbacks_preparados",
             },
         )
 
