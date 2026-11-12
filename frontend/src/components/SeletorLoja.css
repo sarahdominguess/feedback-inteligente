@@ -1,0 +1,262 @@
+/*
+ * Estilos do seletor de loja (visão da regional).
+ *
+ * O card mostra a loja escolhida com um botão de seta à direita; a lista das
+ * outras lojas aparece logo abaixo, no fluxo normal da página. Usa só tokens
+ * do tema: superfície clara, texto tinta e a primária como cor de destaque.
+ * O foco do teclado vem da regra global :focus-visible.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ *
+ * Coluna com o card e, quando aberta, a lista logo abaixo dele.
+ * -------------------------------------------------------------------- */
+
+.seletor-loja {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+}
+
+/* ----------------------------------------------------------------------
+ * Card da loja escolhida
+ *
+ * Superfície clara com borda de controle (~10:1 sobre o fundo): como o card
+ * e a barra lateral têm a mesma cor, a borda é o que delimita a área.
+ * -------------------------------------------------------------------- */
+
+.seletor-loja__card {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-lg);
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/*
+ * Círculo com a letra da loja.
+ *
+ * 44px é o alvo de toque mínimo do DESIGN.md; aqui ele também dá o tamanho
+ * confortável do avatar. Fundo primária com texto #111111 (≈ 11,2:1).
+ */
+.seletor-loja__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--raio-full);
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-sobre-primaria);
+  font-size: var(--texto-botao);
+  font-weight: var(--peso-forte);
+}
+
+/* Versão menor do avatar, usada dentro dos itens da lista. */
+.seletor-loja__avatar--lista {
+  width: 32px;
+  height: 32px;
+  font-size: var(--texto-legenda);
+}
+
+/* Bloco de texto: nome da loja em cima, gerente embaixo. */
+.seletor-loja__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  /* flex: 1 faz o texto ocupar o espaço e empurrar a seta para a direita;
+     min-width: 0 permite encolher em vez de estourar a largura. */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Nome da loja, como veio da API. */
+.seletor-loja__nome {
+  font-weight: var(--peso-forte);
+  overflow-wrap: anywhere;
+}
+
+/* Convite "Escolher loja": texto de apoio, não é um nome. */
+.seletor-loja__nome--vazio {
+  font-weight: var(--peso-medio);
+  color: var(--cor-texto-suave);
+}
+
+/* Linha do gerente em letra menor e tom de apoio (~10:1 sobre a superfície). */
+.seletor-loja__gerente {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-suave);
+}
+
+/* ----------------------------------------------------------------------
+ * Botão da seta
+ *
+ * É o único controle do card: área de toque de 44x44px, borda de controle e
+ * fundo claro. O ícone herda a cor do texto (tinta, ≈ 14:1).
+ * -------------------------------------------------------------------- */
+
+.seletor-loja__seta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover: fundo clareia e a borda escurece, deixando claro que é clicável. */
+.seletor-loja__seta:hover {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria-ativa);
+}
+
+/*
+ * Lista aberta: o React escreve aria-expanded="true" no botão. Usamos esse
+ * atributo como seletor para não precisar de uma classe extra só para isso.
+ */
+.seletor-loja__seta[aria-expanded='true'] {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-primaria-ativa);
+}
+
+/* Tamanho do desenho da seta: 16px, igual ao texto de corpo. */
+.seletor-loja__seta svg {
+  width: var(--texto-corpo);
+  height: var(--texto-corpo);
+}
+
+/* ----------------------------------------------------------------------
+ * Lista das outras lojas
+ * -------------------------------------------------------------------- */
+
+.seletor-loja__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  /* Lista sem marcadores e sem recuo padrão do navegador. */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /*
+   * Aparecimento suave: a lista "entra" logo abaixo do card. É só uma
+   * animação de opacidade/posição curta; nada muda de lugar fora do fluxo.
+   */
+  animation: seletor-loja-aparecer 140ms ease-out;
+}
+
+@keyframes seletor-loja-aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Item: um botão inteiro (nome da loja + gerente + letra), com 44px de altura
+ * mínima. Texto tinta sobre superfície clara (≈ 14:1).
+ */
+.seletor-loja__item {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-lg);
+  width: 100%;
+  /* 44px é o alvo de toque mínimo declarado no DESIGN.md. */
+  min-height: 44px;
+  padding: var(--espaco-lg) var(--espaco-xl);
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  font-family: inherit;
+  font-size: var(--texto-corpo);
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover: a borda escurece e o fundo ganha o tom secundário (texto segue
+   legível: tinta sobre o menta claro fica em ≈ 13:1). */
+.seletor-loja__item:hover {
+  border-color: var(--cor-tinta);
+  background-color: var(--cor-secundaria);
+}
+
+/* Mensagem do caso atual: a regional ainda não tem outras lojas com dados. */
+.seletor-loja__sem-outros {
+  margin: 0;
+  padding: var(--espaco-lg) var(--espaco-xl);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  font-size: var(--texto-rotulo);
+  color: var(--cor-texto-suave);
+}
+
+/* ----------------------------------------------------------------------
+ * Movimento reduzido
+ *
+ * Quem pediu ao sistema para reduzir animações não vê a lista "entrando":
+ * o bloco aparece direto.
+ * -------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .seletor-loja__lista {
+    animation: none;
+  }
+}
+
+/* ----------------------------------------------------------------------
+ * Barra recolhida
+ *
+ * Só o círculo com a letra da loja, centralizado. O círculo é um botão que
+ * pede para a barra expandir (não abre a lista: não há espaço).
+ * -------------------------------------------------------------------- */
+
+.seletor-loja--recolhido {
+  align-items: center;
+}
+
+/*
+ * Botão do círculo: 44x44px (alvo de toque do DESIGN.md), sem borda nem
+ * fundo próprios — o visual vem do avatar que fica dentro. O foco do teclado
+ * é desenhado pela regra global :focus-visible.
+ */
+.seletor-loja__avatar-botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-full);
+  background: none;
+  cursor: pointer;
+}
+
+/* Hover: o círculo clareia, deixando claro que é clicável. */
+.seletor-loja__avatar-botao:hover .seletor-loja__avatar {
+  background-color: var(--cor-primaria-ativa);
+}
