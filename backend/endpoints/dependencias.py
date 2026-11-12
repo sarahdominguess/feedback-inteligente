@@ -29,6 +29,7 @@ from services.registro_anotacoes_regional import (
     RegistroAnotacoesRegionalService,
 )
 from services.registro_feedback import RegistroFeedbackService
+from services.registro_feedback_regional import RegistroFeedbackRegionalService
 
 
 @lru_cache(maxsize=1)
@@ -82,6 +83,18 @@ def obter_registro_feedbacks() -> RegistroFeedbackService:
     gravações, que é o que evita dois pedidos apagarem o registro um do outro.
     """
     return RegistroFeedbackService()
+
+
+@lru_cache(maxsize=1)
+def obter_registro_feedbacks_regional() -> RegistroFeedbackRegionalService:
+    """Devolve o serviço dos roteiros do gerente, compartilhado por todas.
+
+    Mesma razão do serviço dos vendedores: uma instância só garante o mesmo
+    arquivo e o mesmo cadeado, evitando que dois pedidos simultâneos apaguem
+    o registro um do outro. É um serviço separado porque o arquivo também é
+    separado (roteiros para o gerente não entram na cobertura do time).
+    """
+    return RegistroFeedbackRegionalService()
 
 
 @lru_cache(maxsize=1)
