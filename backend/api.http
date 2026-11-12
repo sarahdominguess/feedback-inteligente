@@ -85,3 +85,59 @@ Content-Type: application/json
 {
   "texto": ""
 }
+
+
+# ---------------------------------------------------------------------------
+# Etapa 8 — visão da regional POR LOJA.
+# Os roteiros do gerente ficam num registro separado (registro_feedbacks_
+# regional.json) e NÃO entram na cobertura de feedbacks dos vendedores.
+# ---------------------------------------------------------------------------
+
+### Lista as lojas que a regional pode acompanhar.
+### Hoje só existe a L004 (Aurora Shopping Centro), com o gerente Diego Furtado;
+### o formato já é uma lista para receber outras lojas no futuro.
+GET {{base}}/api/regional/lojas
+
+
+### Histórico da loja L004: o mesmo consolidado da visão regional MAIS os
+### roteiros já preparados para o gerente (do mais novo para o mais antigo).
+### O código da loja ignora maiúsculas/espaços: "l004" e " L004 " valem igual.
+GET {{base}}/api/regional/lojas/L004/historico
+
+
+### ERRO esperado: loja inexistente devolve 404 {"erro": "..."}.
+GET {{base}}/api/regional/lojas/L999/historico
+
+
+### Grava uma anotação nova da regional sobre a loja e responde 201.
+### O cliente envia APENAS o texto: a autora é "Patrícia Lemos" (fixa, sem
+### login) e a data é a de hoje no SERVIDOR. Cria o arquivo local
+### backend/data/anotacoes_regional_novas.json (ignorado pelo git).
+POST {{base}}/api/regional/lojas/L004/anotacoes
+Content-Type: application/json
+
+{
+  "texto": "visitar a loja na sexta e conferir a escala do fim de semana"
+}
+
+
+### Gera o roteiro de feedback da regional PARA O GERENTE da loja (todo o
+### histórico). ATENÇÃO: usa a DeepSeek de verdade, CONSOME CRÉDITOS e pode
+### levar de 10 a 60 segundos. Requer DEEPSEEK_API_KEY no backend/.env.
+POST {{base}}/api/regional/feedback/gerar
+Content-Type: application/json
+
+{
+  "loja_id": "L004"
+}
+
+
+### O mesmo roteiro, olhando só outubro de 2026.
+### Também consome créditos e pode levar de 10 a 60 segundos.
+POST {{base}}/api/regional/feedback/gerar
+Content-Type: application/json
+
+{
+  "loja_id": "L004",
+  "mes_referencia": "2026-10"
+}
