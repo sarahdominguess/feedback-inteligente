@@ -1,0 +1,79 @@
+/*
+ * Estilos do rodapé.
+ *
+ * Usa a mesma família visual do cabeçalho: superfície escura do DESIGN.md
+ * (#1E1E24) com texto branco (contraste ≈ 16,5:1, bem acima do AA). O link é
+ * branco sublinhado — o sublinhado é o indicador que não depende de cor.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ *
+ * No celular os dois itens ficam um embaixo do outro, centralizados. A partir
+ * de 768px viram uma linha, com o crédito à esquerda e o link à direita.
+ * -------------------------------------------------------------------- */
+
+.rodape {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-base);
+  padding: var(--espaco-secao);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-fundo-escuro);
+  color: var(--cor-texto-sobre-fundo);
+  text-align: center;
+}
+
+/* Crédito: texto de apoio, sem destaque. */
+.rodape__texto {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+}
+
+/*
+ * Link do Instagram.
+ *
+ * min-height 44px garante o alvo de toque do DESIGN.md; inline-flex com
+ * align-items center centraliza o texto dentro dessa altura. O sublinhado
+ * deixa claro que é um link sem depender da cor.
+ */
+.rodape__link {
+  display: inline-flex;
+  align-items: center;
+  /* 44px: alvo de toque mínimo declarado no DESIGN.md. */
+  min-height: 44px;
+  padding: 0 var(--espaco-base);
+  border-radius: var(--raio-sm);
+  color: var(--cor-texto-sobre-fundo);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  text-decoration: underline;
+  /* Afasta o sublinhado do texto para não cortar as letras com descendente. */
+  text-underline-offset: 2px;
+  transition: color 150ms ease;
+}
+
+/*
+ * Hover: o texto ganha o tom secundário (menta claro). O sublinhado continua,
+ * então a indicação de link não depende só da cor. Contraste do menta sobre
+ * o fundo escuro fica em ≈ 13:1.
+ */
+.rodape__link:hover {
+  color: var(--cor-secundaria);
+}
+
+/*
+ * O foco de teclado vem da regra global :focus-visible (contorno verde-menta
+ * + anel escuro), que aparece bem sobre o fundo escuro do rodapé.
+ */
+
+/* Telas largas: os dois itens na mesma linha, nas pontas. */
+@media (min-width: 768px) {
+  .rodape {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}

@@ -95,3 +95,14 @@ export const ANOTACAO_TEXTO_MAXIMO = 1000;
  * não estiver na lista devolvida pela API, ninguém é selecionado.
  */
 export const VENDEDOR_FOCO_ID = 'C0031';
+
+/**
+ * Créditos do projeto, mostrados no rodapé.
+ *
+ * AUTORA_NOME é o nome que aparece no texto "Desenvolvido por ...".
+ * AUTORA_INSTAGRAM é só o nome de usuário, SEM o "@": o componente do rodapé
+ * monta o "@" da tela e a URL completa do Instagram a partir daqui. Assim o
+ * endereço fica num lugar só e não é digitado à mão em outro arquivo.
+ */
+export const AUTORA_NOME = 'Sarah Domingues';
+export const AUTORA_INSTAGRAM = 'sarahdev.css';
