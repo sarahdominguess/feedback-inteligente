@@ -17,6 +17,7 @@ from datetime import date, datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from config import ANOTACAO_TEXTO_MAXIMO
+from contracts.feedback import FeedbackRoteiroDTO
 from contracts.metricas import (
     MetricaComparadaDTO,
     MetricasDTO,
@@ -78,10 +79,14 @@ class AnotacaoDTO(BaseModel):
 
 
 class FeedbackPreparadoDTO(BaseModel):
-    """Um roteiro que já foi gerado para a pessoa (resumo, sem o conteúdo).
+    """Um roteiro que já foi gerado para a pessoa, COM o conteúdo dele.
 
     Usa "preparado" de propósito: o sistema sabe que o roteiro foi gerado,
     mas não sabe se a conversa chegou a acontecer.
+
+    O campo "roteiro" usa o MESMO formato que o POST /api/feedback/gerar
+    devolve (FeedbackRoteiroDTO). Assim o frontend mostra os roteiros antigos
+    com os mesmos componentes da geração nova, sem precisar de dois formatos.
     """
 
     feedback_id: str = Field(
@@ -96,6 +101,12 @@ class FeedbackPreparadoDTO(BaseModel):
     )
     gerado_em: datetime = Field(
         description="Data e hora em que o roteiro foi gerado (em UTC)."
+    )
+    roteiro: FeedbackRoteiroDTO = Field(
+        description=(
+            "O conteúdo do roteiro: as quatro listas (pontos positivos, "
+            "pontos de melhoria, possíveis motivos e roteiro de conversa)."
+        )
     )
 
 

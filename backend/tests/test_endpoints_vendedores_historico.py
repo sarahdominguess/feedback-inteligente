@@ -5,7 +5,9 @@ arquivo TEMPORÁRIO, trocado via dependency_overrides (nenhum teste toca no
 registro real do projeto).
 """
 
+import json
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -35,10 +37,12 @@ class TestHistoricoVendedor(unittest.TestCase):
         self._diretorio_temporario = tempfile.TemporaryDirectory()
         self.addCleanup(self._diretorio_temporario.cleanup)
 
-        self.service = RegistroFeedbackService(
-            arquivo=Path(self._diretorio_temporario.name)
-            / "registro_feedbacks.json"
+        # Guardamos o caminho do arquivo temporário: alguns testes precisam
+        # escrever nele diretamente para simular um registro corrompido.
+        self.arquivo = (
+            Path(self._diretorio_temporario.name) / "registro_feedbacks.json"
         )
+        self.service = RegistroFeedbackService(arquivo=self.arquivo)
         app.dependency_overrides[obter_registro_feedbacks] = lambda: self.service
         self.addCleanup(
             app.dependency_overrides.pop, obter_registro_feedbacks, None
@@ -92,11 +96,11 @@ class TestHistoricoVendedor(unittest.TestCase):
             )
         )
 
-    def test_feedbacks_preparados_comeca_vazio_e_recebe_um(self):
-        """Sem registro, a lista vem vazia; após registrar, vem 1 resumo.
+    def test_feedbacks_preparados_comeca_vazio_e_recebe_um_com_conteudo(self):
+        """Sem registro, a lista vem vazia; após registrar, vem 1 roteiro.
 
-        O resumo tem só id, mês e horário: o TEXTO do roteiro não entra no
-        histórico.
+        Desde a Etapa 7 o item traz o CONTEÚDO (as quatro listas), e não só o
+        resumo: é o que permite abrir e ler os roteiros anteriores na tela.
         """
         vazio = self.client.get("/api/vendedores/C0031/historico").json()
         self.assertEqual(vazio["feedbacks_preparados"], [])
@@ -106,7 +110,7 @@ class TestHistoricoVendedor(unittest.TestCase):
             "Bianca Rocha",
             "2026-10",
             FeedbackRoteiro(
-                pontos_positivos=["texto único que não deve aparecer"],
+                pontos_positivos=["texto único que agora aparece"],
                 pontos_melhoria=["outro texto"],
                 possiveis_motivos=["mais um"],
                 roteiro_conversa=["pergunta?"],
@@ -118,15 +122,112 @@ class TestHistoricoVendedor(unittest.TestCase):
 
         self.assertEqual(len(dados["feedbacks_preparados"]), 1)
 
-        resumo = dados["feedbacks_preparados"][0]
+        preparado = dados["feedbacks_preparados"][0]
         self.assertEqual(
-            set(resumo), {"feedback_id", "mes_referencia", "gerado_em"}
+            set(preparado),
+            {"feedback_id", "mes_referencia", "gerado_em", "roteiro"},
         )
-        self.assertEqual(resumo["feedback_id"], registro.feedback_id)
-        self.assertEqual(resumo["mes_referencia"], "2026-10")
+        self.assertEqual(preparado["feedback_id"], registro.feedback_id)
+        self.assertEqual(preparado["mes_referencia"], "2026-10")
 
-        # O conteúdo do roteiro NÃO pode ter vazado para a resposta.
-        self.assertNotIn("texto único que não deve aparecer", resposta.text)
+        # O conteúdo VEM na resposta, no mesmo formato do POST de geração.
+        self.assertEqual(
+            preparado["roteiro"],
+            {
+                "pontos_positivos": ["texto único que agora aparece"],
+                "pontos_melhoria": ["outro texto"],
+                "possiveis_motivos": ["mais um"],
+                "roteiro_conversa": ["pergunta?"],
+            },
+        )
+        self.assertIn("texto único que agora aparece", resposta.text)
+
+    def test_preparados_vem_do_mais_novo_para_o_mais_antigo(self):
+        """Dois roteiros saem na ordem inversa da gravação (mais novo antes).
+
+        Esperamos alguns milissegundos entre um registro e outro para o
+        horário ser diferente de forma garantida.
+        """
+        primeiro = self.service.registrar(
+            "C0031",
+            "Bianca Rocha",
+            "2026-09",
+            FeedbackRoteiro(pontos_positivos=["do mês passado"]),
+        )
+        time.sleep(0.005)
+        segundo = self.service.registrar(
+            "C0031",
+            "Bianca Rocha",
+            "2026-10",
+            FeedbackRoteiro(pontos_positivos=["do mês atual"]),
+        )
+
+        dados = self.client.get("/api/vendedores/C0031/historico").json()
+
+        self.assertEqual(
+            [
+                item["feedback_id"]
+                for item in dados["feedbacks_preparados"]
+            ],
+            [segundo.feedback_id, primeiro.feedback_id],
+        )
+        # Cada item mantém o próprio conteúdo (nada é trocado entre eles).
+        self.assertEqual(
+            dados["feedbacks_preparados"][0]["roteiro"]["pontos_positivos"],
+            ["do mês atual"],
+        )
+
+    def test_json_do_historico_nao_tem_nan(self):
+        """Com roteiro no registro, o texto bruto continua sendo JSON válido.
+
+        NaN e Infinity não existem em JSON e quebrariam o JSON.parse do
+        navegador.
+        """
+        self.service.registrar(
+            "C0031",
+            "Bianca Rocha",
+            None,
+            FeedbackRoteiro(pontos_positivos=["texto qualquer"]),
+        )
+
+        resposta = self.client.get("/api/vendedores/C0031/historico")
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertNotIn("NaN", resposta.text)
+        self.assertNotIn("Infinity", resposta.text)
+
+    def test_roteiro_invalido_no_arquivo_devolve_erro_amigavel(self):
+        """Roteiro corrompido no arquivo não vira erro técnico.
+
+        O registro passa na validação do RegistroFeedback (as quatro chaves
+        são listas), mas um item que não é texto quebra a conversão para o
+        DTO. O comportamento esperado é o mesmo que o serviço já tem para
+        arquivo inválido: DadosIndisponiveisError, com a mensagem fixa e sem
+        detalhes internos.
+        """
+        registro_invalido = {
+            "feedback_id": "id-invalido",
+            "vendedor_id": "C0031",
+            "vendedor_nome": "Bianca Rocha",
+            "mes_referencia": None,
+            "gerado_em": "2026-11-11T14:00:00+00:00",
+            # 123 não é texto: FeedbackRoteiro.de_dict recusa.
+            "roteiro": {"pontos_positivos": [123]},
+        }
+        self.arquivo.write_text(
+            json.dumps([registro_invalido]), encoding="utf-8"
+        )
+
+        resposta = self.client.get("/api/vendedores/C0031/historico")
+
+        self.assertEqual(resposta.status_code, 500)
+        self.assertEqual(
+            resposta.json(),
+            {"erro": "Não foi possível carregar os dados necessários."},
+        )
+        # Nada de detalhe interno na resposta.
+        self.assertNotIn("Traceback", resposta.text)
+        self.assertNotIn("roteiro em formato inválido", resposta.text)
 
     def test_gerente_e_id_inexistente_devolvem_404(self):
         """C0030 (gerente) e um ID qualquer não são vendedores: 404."""

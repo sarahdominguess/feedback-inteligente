@@ -174,7 +174,8 @@ def obter_historico_do_vendedor(
     ]
 
     # Roteiros já preparados: listar() já devolve do mais novo para o mais
-    # antigo. O texto do roteiro não entra no histórico, só o resumo.
+    # antigo. Cada item leva o conteúdo completo do roteiro (as quatro
+    # listas), para o frontend poder abrir e ler os roteiros anteriores.
     feedbacks_preparados = [
         feedback_preparado_de(registro_gravado)
         for registro_gravado in registro.listar(vendedor_id)

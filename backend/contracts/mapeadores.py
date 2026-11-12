@@ -20,6 +20,7 @@ from contracts.metricas import (
 from contracts.vendedores import AnotacaoDTO, FeedbackPreparadoDTO
 from domain.anotacao import Anotacao
 from domain.comparativo_time import ComparativoTime
+from domain.excecoes import DadosIndisponiveisError
 from domain.feedback_roteiro import FeedbackRoteiro
 from domain.registro_feedback import RegistroFeedback
 from domain.vendedor import Vendedor
@@ -119,23 +120,54 @@ def roteiro_de(roteiro: FeedbackRoteiro) -> FeedbackRoteiroDTO:
     return FeedbackRoteiroDTO(**roteiro.para_dict())
 
 
+def roteiro_do_registro(registro: RegistroFeedback) -> FeedbackRoteiroDTO:
+    """Reconstrói o DTO do roteiro a partir do dicionário gravado.
+
+    Recebe o RegistroFeedback (o "registro" é a marca, no arquivo, de que um
+    roteiro existiu) e devolve o FeedbackRoteiroDTO, que é o formato que a API
+    entrega.
+
+    Por que esta função existe: a resposta do POST /api/feedback/gerar e os
+    roteiros antigos do histórico precisam do MESMO formato. Uma conversão só
+    evita duas versões que podem divergir com o tempo.
+
+    Se o dicionário gravado estiver num formato que o domínio não aceita
+    (arquivo editado à mão, por exemplo), levantamos DadosIndisponiveisError:
+    é o mesmo erro que o RegistroFeedbackService usa ao ler um arquivo
+    inválido, e o tratador global o transforma numa mensagem amigável em vez
+    de um erro técnico com detalhes internos.
+    """
+    try:
+        # de_dict confere que as quatro chaves são listas de textos e levanta
+        # ValueError quando não são. O ValidationError do Pydantic também é
+        # um ValueError, então o mesmo except cobre os dois casos.
+        return roteiro_de(FeedbackRoteiro.de_dict(registro.roteiro))
+    except ValueError as erro:
+        raise DadosIndisponiveisError(
+            "O registro de feedbacks tem um roteiro em formato inválido."
+        ) from erro
+
+
 def feedback_preparado_de(
     registro: RegistroFeedback,
 ) -> FeedbackPreparadoDTO:
-    """Resume um registro de roteiro para a lista do histórico.
+    """Monta um roteiro preparado (com o conteúdo) para a lista do histórico.
 
-    Recebe o RegistroFeedback gravado pelo serviço e devolve só o
-    identificador, o mês de referência e o horário. O CONTEÚDO do roteiro
-    (as quatro listas) NÃO entra aqui: o histórico só precisa mostrar que
-    existe um preparo, não repetir o texto.
+    Recebe o RegistroFeedback gravado pelo serviço e devolve o identificador,
+    o mês de referência, o horário e o CONTEÚDO do roteiro (as quatro
+    listas) — o mesmo conteúdo que o POST da geração devolve, para o frontend
+    mostrar os roteiros antigos sem um segundo formato.
 
     "Preparado" significa que o roteiro foi GERADO; não sabemos se a
     conversa aconteceu.
+
+    Exemplo: feedback_preparado_de(registro).roteiro.pontos_positivos
     """
     return FeedbackPreparadoDTO(
         feedback_id=registro.feedback_id,
         mes_referencia=registro.mes_referencia,
         gerado_em=registro.gerado_em,
+        roteiro=roteiro_do_registro(registro),
     )
 
 
@@ -144,8 +176,8 @@ def resposta_de_feedback(registro: RegistroFeedback) -> FeedbackGerarResposta:
 
     Recebe o RegistroFeedback que acabou de ser salvo e devolve identidade,
     id, mês, horário e o roteiro em quatro listas. O roteiro é reconstruído
-    com FeedbackRoteiro.de_dict (a partir do dicionário gravado) e convertido
-    com roteiro_de, para não duplicar a conversão.
+    com roteiro_do_registro, a MESMA conversão usada pelos roteiros antigos
+    do histórico.
 
     Exemplo: resposta_de_feedback(registro).roteiro.roteiro_conversa
     """
@@ -155,5 +187,5 @@ def resposta_de_feedback(registro: RegistroFeedback) -> FeedbackGerarResposta:
         vendedor_nome=registro.vendedor_nome,
         mes_referencia=registro.mes_referencia,
         gerado_em=registro.gerado_em,
-        roteiro=roteiro_de(FeedbackRoteiro.de_dict(registro.roteiro)),
+        roteiro=roteiro_do_registro(registro),
     )

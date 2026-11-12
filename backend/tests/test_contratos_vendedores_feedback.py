@@ -183,6 +183,14 @@ class TestSerializacaoDeVendedores(unittest.TestCase):
                     gerado_em=datetime(
                         2026, 11, 11, 14, 0, tzinfo=timezone.utc
                     ),
+                    # O conteúdo do roteiro faz parte do item desde a
+                    # Etapa 7: o frontend abre e lê os roteiros anteriores.
+                    roteiro=FeedbackRoteiroDTO(
+                        pontos_positivos=["Bom atendimento"],
+                        pontos_melhoria=["Vender mais de uma peça"],
+                        possiveis_motivos=["Correria no sábado"],
+                        roteiro_conversa=["Como foi o sábado?"],
+                    ),
                 )
             ],
         )
@@ -197,6 +205,11 @@ class TestSerializacaoDeVendedores(unittest.TestCase):
             dados["feedbacks_preparados"][0]["gerado_em"].startswith(
                 "2026-11-11T14:00:00"
             )
+        )
+        # As quatro listas saem no mesmo formato do POST de geração.
+        self.assertEqual(
+            dados["feedbacks_preparados"][0]["roteiro"]["pontos_positivos"],
+            ["Bom atendimento"],
         )
 
     def test_resposta_de_geracao_de_feedback(self):
