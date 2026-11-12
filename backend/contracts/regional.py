@@ -15,9 +15,7 @@ ausências viram null no JSON e valores NaN/infinito são recusados.
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
-
-from config import ANOTACAO_TEXTO_MAXIMO
+from pydantic import BaseModel, Field
 
 # Situação do acompanhamento: a pessoa já tem roteiro preparado ou não.
 SituacaoAcompanhamento = Literal["com_roteiro", "sem_roteiro"]
@@ -162,37 +160,6 @@ class AcompanhamentoFeedbackDTO(BaseModel):
     )
     vendedores: list[AcompanhamentoVendedorDTO] = Field(
         description="Um item por vendedor, com sua situação de feedback."
-    )
-
-
-class AnotacaoRegionalNovaRequisicao(BaseModel):
-    """Dados que o frontend envia para a regional gravar uma anotação nova.
-
-    Recebe APENAS o texto. A data e a autora NÃO vêm do cliente:
-    - a data é o dia de hoje no servidor, para ninguém inventar ou adulterar;
-    - a autora é a padrão do config (Patrícia Lemos), porque o sistema não
-      tem login para descobrir quem está digitando.
-
-    Regras de validação (o FastAPI devolve 400 com {"erro": ...} quando elas
-    falham):
-    - str_strip_whitespace remove os espaços das pontas ANTES de contar;
-    - min_length=1 recusa texto vazio e texto só com espaços (que vira "");
-    - max_length usa o MESMO limite do serviço (config), para as duas camadas
-      nunca divergirem.
-
-    Exemplo: AnotacaoRegionalNovaRequisicao(texto="  visitar a loja  ")
-    vira texto="visitar a loja".
-    """
-
-    model_config = ConfigDict(str_strip_whitespace=True)
-
-    texto: str = Field(
-        min_length=1,
-        max_length=ANOTACAO_TEXTO_MAXIMO,
-        description=(
-            "O que a regional escreveu sobre a loja. Até "
-            f"{ANOTACAO_TEXTO_MAXIMO} caracteres; não pode ser vazio."
-        ),
     )
 
 
