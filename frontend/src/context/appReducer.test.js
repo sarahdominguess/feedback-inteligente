@@ -990,3 +990,27 @@ test('as ações antigas continuam funcionando depois das novas', () => {
   assert.equal(estado.lojaSelecionadaId, null);
   assert.deepEqual(estado.lojas.dados, []);
 });
+
+test('trocar de visão preserva a aba escolhida nos dois sentidos', () => {
+  // A aba é uma só no estado global: mudar de gerente para regional (e
+  // voltar) não pode reiniciar a navegação em Feedback.
+  let estado = criarEstadoInicial();
+
+  estado = appReducer(estado, { tipo: TIPOS.MUDAR_ABA, aba: ABAS.ANOTACOES });
+  estado = appReducer(estado, {
+    tipo: TIPOS.MUDAR_VISAO,
+    visao: VISOES.REGIONAL,
+  });
+
+  assert.equal(estado.visao, VISOES.REGIONAL);
+  assert.equal(estado.aba, ABAS.ANOTACOES);
+
+  estado = appReducer(estado, { tipo: TIPOS.MUDAR_ABA, aba: ABAS.DADOS });
+  estado = appReducer(estado, {
+    tipo: TIPOS.MUDAR_VISAO,
+    visao: VISOES.GERENTE,
+  });
+
+  assert.equal(estado.visao, VISOES.GERENTE);
+  assert.equal(estado.aba, ABAS.DADOS);
+});

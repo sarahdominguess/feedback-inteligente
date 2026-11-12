@@ -1,9 +1,9 @@
 /**
- * Abas do gerente: Feedback, Anotações e Dados.
+ * Abas de navegação: Feedback, Anotações e Dados.
  *
- * Aparecem empilhadas (uma embaixo da outra) e só existem na visão do gerente.
- * A aba ativa vem do contexto (fonte única de verdade) e pode ser trocada por
- * clique ou pelas setas do teclado.
+ * Aparecem empilhadas (uma embaixo da outra) nas DUAS visões. A aba ativa vem
+ * do contexto (fonte única de verdade) e pode ser trocada por clique ou pelas
+ * setas do teclado.
  */
 
 import { ChartColumn, NotebookPen, Sparkles } from 'lucide-react';
@@ -52,8 +52,9 @@ const ICONES_ABAS = {
  *     passar o mouse). Assim leitores de tela e mouse continuam sabendo o
  *     nome de cada aba.
  *
- * Também lê do contexto a aba atual e a ação mudarAba, e confere a visão,
- * porque as abas são exclusivas do gerente.
+ * Também lê do contexto a aba atual e a ação mudarAba. O rótulo do conjunto
+ * muda conforme a visão (colaborador ou loja), mas a aba escolhida é a MESMA
+ * do estado global.
  *
  * Devolve a lista vertical com três botões no papel de abas (role="tab"),
  * cada um com ícone e texto.
@@ -71,10 +72,8 @@ export function NavegacaoAbas({ recolhida = false }) {
   // do teclado de um para outro.
   const botoesRef = useRef([]);
 
-  // Na visão regional não existem abas: o componente não desenha nada.
-  if (estado.visao !== VISOES.GERENTE) {
-    return null;
-  }
+  // O rótulo do conjunto fala de colaborador ou de loja, conforme a visão.
+  const ehRegional = estado.visao === VISOES.REGIONAL;
 
   /**
    * Trata as setas do teclado dentro da lista de abas.
@@ -122,7 +121,7 @@ export function NavegacaoAbas({ recolhida = false }) {
       role="tablist"
       // Avisa ao leitor de tela que a fila é vertical (↑/↓), e não lado a lado.
       aria-orientation="vertical"
-      aria-label="Seções do colaborador"
+      aria-label={ehRegional ? 'Seções da loja' : 'Seções do colaborador'}
     >
       {ORDEM_ABAS.map((valor, indice) => {
         const ativa = valor === estado.aba;

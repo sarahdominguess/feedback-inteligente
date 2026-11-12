@@ -13,38 +13,31 @@ import { AreaCentral } from './components/AreaCentral.jsx';
 import { BarraLateral } from './components/BarraLateral.jsx';
 import { Cabecalho } from './components/Cabecalho.jsx';
 import { Rodape } from './components/Rodape.jsx';
-import { VISOES } from './constantes.js';
-import { useApp } from './context/useApp.js';
 
 /**
  * Componente App.
  *
- * Não recebe props: é o topo da árvore. Usa o useApp() apenas para saber a
- * visão atual, que decide se a coluna lateral existe.
+ * Não recebe props: é o topo da árvore. Não lê o contexto: a barra lateral
+ * existe nas DUAS visões e é ela quem decide o conteúdo (colaborador ou
+ * loja).
  *
  * Devolve:
  *   - <Cabecalho /> ocupando a largura toda no topo;
- *   - <div class="app__corpo"> com a barra lateral (só na visão do gerente)
- *     e a área central, que ocupa todo o espaço restante;
+ *   - <div class="app__corpo"> com a barra lateral e a área central, que
+ *     ocupa todo o espaço restante;
  *   - <Rodape /> no fim da tela.
  *
  * Exemplo (feito em main.jsx): <App />
  */
 function App() {
-  const { estado } = useApp();
-
-  // Na visão do gerente existe a coluna do menu do colaborador; na regional,
-  // não — e aí a área central usa a largura inteira.
-  const mostrarLateral = estado.visao === VISOES.GERENTE;
-
   return (
     <div className="app">
-      {/* Topo: título, subtítulo e alternador de visão. */}
+      {/* Topo: título, subtítulo e menu de usuário. */}
       <Cabecalho />
 
-      {/* Meio: lateral à esquerda (quando existe) e conteúdo no restante. */}
+      {/* Meio: lateral à esquerda e conteúdo no restante. */}
       <div className="app__corpo">
-        {mostrarLateral && <BarraLateral />}
+        <BarraLateral />
 
         {/* Área central: mostra a página conforme visão, seleção e aba. */}
         <AreaCentral />

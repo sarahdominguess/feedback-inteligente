@@ -1,10 +1,10 @@
 /**
- * Barra lateral (menu do colaborador).
+ * Barra lateral (menu do colaborador ou da loja).
  *
- * Em coluna: botão que expande/recolhe, as abas da pessoa escolhida e o card
- * que mostra quem está selecionado. Expandida mostra ícone + texto; recolhida
- * mostra só os ícones, para sobrar espaço ao conteúdo. Só existe na visão do
- * gerente.
+ * Em coluna: botão que expande/recolhe, as abas do item escolhido e o card do
+ * seletor. Na visão do gerente, o item é um colaborador; na regional, uma
+ * loja. Expandida mostra ícone + texto; recolhida mostra só os ícones, para
+ * sobrar espaço ao conteúdo.
  *
  * A preferência NÃO é guardada entre visitas: cada abertura do app começa
  * expandida em telas largas e recolhida no celular.
@@ -17,6 +17,7 @@ import { VISOES } from '../constantes.js';
 import { useApp } from '../context/useApp.js';
 import { NavegacaoAbas } from './NavegacaoAbas.jsx';
 import { SeletorColaborador } from './SeletorColaborador.jsx';
+import { SeletorLoja } from './SeletorLoja.jsx';
 
 // Importa o CSS deste componente.
 import './BarraLateral.css';
@@ -60,14 +61,15 @@ function telaLarga() {
 /**
  * Componente BarraLateral.
  *
- * Não recebe props: lê do contexto a visão atual e o colaborador escolhido.
- * Guarda no estado local se está expandida ou recolhida.
+ * Não recebe props: lê do contexto a visão atual, o colaborador escolhido e a
+ * loja escolhida. Guarda no estado local se está expandida ou recolhida.
  *
  * Devolve:
  *   - o botão de alternar (sempre visível, no topo);
- *   - as abas, apenas quando há um colaborador selecionado;
- *   - o SeletorColaborador, SEMPRE montado — é ele que carrega a lista de
- *     vendedores e escolhe a Bianca automaticamente na demo, mesmo recolhido.
+ *   - as abas, apenas quando há um colaborador (gerente) ou loja (regional)
+ *     selecionado;
+ *   - o seletor da visão, SEMPRE montado — é ele que carrega a lista e escolhe
+ *     a Bianca/a L004 automaticamente na demo, mesmo recolhido.
  *
  * Exemplo de uso: <BarraLateral />
  */
@@ -83,13 +85,13 @@ export function BarraLateral() {
    */
   const [expandida, setExpandida] = useState(telaLarga);
 
-  // Na visão regional não existe escolha de colaborador: nada é desenhado.
-  if (estado.visao !== VISOES.GERENTE) {
-    return null;
-  }
+  // A visão decide o conteúdo: colaborador (gerente) ou loja (regional).
+  const ehRegional = estado.visao === VISOES.REGIONAL;
 
-  // As abas fazem sentido depois que existe uma pessoa escolhida.
-  const temSelecionado = Boolean(estado.vendedorSelecionadoId);
+  // As abas fazem sentido depois que existe uma pessoa/loja escolhida.
+  const temSelecionado = ehRegional
+    ? Boolean(estado.lojaSelecionadaId)
+    : Boolean(estado.vendedorSelecionadoId);
 
   /**
    * Alterna entre expandida e recolhida.
@@ -114,10 +116,11 @@ export function BarraLateral() {
     >
       {/*
        * Título acessível: não ocupa espaço na tela, mas leitores de tela
-       * anunciam "Menu do colaborador" ao entrar na região.
+       * anunciam "Menu do colaborador" (gerente) ou "Menu da loja" (regional)
+       * ao entrar na região.
        */}
       <h2 id={ID_TITULO_LATERAL} className="ui-visualmente-oculto">
-        Menu do colaborador
+        {ehRegional ? 'Menu da loja' : 'Menu do colaborador'}
       </h2>
 
       {/*
@@ -149,12 +152,21 @@ export function BarraLateral() {
       <div id={ID_CONTEUDO_LATERAL} className="barra-lateral__conteudo">
         {temSelecionado && <NavegacaoAbas recolhida={!expandida} />}
 
-        <SeletorColaborador
-          recolhida={!expandida}
-          // Clicar no círculo do colaborador com a barra recolhida expande a
-          // barra (é o único controle que faz sentido nesse estado).
-          aoExpandir={() => setExpandida(true)}
-        />
+        {ehRegional ? (
+          <SeletorLoja
+            recolhida={!expandida}
+            // Clicar no círculo da loja com a barra recolhida expande a
+            // barra (é o único controle que faz sentido nesse estado).
+            aoExpandir={() => setExpandida(true)}
+          />
+        ) : (
+          <SeletorColaborador
+            recolhida={!expandida}
+            // Clicar no círculo do colaborador com a barra recolhida expande
+            // a barra (é o único controle que faz sentido nesse estado).
+            aoExpandir={() => setExpandida(true)}
+          />
+        )}
       </div>
     </aside>
   );
