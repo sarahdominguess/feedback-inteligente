@@ -77,7 +77,14 @@ export function AreaCentral() {
         >
           {aba === ABAS.DADOS && <PaginaDados />}
 
-          {aba === ABAS.ANOTACOES && <PaginaAnotacoes />}
+          {aba === ABAS.ANOTACOES && (
+            /*
+             * key={vendedorSelecionadoId} reinicia a página quando a pessoa
+             * muda: o rascunho digitado para um colaborador não pode aparecer
+             * no campo do próximo. Mesmo padrão da PaginaFeedback.
+             */
+            <PaginaAnotacoes key={vendedorSelecionadoId} />
+          )}
 
           {aba === ABAS.FEEDBACK && (
             /*

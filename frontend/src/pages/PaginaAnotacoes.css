@@ -1,11 +1,16 @@
 /*
- * Estilos da página da aba Anotações.
+ * Estilos da página da aba Anotações (conversa).
  *
- * A página fica dentro do cartão claro da área central; usa texto tinta sobre
- * superfície suave (contraste ≈ 14:1). Só tokens de cor, espaço e raio.
+ * A página fica dentro do cartão claro da área central: texto tinta sobre
+ * superfície suave (contraste ≈ 14:1). Os balões usam a cor secundária com
+ * texto tinta (≈ 13:1). Só tokens de cor, espaço e raio.
  */
 
-/* Coluna com a orientação e as duas seções. */
+/* ----------------------------------------------------------------------
+ * Estrutura da página
+ * -------------------------------------------------------------------- */
+
+/* Coluna: orientação, conversa, campo de escrita e seção do time. */
 .pagina-anotacoes {
   display: flex;
   flex-direction: column;
@@ -13,8 +18,8 @@
 }
 
 /*
- * Orientação fixa do topo: uma caixa discreta, com borda para se separar do
- * fundo da página (que é da mesma cor).
+ * Orientação do topo: caixa discreta com borda para se separar do fundo
+ * (que é da mesma cor).
  */
 .pagina-anotacoes__orientacao {
   margin: 0;
@@ -25,39 +30,69 @@
   line-height: 1.45;
 }
 
-/* Cada seção: título, explicação e lista. */
-.pagina-anotacoes__secao {
+/* Bloco da conversa: título e área de mensagens. */
+.pagina-anotacoes__chat {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-lg);
 }
 
-/* Separador discreto entre a primeira e a segunda seção. */
-.pagina-anotacoes__secao + .pagina-anotacoes__secao {
-  padding-top: var(--espaco-secao);
-  border-top: 1px solid var(--cor-borda);
-}
-
-/* Título de seção: 22px, um degrau acima do texto comum. */
+/* Título "Anotações sobre ...": 22px, um degrau acima do texto comum. */
 .pagina-anotacoes__titulo {
   margin: 0;
   font-size: var(--texto-display-sm);
   font-weight: var(--peso-medio);
 }
 
-/* Explicação da seção do time: texto de apoio, menor. */
-.pagina-anotacoes__explicacao {
-  margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
-  color: var(--cor-texto-suave);
-}
-
 /* ----------------------------------------------------------------------
- * Lista de anotações
+ * Área de mensagens
+ *
+ * Altura máxima de 60vh com rolagem interna: a conversa não empurra o campo
+ * de escrita para fora da tela em listas longas. O vh é medida de tela, não
+ * da escala de espaçamento, por isso não vem de um token.
  * -------------------------------------------------------------------- */
 
-/* Sem marcadores e sem recuo padrão; cada anotação é um cartão. */
+.pagina-anotacoes__mensagens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-lg);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: var(--espaco-lg);
+  /* Borda de controle (~10:1) delimita a área que rola. */
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  /* Rolagem suave quando o navegador posiciona a barra. */
+  scroll-behavior: smooth;
+  /* O conteúdo pode encolher em telas estreitas sem estourar a largura. */
+  min-width: 0;
+}
+
+/* Um conjunto de mensagens de um mesmo dia. */
+.pagina-anotacoes__dia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+}
+
+/*
+ * Separador de dia: centralizado, pequeno e discreto. A cor é o texto de
+ * apoio sobre a superfície clara (≈ 10:1), então continua legível.
+ */
+.pagina-anotacoes__separador {
+  margin: 0;
+  align-self: center;
+  padding: var(--espaco-xs) var(--espaco-lg);
+  border-radius: var(--raio-full);
+  font-size: var(--texto-legenda);
+  font-weight: var(--peso-medio);
+  color: var(--cor-texto-suave);
+  background-color: var(--cor-superficie-suave);
+}
+
+/* Lista de balões do dia: sem marcadores e sem recuo do navegador. */
 .pagina-anotacoes__lista {
   display: flex;
   flex-direction: column;
@@ -67,29 +102,38 @@
   list-style: none;
 }
 
-/* Um cartão por anotação, com borda para separar do fundo. */
-.pagina-anotacoes__item {
+/*
+ * Linha de uma mensagem. justify-content: flex-end joga o balão para a
+ * DIREITA: são mensagens do próprio gerente, como num chat.
+ */
+.pagina-anotacoes__linha {
   display: flex;
-  flex-direction: column;
-  gap: var(--espaco-xs);
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-md);
-}
-
-/* Data em letra menor e tom de apoio (contraste ≈ 10:1). */
-.pagina-anotacoes__data {
-  font-size: var(--texto-legenda);
-  font-weight: var(--peso-medio);
-  color: var(--cor-texto-suave);
+  justify-content: flex-end;
 }
 
 /*
- * Texto original da anotação.
+ * Balão da mensagem: largura no máximo 85% para o lado de quem escreveu
+ * ficar claro. Fundo na cor secundária (menta claro) com texto tinta:
+ * contraste ≈ 13:1, acima do mínimo AA.
+ */
+.pagina-anotacoes__balao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  max-width: 85%;
+  padding: var(--espaco-lg) var(--espaco-xl);
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-secundaria);
+  color: var(--cor-tinta);
+}
+
+/*
+ * Texto da anotação, como veio da API.
  *
- * white-space: pre-wrap preserva quebras de linha e espaços exatamente como
- * vieram no texto (é só exibição, não altera o dado). overflow-wrap evita
- * que uma palavra muito longa estoure o cartão.
+ * white-space: pre-wrap preserva as quebras de linha e os espaços digitados
+ * (é só exibição, o dado não muda). overflow-wrap evita que uma palavra
+ * gigante estoure o balão.
  */
 .pagina-anotacoes__texto {
   margin: 0;
@@ -97,4 +141,183 @@
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* Data dentro do balão: letra menor, mesmo tom do texto (contraste alto). */
+.pagina-anotacoes__data {
+  align-self: flex-end;
+  font-size: var(--texto-legenda);
+  font-weight: var(--peso-medio);
+  color: var(--cor-tinta);
+}
+
+/* ----------------------------------------------------------------------
+ * Campo de escrita
+ * -------------------------------------------------------------------- */
+
+.pagina-anotacoes__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+}
+
+/*
+ * Campo de texto com várias linhas.
+ *
+ * font-size 16px (token de entrada): abaixo disso o iOS dá zoom ao focar.
+ * resize: vertical deixa a pessoa aumentar a altura, mas não a largura.
+ */
+.pagina-anotacoes__campo {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--espaco-lg) var(--espaco-xl);
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+  font-family: inherit;
+  font-size: var(--texto-entrada);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/*
+ * Foco visível: a borda escurece ao entrar no campo. O contorno do
+ * :focus-visible (regra global de base.css) continua valendo para quem
+ * navega por teclado.
+ */
+.pagina-anotacoes__campo:focus {
+  border-color: var(--cor-tinta);
+}
+
+/* Texto de exemplo (placeholder) com tom de apoio. */
+.pagina-anotacoes__campo::placeholder {
+  color: var(--cor-texto-suave);
+}
+
+/* Linha do contador + botão. */
+.pagina-anotacoes__acoes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-lg);
+  /* Em telas estreitas, o botão desce em vez de espremer o contador. */
+  flex-wrap: wrap;
+}
+
+/* Contador de caracteres: discreto, sem competir com o campo. */
+.pagina-anotacoes__contador {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-suave);
+}
+
+/* Ícone do botão no tamanho do texto (16px). */
+.pagina-anotacoes__botao svg {
+  width: var(--texto-corpo);
+  height: var(--texto-corpo);
+}
+
+/*
+ * Mensagem de erro do envio: usa o par de perigo do tema (fundo claro,
+ * borda e texto tinta ≈ 14,8:1). Nunca é só cor: o texto explica o problema.
+ */
+.pagina-anotacoes__erro {
+  margin: 0;
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-perigo-borda);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-perigo-fundo);
+  color: var(--cor-tinta);
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+}
+
+/* ----------------------------------------------------------------------
+ * Anotações sobre o time (bloco recolhível)
+ * -------------------------------------------------------------------- */
+
+.pagina-anotacoes__time {
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie-suave);
+}
+
+/*
+ * O <summary> é o título clicável do bloco. Altura mínima de 44px garante o
+ * alvo de toque do DESIGN.md; cursor pointer avisa que abre e fecha.
+ */
+.pagina-anotacoes__time-resumo {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+}
+
+/* Espaço entre o título e o conteúdo aberto. */
+.pagina-anotacoes__time[open] .pagina-anotacoes__time-resumo {
+  margin-bottom: var(--espaco-lg);
+}
+
+/* Explicação da seção do time: texto de apoio, menor. */
+.pagina-anotacoes__explicacao {
+  margin: 0 0 var(--espaco-lg) 0;
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+/* Lista do time: sem marcadores e sem recuo. */
+.pagina-anotacoes__lista-time {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cada anotação do time é um cartão simples, só de leitura. */
+.pagina-anotacoes__item-time {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  padding: var(--espaco-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-suave);
+}
+
+/* ----------------------------------------------------------------------
+ * Telas estreitas (a partir de 360px de largura)
+ *
+ * Menos respiro nas laterais para o texto caber sem rolagem horizontal, e o
+ * balão pode ocupar mais espaço.
+ * -------------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .pagina-anotacoes__mensagens {
+    padding: var(--espaco-base);
+  }
+
+  .pagina-anotacoes__balao {
+    max-width: 92%;
+    padding: var(--espaco-base) var(--espaco-lg);
+  }
+}
+
+/* ----------------------------------------------------------------------
+ * Movimento reduzido
+ *
+ * A rolagem automática já escolhe o modo "auto" no JavaScript quando a
+ * pessoa pede menos movimento. Aqui desligamos também a rolagem suave do
+ * container, para nada deslizar na tela.
+ * -------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .pagina-anotacoes__mensagens {
+    scroll-behavior: auto;
+  }
 }

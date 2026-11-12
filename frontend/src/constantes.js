@@ -77,6 +77,17 @@ export const VISOES = {
 };
 
 /**
+ * Limite de caracteres de uma anotação nova — só para ORIENTAR na tela.
+ *
+ * Serve para o contador e para o maxLength do campo de escrita. O limite de
+ * verdade é validado pelo BACKEND (backend/config.py, ANOTACAO_TEXTO_MAXIMO):
+ * se os dois números divergirem, quem manda é o backend, que responde 400 com
+ * uma mensagem clara. Este valor existe para a pessoa ver quando está
+ * chegando no fim antes de tentar enviar.
+ */
+export const ANOTACAO_TEXTO_MAXIMO = 1000;
+
+/**
  * Vendedora usada como foco do cenário da demo: Bianca Rocha (C0031).
  *
  * Serve apenas para a lateral já abrir com ela selecionada quando a lista
