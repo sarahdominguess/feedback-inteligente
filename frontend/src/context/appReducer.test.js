@@ -24,6 +24,8 @@ test('estado inicial tem a forma combinada', () => {
     vendedorSelecionadoId: null,
     detalhes: { status: STATUS.OCIOSO, dados: null, erro: null },
     feedbacks: {},
+    // O envio de anotação começa parado, sem erro.
+    novaAnotacao: { status: STATUS.OCIOSO, erro: null },
     regional: { status: STATUS.OCIOSO, dados: null, erro: null },
   });
 });
@@ -269,4 +271,195 @@ test('erro sem mensagem util vira texto genérico', () => {
   });
 
   assert.equal(estado.vendedores.erro, 'Não foi possível concluir a operação.');
+});
+
+// ---------------------------------------------------------------------------
+// Anotação nova (aba Anotações)
+// ---------------------------------------------------------------------------
+
+/**
+ * Monta um estado com o histórico da Bianca já carregado.
+ *
+ * Recebe a lista de anotações que o histórico deve conter (por padrão, uma
+ * anotação "antiga" do CSV) e devolve o estado pronto, com a Bianca
+ * selecionada e os detalhes em sucesso.
+ */
+function estadoComHistorico(
+  anotacoes = [{ data: '2026-10-08', sobre: 'Bianca Rocha', texto: 'antiga' }],
+) {
+  let estado = criarEstadoInicial();
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_VENDEDOR,
+    vendedorId: 'C0031',
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.DETALHES_SUCESSO,
+    vendedorId: 'C0031',
+    dados: { nome: 'Bianca Rocha', anotacoes },
+  });
+
+  return estado;
+}
+
+// Anotação no formato que a API devolve (AnotacaoDTO).
+const ANOTACAO_NOVA = {
+  data: '2026-11-12',
+  sobre: 'Bianca Rocha',
+  texto: 'cliente elogiou o caixa',
+  e_do_time: false,
+};
+
+test('envio de anotação: começa ocioso e vai para carregando', () => {
+  // O formulário precisa saber que o pedido está em andamento.
+  const inicial = criarEstadoInicial();
+  assert.deepEqual(inicial.novaAnotacao, {
+    status: STATUS.OCIOSO,
+    erro: null,
+  });
+
+  const enviando = appReducer(inicial, { tipo: TIPOS.ANOTACAO_ENVIANDO });
+
+  assert.equal(enviando.novaAnotacao.status, STATUS.CARREGANDO);
+  assert.equal(enviando.novaAnotacao.erro, null);
+});
+
+test('envio de anotação: limpa o erro anterior ao tentar de novo', () => {
+  // Se a tentativa anterior falhou, o aviso não pode ficar na tela enquanto
+  // a nova tentativa acontece.
+  let estado = appReducer(criarEstadoInicial(), {
+    tipo: TIPOS.SELECIONAR_VENDEDOR,
+    vendedorId: 'C0031',
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_ERRO,
+    vendedorId: 'C0031',
+    erro: new ErroApi('A anotação não foi salva.', { tipo: 'rede' }),
+  });
+  assert.equal(estado.novaAnotacao.status, STATUS.ERRO);
+
+  estado = appReducer(estado, { tipo: TIPOS.ANOTACAO_ENVIANDO });
+
+  assert.equal(estado.novaAnotacao.status, STATUS.CARREGANDO);
+  assert.equal(estado.novaAnotacao.erro, null);
+});
+
+test('sucesso acrescenta a anotação NO FIM e não altera o estado anterior', () => {
+  // A lista do histórico é copiada: o React precisa de uma referência nova,
+  // e o estado antigo tem de continuar intacto.
+  const estado = estadoComHistorico();
+  const antes = structuredClone(estado);
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_SUCESSO,
+    vendedorId: 'C0031',
+    dados: ANOTACAO_NOVA,
+  });
+
+  assert.equal(proximo.novaAnotacao.status, STATUS.SUCESSO);
+  assert.equal(proximo.novaAnotacao.erro, null);
+
+  // Duas anotações: a antiga e a nova, nesta ordem.
+  assert.equal(proximo.detalhes.dados.anotacoes.length, 2);
+  assert.equal(
+    proximo.detalhes.dados.anotacoes[0].texto,
+    'antiga',
+  );
+  assert.deepEqual(proximo.detalhes.dados.anotacoes[1], ANOTACAO_NOVA);
+
+  // O estado recebido não muda e a lista é outro array.
+  assert.deepEqual(estado, antes);
+  assert.notEqual(
+    proximo.detalhes.dados.anotacoes,
+    estado.detalhes.dados.anotacoes,
+  );
+});
+
+test('sucesso de outro vendedor é ignorado (resposta antiga)', () => {
+  // A pessoa trocou de colaborador no meio do envio: a resposta que chega
+  // depois não pode mexer no histórico de quem está na tela agora.
+  const estado = estadoComHistorico();
+
+  const resultado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_SUCESSO,
+    vendedorId: 'C0032',
+    dados: ANOTACAO_NOVA,
+  });
+
+  // Devolve o MESMO estado, sem criar objeto novo.
+  assert.equal(resultado, estado);
+});
+
+test('sucesso sem histórico carregado não quebra e ainda marca sucesso', () => {
+  // Decisão: a anotação FOI gravada no servidor; sem uma lista onde
+  // acrescentar, registramos sucesso mesmo assim (marcar erro seria mentira).
+  // Ela aparece quando o histórico for carregado.
+  let estado = criarEstadoInicial();
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_VENDEDOR,
+    vendedorId: 'C0031',
+  });
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_SUCESSO,
+    vendedorId: 'C0031',
+    dados: ANOTACAO_NOVA,
+  });
+
+  assert.equal(proximo.novaAnotacao.status, STATUS.SUCESSO);
+  assert.equal(proximo.detalhes.dados, null);
+});
+
+test('erro do envio guarda só o texto, nunca o objeto de erro', () => {
+  // O estado é serializável e a tela só precisa de uma frase pronta.
+  const estado = estadoComHistorico();
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_ERRO,
+    vendedorId: 'C0031',
+    erro: new ErroApi('Não foi possível conectar ao servidor.', {
+      tipo: 'rede',
+    }),
+  });
+
+  assert.equal(proximo.novaAnotacao.status, STATUS.ERRO);
+  assert.equal(
+    proximo.novaAnotacao.erro,
+    'Não foi possível conectar ao servidor.',
+  );
+  assert.equal(typeof proximo.novaAnotacao.erro, 'string');
+});
+
+test('erro de outro vendedor é ignorado (resposta antiga)', () => {
+  // Mesma proteção do sucesso: o aviso não é sobre a pessoa da tela.
+  const estado = estadoComHistorico();
+
+  const resultado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_ERRO,
+    vendedorId: 'C0032',
+    erro: new ErroApi('Falhou.', { tipo: 'rede' }),
+  });
+
+  assert.equal(resultado, estado);
+});
+
+test('trocar de vendedor limpa o estado do envio de anotação', () => {
+  // Um "enviando" ou um erro da pessoa anterior não pode aparecer na tela
+  // da próxima.
+  let estado = estadoComHistorico();
+  estado = appReducer(estado, {
+    tipo: TIPOS.ANOTACAO_ERRO,
+    vendedorId: 'C0031',
+    erro: new ErroApi('Falhou.', { tipo: 'rede' }),
+  });
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_VENDEDOR,
+    vendedorId: 'C0032',
+  });
+
+  assert.deepEqual(estado.novaAnotacao, {
+    status: STATUS.OCIOSO,
+    erro: null,
+  });
 });

@@ -3,7 +3,8 @@
  *
  * Provider: o componente que "abraça" a árvore e oferece o contexto para
  * todos os filhos. Aqui ele guarda o estado (useReducer), expõe as ações
- * assíncronas (que chamam os serviços HTTP) e cuida de cancelar pedidos
+ * assíncronas (carregar a lista, selecionar alguém, gerar feedback, gravar
+ * uma ANOTAÇÃO NOVA, carregar a regional) e cuida de cancelar pedidos
  * pendentes quando a tela sai.
  */
 
@@ -12,6 +13,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { criarEstadoInicial, appReducer, TIPOS } from './appReducer.js';
 import { AppContext } from './appContext.js';
 import { erroFoiCancelamento } from '../services/erroApi.js';
+import { registrarAnotacao } from '../services/anotacaoService.js';
 import {
   obterVendedoresPorLoja,
   obterDetalhesVendedor,
@@ -31,6 +33,7 @@ const SERVICOS_REAIS = {
   obterDetalhesVendedor,
   gerarFeedback: gerarFeedbackDaApi,
   obterDesempenhoGerente,
+  registrarAnotacao,
 };
 
 /**
@@ -55,6 +58,8 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
   const detalhesControlador = useRef(null);
   const regionalControlador = useRef(null);
   const geracoes = useRef(new Map());
+  // Controlador do envio de anotação em andamento (null = nenhum).
+  const anotacaoControlador = useRef(null);
 
   /**
    * Busca a lista de vendedores da loja.
@@ -159,6 +164,50 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
   );
 
   /**
+   * Grava uma anotação nova sobre um vendedor.
+   *
+   * Recebe o código da pessoa e o texto digitado. Devolve uma Promise com
+   * TRUE quando gravou e FALSE quando falhou — a tela usa esse retorno para
+   * limpar o campo de texto só quando deu certo (se falhou, o texto continua
+   * lá para a pessoa tentar de novo sem digitar tudo outra vez).
+   *
+   * Enquanto um envio está em andamento, uma nova chamada é ignorada: duplo
+   * clique não pode gravar a mesma anotação duas vezes. Não há tentativa
+   * automática: se falhou, quem decide repetir é a pessoa.
+   */
+  const adicionarAnotacao = useCallback(
+    async (vendedorId, texto) => {
+      // Já existe um envio em andamento: não dispara outro.
+      if (anotacaoControlador.current !== null) {
+        return false;
+      }
+
+      const controlador = new AbortController();
+      anotacaoControlador.current = controlador;
+
+      despachar({ tipo: TIPOS.ANOTACAO_ENVIANDO });
+
+      try {
+        const dados = await servicos.registrarAnotacao(vendedorId, texto, {
+          signal: controlador.signal,
+        });
+        despachar({ tipo: TIPOS.ANOTACAO_SUCESSO, vendedorId, dados });
+        return true;
+      } catch (erro) {
+        // Cancelamento é escolha nossa (troca de tela), não falha do usuário.
+        if (!erroFoiCancelamento(erro)) {
+          despachar({ tipo: TIPOS.ANOTACAO_ERRO, vendedorId, erro });
+        }
+        return false;
+      } finally {
+        // Libera a trava para a próxima anotação poder ser enviada.
+        anotacaoControlador.current = null;
+      }
+    },
+    [servicos],
+  );
+
+  /**
    * Carrega o consolidado da visão regional.
    *
    * Também cancela o pedido anterior, caso a pessoa peça de novo rápido.
@@ -206,6 +255,8 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
     return () => {
       detalhesControlador.current?.abort();
       regionalControlador.current?.abort();
+      // Envio de anotação em andamento também é cancelado.
+      anotacaoControlador.current?.abort();
 
       for (const controlador of controladoresDeGeracao.values()) {
         controlador.abort();
@@ -222,6 +273,7 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
       carregarVendedores,
       selecionarVendedor,
       gerarFeedback,
+      adicionarAnotacao,
       carregarRegional,
       mudarAba,
       mudarVisao,
@@ -231,6 +283,7 @@ export function AppProvider({ children, servicos = SERVICOS_REAIS }) {
       carregarVendedores,
       selecionarVendedor,
       gerarFeedback,
+      adicionarAnotacao,
       carregarRegional,
       mudarAba,
       mudarVisao,

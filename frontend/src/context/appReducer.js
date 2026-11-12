@@ -10,6 +10,11 @@
  * "espalhamento" ({ ...estado }). O React compara as referências para saber
  * o que mudou na tela.
  *
+ * As ações cobrem carregar a lista de vendedores, selecionar alguém, buscar o
+ * histórico, gerar feedback, carregar a regional, navegar entre aba/visão e
+ * ENVIAR UMA ANOTAÇÃO NOVA (as ações de anotação ficam num bloco próprio,
+ * mais abaixo).
+ *
  * Este arquivo não usa React de propósito: assim a lógica pode ser testada
  * direto no Node, sem navegador.
  */
@@ -34,6 +39,10 @@ export const TIPOS = {
   FEEDBACK_CARREGANDO: 'feedback/carregando',
   FEEDBACK_SUCESSO: 'feedback/sucesso',
   FEEDBACK_ERRO: 'feedback/erro',
+
+  ANOTACAO_ENVIANDO: 'anotacao/enviando',
+  ANOTACAO_SUCESSO: 'anotacao/sucesso',
+  ANOTACAO_ERRO: 'anotacao/erro',
 
   REGIONAL_CARREGANDO: 'regional/carregando',
   REGIONAL_SUCESSO: 'regional/sucesso',
@@ -87,6 +96,11 @@ export function criarEstadoInicial() {
 
     // Roteiros por vendedor: { [vendedor_id]: { status, dados, erro } }.
     feedbacks: {},
+
+    // Situação do envio de uma anotação nova (o formulário da aba Anotações).
+    // É um pedaço separado porque descreve um ENVIO em andamento, e não o
+    // histórico da pessoa: { status, erro }.
+    novaAnotacao: { status: STATUS.OCIOSO, erro: null },
 
     // Consolidado da visão da regional.
     regional: { status: STATUS.OCIOSO, dados: null, erro: null },
@@ -187,10 +201,13 @@ export function appReducer(estado, acao) {
       // Trocar de pessoa reinicia o histórico (detalhes) para "ocioso".
       // Os feedbacks já gerados continuam guardados: eles são por vendedor
       // e não têm relação com quem está selecionado agora.
+      // O envio de anotação também volta ao início: um erro ou um "enviando"
+      // da pessoa anterior não pode aparecer na tela da próxima.
       return {
         ...estado,
         vendedorSelecionadoId: acao.vendedorId ?? null,
         detalhes: { status: STATUS.OCIOSO, dados: null, erro: null },
+        novaAnotacao: { status: STATUS.OCIOSO, erro: null },
       };
 
     // ----- Detalhes do vendedor selecionado ------------------------------
@@ -253,6 +270,77 @@ export function appReducer(estado, acao) {
         status: STATUS.ERRO,
         erro: mensagemDeErro(acao.erro),
       });
+
+    // ----- Anotação nova do gerente (aba Anotações) -----------------------
+    case TIPOS.ANOTACAO_ENVIANDO:
+      // O envio começou: limpa o erro anterior para a tela não mostrar uma
+      // falha velha enquanto a nova tentativa acontece.
+      return {
+        ...estado,
+        novaAnotacao: { status: STATUS.CARREGANDO, erro: null },
+      };
+
+    case TIPOS.ANOTACAO_SUCESSO: {
+      // Resposta de outra pessoa (a pessoa trocou de colaborador no meio do
+      // envio): descartamos, como já fazemos com os detalhes. O texto já foi
+      // gravado no servidor e aparece quando aquele histórico for recarregado.
+      if (!ehDoVendedorSelecionado(estado, acao.vendedorId)) {
+        return estado;
+      }
+
+      // Atalhos para o histórico carregado e para a lista de anotações dele.
+      const dados = estado.detalhes.dados;
+      const anotacoes = Array.isArray(dados?.anotacoes)
+        ? dados.anotacoes
+        : null;
+
+      /*
+       * Decisão: mesmo quando não há onde acrescentar (histórico ainda não
+       * carregado ou resposta sem os campos esperados), marcamos SUCESSO.
+       * A anotação FOI gravada no servidor; marcar erro seria mentira. Ela
+       * aparece na próxima vez que o histórico for carregado.
+       */
+      const comSucesso = {
+        ...estado,
+        novaAnotacao: { status: STATUS.SUCESSO, erro: null },
+      };
+
+      if (
+        anotacoes === null ||
+        acao.dados === undefined ||
+        acao.dados === null
+      ) {
+        return comSucesso;
+      }
+
+      return {
+        ...comSucesso,
+        detalhes: {
+          ...estado.detalhes,
+          dados: {
+            ...dados,
+            // Lista NOVA (o estado antigo nunca é alterado) e a anotação no
+            // FIM, que é a ordem cronológica usada pelo histórico.
+            anotacoes: [...anotacoes, acao.dados],
+          },
+        },
+      };
+    }
+
+    case TIPOS.ANOTACAO_ERRO:
+      // Falha de outra pessoa: a tela já mostra o colaborador novo, então o
+      // aviso não teria a ver com ele. Mesma proteção de "resposta antiga".
+      if (!ehDoVendedorSelecionado(estado, acao.vendedorId)) {
+        return estado;
+      }
+      return {
+        ...estado,
+        novaAnotacao: {
+          status: STATUS.ERRO,
+          // Só o texto da mensagem: nunca URL, cabeçalho ou objeto de erro.
+          erro: mensagemDeErro(acao.erro),
+        },
+      };
 
     // ----- Visão regional -------------------------------------------------
     case TIPOS.REGIONAL_CARREGANDO:
