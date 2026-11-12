@@ -24,6 +24,7 @@ from fastapi import Depends
 from services.consolidado_regional import ConsolidadoRegional
 from services.data_loader import DataLoader
 from services.llm_service import LLMService
+from services.registro_anotacoes import RegistroAnotacoesService
 from services.registro_feedback import RegistroFeedbackService
 
 
@@ -34,8 +35,23 @@ def obter_data_loader() -> DataLoader:
     lru_cache guarda o resultado da primeira chamada; com maxsize=1 e sem
     argumentos, funciona como singleton. A leitura dos CSVs continua
     preguiçosa: só acontece quando alguma rota pedir dados de verdade.
+
+    O DataLoader recebe o serviço das anotações novas para que o histórico,
+    o prompt da IA e a visão regional enxerguem o que o gerente escreveu na
+    interface, sem alterar os CSVs de origem.
     """
-    return DataLoader()
+    return DataLoader(registro_anotacoes=obter_registro_anotacoes())
+
+
+@lru_cache(maxsize=1)
+def obter_registro_anotacoes() -> RegistroAnotacoesService:
+    """Devolve o serviço das anotações novas, compartilhado por todas as rotas.
+
+    Uma instância só garante o mesmo arquivo e o mesmo cadeado para todas as
+    gravações — é o que evita dois pedidos simultâneos apagarem a anotação um
+    do outro.
+    """
+    return RegistroAnotacoesService()
 
 
 @lru_cache(maxsize=1)

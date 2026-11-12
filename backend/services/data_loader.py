@@ -28,6 +28,7 @@ from domain.gerente import Gerente
 from domain.indicador_diario import IndicadorDiario
 from domain.texto import nome_corresponde
 from domain.vendedor import Vendedor
+from services.registro_anotacoes import RegistroAnotacoesService
 
 
 def _texto(valor) -> str:
@@ -75,12 +76,20 @@ class DataLoader:
         data_dir: pasta onde estão os CSVs (padrão: backend/data).
         loja_id: código da loja dos funcionários (padrão: L004).
         loja_nome: nome da loja (padrão: Aurora Shopping Centro).
+        registro_anotacoes: serviço das anotações NOVAS, escritas na
+            interface (padrão: None = ignora essas anotações e usa só o CSV).
 
     A leitura é preguiçosa: nada é lido no construtor. Na primeira chamada de
     um método público, os quatro arquivos de vendas são lidos uma única vez e
     ficam em cache interno; as chamadas seguintes reaproveitam os dados. Os
     dois CSVs da regional têm um cache próprio, carregado apenas quando a
     visão executiva precisar deles.
+
+    Exceção ao cache: quando registro_anotacoes é informado, as anotações
+    novas são lidas do serviço a cada obter_gerente(). Elas mudam a cada
+    gravação feita na interface, então guardar uma cópia faria uma anotação
+    recém-escrita só aparecer depois de reiniciar o servidor. O CSV, que não
+    muda durante a execução, continua sendo lido uma vez só.
     """
 
     def __init__(
@@ -88,11 +97,16 @@ class DataLoader:
         data_dir: Path = DATA_DIR,
         loja_id: str = LOJA_ID,
         loja_nome: str = LOJA_NOME,
+        registro_anotacoes: RegistroAnotacoesService | None = None,
     ):
         """Guarda a configuração; os arquivos só serão lidos depois."""
         self._data_dir = Path(data_dir)
         self._loja_id = loja_id
         self._loja_nome = loja_nome
+
+        # Fonte extra de anotações (as escritas no site). None é o padrão
+        # histórico: nesse caso o comportamento é exatamente o de antes.
+        self._registro_anotacoes = registro_anotacoes
 
         # "Cache": guardar o resultado para não recalcular (aqui, para não
         # reler os arquivos a cada chamada).
@@ -366,12 +380,48 @@ class DataLoader:
         self._carregado = True
 
     def obter_gerente(self) -> Gerente:
-        """Devolve o gerente da loja, com todas as anotações do CSV.
+        """Devolve o gerente da loja, com todas as anotações conhecidas.
 
         O gerente é a linha de vendedores.csv cujo cargo é "gerente".
+
+        As anotações vêm de duas fontes:
+        1) o CSV (anotacoes_gerente.csv), lido uma vez e guardado em cache;
+        2) o serviço de anotações novas (as escritas na interface), quando
+           ele foi informado no construtor.
+
+        Por que o serviço é lido a cada chamada: uma anotação nova pode ser
+        gravada a qualquer momento e a próxima leitura já precisa mostrá-la.
+        Uma cópia congelada só apareceria depois de reiniciar o servidor. O
+        CSV, que não muda durante a execução, continua em cache — assim a
+        parte cara (ler o arquivo com Pandas) é feita uma vez só.
+
+        Ordem: o Gerente ordena por data com sorted, que é estável. Passamos
+        primeiro as anotações do CSV e depois as novas; por isso, em datas
+        iguais, as do CSV vêm antes, e entre as novas vale a ordem em que
+        foram registradas.
+
+        Sem o serviço informado, devolvemos o MESMO objeto montado na carga
+        do CSV: o comportamento de quem não usa anotações novas não muda.
         """
         self._garantir_carregado()
-        return self._gerente
+
+        if self._registro_anotacoes is None:
+            return self._gerente
+
+        # Uma anotação nova é gravada a cada POST; o serviço é relido aqui.
+        anotacoes_novas = self._registro_anotacoes.listar()
+
+        # Tupla nova, do CSV para as novas. O gerente do cache não é alterado
+        # (ele pode continuar sendo usado por quem não vê anotações novas).
+        anotacoes = (*self._anotacoes, *anotacoes_novas)
+
+        return Gerente(
+            gerente_id=self._gerente.gerente_id,
+            nome=self._gerente.nome,
+            loja_id=self._gerente.loja_id,
+            loja_nome=self._gerente.loja_nome,
+            anotacoes=anotacoes,
+        )
 
     def obter_vendas_do_gerente(self) -> Vendedor:
         """Devolve as vendas do próprio gerente como um Vendedor.
@@ -454,6 +504,11 @@ class DataLoader:
         Usa o nome do vendedor para filtrar as anotações; as anotações sobre
         o time ("(time)") ficam de fora. Levanta VendedorNaoEncontradoError
         se o ID não for de um vendedor.
+
+        Como a busca parte de obter_gerente(), o resultado já inclui as
+        anotações novas gravadas na interface (quando o DataLoader recebeu o
+        serviço delas). É por aqui que o histórico, o prompt da IA e a visão
+        regional enxergam o texto recém-escrito.
         """
         vendedor = self.obter_vendedor(vendedor_id)
         gerente = self.obter_gerente()
