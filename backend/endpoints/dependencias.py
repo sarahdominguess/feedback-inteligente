@@ -25,9 +25,6 @@ from services.consolidado_regional import ConsolidadoRegional
 from services.data_loader import DataLoader
 from services.llm_service import LLMService
 from services.registro_anotacoes import RegistroAnotacoesService
-from services.registro_anotacoes_regional import (
-    RegistroAnotacoesRegionalService,
-)
 from services.registro_feedback import RegistroFeedbackService
 
 
@@ -39,25 +36,11 @@ def obter_data_loader() -> DataLoader:
     argumentos, funciona como singleton. A leitura dos CSVs continua
     preguiçosa: só acontece quando alguma rota pedir dados de verdade.
 
-    O DataLoader recebe os serviços das anotações novas (do gerente e da
-    regional) para que o histórico, o prompt da IA e a visão regional
-    enxerguem o que foi escrito na interface, sem alterar os CSVs de origem.
+    O DataLoader recebe o serviço das anotações novas para que o histórico,
+    o prompt da IA e a visão regional enxerguem o que o gerente escreveu na
+    interface, sem alterar os CSVs de origem.
     """
-    return DataLoader(
-        registro_anotacoes=obter_registro_anotacoes(),
-        registro_anotacoes_regional=obter_registro_anotacoes_regional(),
-    )
-
-
-@lru_cache(maxsize=1)
-def obter_registro_anotacoes_regional() -> RegistroAnotacoesRegionalService:
-    """Devolve o serviço das anotações novas da regional (instância única).
-
-    Uma instância só garante o mesmo arquivo e o mesmo cadeado para todas as
-    gravações — é o que evita dois pedidos simultâneos apagarem a anotação um
-    do outro.
-    """
-    return RegistroAnotacoesRegionalService()
+    return DataLoader(registro_anotacoes=obter_registro_anotacoes())
 
 
 @lru_cache(maxsize=1)
