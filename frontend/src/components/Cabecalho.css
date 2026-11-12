@@ -19,6 +19,13 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--espaco-secao);
+  /*
+   * Faixa de largura total no topo. O padding nas laterais impede o texto de
+   * colar na borda da tela; sem cantos arredondados, porque a faixa vai de
+   * ponta a ponta.
+   */
+  width: 100%;
+  padding: var(--espaco-secao);
   /* Branco sobre o roxo #8328D9: ≈ 6,4:1. */
   color: var(--cor-texto-sobre-fundo);
 }

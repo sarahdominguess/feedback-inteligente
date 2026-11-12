@@ -1,24 +1,31 @@
 /*
  * Estilos da área central.
  *
- * Cartão claro sobre o roxo, com texto tinta (contraste ≈ 14:1). A largura
- * vem do layout em App.css; aqui só cuidamos do conteúdo e do respiro.
+ * É o conteúdo principal: ocupa TODO o espaço que sobra ao lado da barra
+ * lateral (ou a largura inteira, na visão regional). O respiro interno vem
+ * daqui, já que o container da página não tem mais padding próprio.
+ *
+ * Fundo claro com texto tinta (contraste ≈ 14:1). Sem borda e sem cantos
+ * arredondados: a área encosta nas bordas da tela e na lateral.
  */
 
 .area-central {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-secao);
+  /*
+   * flex: 1 faz a área ocupar todo o espaço restante da linha. min-width: 0
+   * permite que ela ENCOLHA em vez de estourar a página: assim tabelas
+   * largas rolam dentro do próprio container, sem criar rolagem horizontal
+   * na página inteira.
+   */
+  flex: 1;
+  min-width: 0;
   padding: var(--espaco-secao);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-lg);
   background-color: var(--cor-superficie-suave);
   color: var(--cor-tinta);
   /* Altura mínima de ~288px para a área não "sumir" quando está vazia. */
   min-height: calc(var(--espaco-secao) * 18);
-  /* min-width: 0 permite que a coluna encolha em telas estreitas; as tabelas
-     largas rolam dentro dos próprios containers, sem esticar a página. */
-  min-width: 0;
 }
 
 /*

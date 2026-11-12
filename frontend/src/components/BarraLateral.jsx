@@ -62,11 +62,17 @@ export function BarraLateral() {
         Menu do colaborador
       </h2>
 
-      {/* Abas da pessoa escolhida (Feedback, Anotações, Dados). */}
-      {temSelecionado && <NavegacaoAbas />}
+      {/*
+       * Conteúdo visível do menu, num bloco próprio para poder ficar
+       * "sticky" (grudado no topo) enquanto a página rola — explicado no CSS.
+       */}
+      <div className="barra-lateral__conteudo">
+        {/* Abas da pessoa escolhida (Feedback, Anotações, Dados). */}
+        {temSelecionado && <NavegacaoAbas />}
 
-      {/* Card da pessoa escolhida, com a seta para trocar. */}
-      <SeletorColaborador />
+        {/* Card da pessoa escolhida, com a seta para trocar. */}
+        <SeletorColaborador />
+      </div>
     </aside>
   );
 }

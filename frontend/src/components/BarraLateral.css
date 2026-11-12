@@ -1,26 +1,66 @@
 /*
  * Estilos da barra lateral.
  *
- * Um cartão claro sobre o roxo da página, com texto tinta (contraste ≈ 14:1).
- * Os filhos ficam em COLUNA: as abas primeiro e o card do colaborador por
- * último. Não usamos a propriedade "order": assim a ordem que aparece na tela
- * é a mesma do DOM, e leitores de tela e teclado percorrem o mesmo caminho
- * que os olhos.
+ * A lateral é uma faixa clara COLADA na borda esquerda da tela: sem margem,
+ * sem cantos arredondados desse lado e com uma borda só à direita, que a
+ * separa do conteúdo. Ela ocupa toda a altura do corpo (do fim do cabeçalho
+ * ao começo do rodapé) por causa do alinhamento definido em App.css.
  */
+
+/* ----------------------------------------------------------------------
+ * A faixa lateral
+ * -------------------------------------------------------------------- */
 
 .barra-lateral {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-secao);
+  /*
+   * Largura fixa de 260px: três abas curtas e o card de uma pessoa cabem
+   * bem. "flex: 0 0 260px" quer dizer: não cresce, não encolhe, começa com
+   * 260px (o tamanho inclui padding e borda por causa do box-sizing).
+   */
+  flex: 0 0 260px;
+  /* Estica na vertical para acompanhar a altura do corpo. */
+  align-self: stretch;
   padding: var(--espaco-secao);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-lg);
+  /* Só a borda da direita: a esquerda encosta na borda da tela. */
+  border-right: 1px solid var(--cor-borda);
   background-color: var(--cor-superficie-suave);
   color: var(--cor-tinta);
-  /*
-   * min-width: 0 permite que a coluna encolha dentro da grade do App em vez
-   * de estourar a largura quando o nome de alguém for muito comprido.
-   * A largura da coluna em si é definida em App.css.
-   */
+  /* Permite encolher sem estourar a largura em telas estreitas. */
   min-width: 0;
+}
+
+/*
+ * Conteúdo do menu.
+ *
+ * "position: sticky" gruda o elemento no topo (top: 0) enquanto a página
+ * rola: em páginas longas o menu continua visível em vez de subir junto com
+ * o conteúdo. Só funciona porque este bloco é MAIS BAIXO que a coluna que o
+ * contém — a coluna está esticada na altura toda do corpo.
+ */
+.barra-lateral__conteudo {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-secao);
+}
+
+/* ----------------------------------------------------------------------
+ * Telas estreitas
+ *
+ * O corpo do app passa a ser uma coluna (ver App.css), então a lateral
+ * deixa de ter largura fixa, ocupa a largura toda e ganha uma borda embaixo
+ * em vez da borda à direita.
+ * -------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .barra-lateral {
+    /* Em coluna, o "flex-basis" viraria ALTURA: por isso voltamos ao auto. */
+    flex: 0 0 auto;
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--cor-borda);
+  }
 }

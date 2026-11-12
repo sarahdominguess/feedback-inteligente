@@ -1,72 +1,48 @@
 /*
- * Estilos do componente App: o layout principal da aplicação.
+ * Estilos da casca do app (App.jsx).
  *
- * O app usa uma grade (grid): o cabeçalho ocupa a largura toda e, na visão
- * do gerente, a barra lateral (menu do colaborador) fica à esquerda com a
- * área central à direita. Em telas estreitas, tudo empilha em uma coluna.
+ * A página é uma coluna de três faixas: cabeçalho no topo, corpo no meio
+ * (barra lateral + conteúdo) e rodapé no fim. O corpo cresce para ocupar o
+ * espaço livre, então o rodapé fica sempre no fim da tela — mesmo quando o
+ * conteúdo é curto.
+ *
+ * "Flexbox" é a forma de organizar elementos em linha ou coluna: aqui usamos
+ * coluna no app inteiro e linha dentro do corpo.
  */
 
-/*
- * "Grid" é o layout em grade: definimos colunas e áreas com nome, e cada
- * bloco ocupa a área indicada pela regra grid-area mais abaixo.
- *
- * A versão base tem UMA coluna (usada na visão regional). A versão com
- * lateral troca para duas colunas.
- */
-.app-layout {
-  display: grid;
-  /* minmax(0, 1fr) = uma coluna que ocupa o espaço sem estourar. */
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'cabecalho'
-    'central';
-  gap: var(--espaco-secao);
-  /* 1200px limita a largura em telas grandes. É medida de página, não da
-     escala de espaçamento, por isso não vem de um token. */
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--espaco-secao);
-}
+/* ----------------------------------------------------------------------
+ * Casca
+ * -------------------------------------------------------------------- */
 
-/*
- * Duas colunas: 260px para o menu do colaborador e o resto para o conteúdo.
- *
- * A lateral diminuiu de 300px para 260px porque ela deixou de listar a equipe
- * inteira: agora mostra só três abas curtas e o card de uma pessoa. Com menos
- * largura, sobra mais espaço para o conteúdo (indicadores, anotações e o
- * roteiro), que é onde o gerente passa a maior parte do tempo.
- */
-.app-layout--com-lateral {
-  grid-template-columns: 260px minmax(0, 1fr);
-  grid-template-areas:
-    'cabecalho cabecalho'
-    'lateral central';
-}
-
-/* Cada componente ocupa a sua área nomeada na grade. */
-.cabecalho {
-  grid-area: cabecalho;
-}
-
-.barra-lateral {
-  grid-area: lateral;
-}
-
-.area-central {
-  grid-area: central;
+.app {
+  display: flex;
+  flex-direction: column;
+  /*
+   * A página ocupa no mínimo a altura da tela.
+   * 100dvh é a altura "dinâmica" da janela: no celular ela desconta as
+   * barras do navegador, que aparecem e desaparecem. 100vh fica como
+   * reserva para navegadores antigos que não conhecem dvh.
+   */
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /*
- * Layout responsivo: em telas com menos de 768px, a lateral sai da coluna
- * e tudo empilha na vertical, na ordem cabeçalho → menu do colaborador →
- * conteúdo.
+ * Corpo: barra lateral à esquerda e conteúdo no restante.
+ *
+ * flex: 1 faz o corpo crescer e empurrar o rodapé para o fim da tela.
+ * align-items: stretch estica os filhos na vertical: a barra lateral fica
+ * com a altura toda do corpo, do fim do cabeçalho ao começo do rodapé.
  */
+.app__corpo {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+}
+
+/* Telas estreitas: a lateral empilha acima do conteúdo. */
 @media (max-width: 767px) {
-  .app-layout--com-lateral {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      'cabecalho'
-      'lateral'
-      'central';
+  .app__corpo {
+    flex-direction: column;
   }
 }
