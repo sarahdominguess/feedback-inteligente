@@ -1,0 +1,174 @@
+/*
+ * Estilos do menu de usuário do cabeçalho.
+ *
+ * A identificação (círculo, nome e cargo) fica sobre o roxo da página, com
+ * texto branco (contraste ≈ 6,4:1). O painel que abre é claro, com texto
+ * tinta (≈ 14:1), para se destacar do fundo escuro.
+ */
+
+/* ----------------------------------------------------------------------
+ * Container
+ *
+ * position: relative transforma este bloco na "âncora" do painel: um filho
+ * com position: absolute é posicionado em relação a ELE, não à página.
+ * -------------------------------------------------------------------- */
+
+.menu-usuario {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-base);
+  color: var(--cor-texto-sobre-fundo);
+}
+
+/* Identificação: círculo à esquerda, nome e cargo empilhados à direita. */
+.menu-usuario__identificacao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-base);
+}
+
+/*
+ * Círculo com as iniciais: 44px (alvo de toque do DESIGN.md), fundo primária
+ * com texto escuro (contraste ≈ 11,2:1).
+ */
+.menu-usuario__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
+  width: 44px;
+  height: 44px;
+  border-radius: var(--raio-full);
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-sobre-primaria);
+  font-size: var(--texto-botao);
+  font-weight: var(--peso-forte);
+}
+
+/* Versão menor do avatar, usada dentro do painel. */
+.menu-usuario__avatar--opcao {
+  width: 36px;
+  height: 36px;
+  font-size: var(--texto-legenda);
+}
+
+/* Nome em cima, cargo embaixo. */
+.menu-usuario__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-xs);
+  /* min-width: 0 deixa o texto encolher em telas estreitas. */
+  min-width: 0;
+}
+
+/* Nome: texto principal do menu. */
+.menu-usuario__nome {
+  font-size: var(--texto-corpo);
+  font-weight: var(--peso-forte);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* Cargo: texto de apoio, um degrau menor. */
+.menu-usuario__cargo {
+  font-size: var(--texto-legenda);
+  line-height: 1.2;
+}
+
+/* ----------------------------------------------------------------------
+ * Botão da seta
+ *
+ * Só ícone, 44x44px. O foco do teclado vem da regra global :focus-visible.
+ * -------------------------------------------------------------------- */
+
+.menu-usuario__seta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  /* Sobre o fundo escuro, a borda é o que delimita o botão. */
+  border: 1px solid var(--cor-texto-sobre-fundo);
+  border-radius: var(--raio-md);
+  background-color: transparent;
+  color: var(--cor-texto-sobre-fundo);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+/*
+ * Hover: o botão ganha fundo claro e texto escuro (≈ 14:1), deixando claro
+ * que é clicável sobre o fundo roxo.
+ */
+.menu-usuario__seta:hover {
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/* Tamanho do desenho da seta: 16px, igual ao texto de corpo. */
+.menu-usuario__seta svg {
+  width: var(--texto-corpo);
+  height: var(--texto-corpo);
+}
+
+/* ----------------------------------------------------------------------
+ * Painel de opções
+ *
+ * position: absolute tira o painel do fluxo: ele aparece POR CIMA do
+ * conteúdo, logo abaixo do menu, alinhado à direita. z-index alto garante
+ * que ele fique na frente do conteúdo da página.
+ *
+ * max-width com 100vw impede que o painel estoure a tela em 360px.
+ * -------------------------------------------------------------------- */
+
+.menu-usuario__painel {
+  position: absolute;
+  top: calc(100% + var(--espaco-base));
+  right: 0;
+  z-index: 20;
+  min-width: 200px;
+  max-width: calc(100vw - var(--espaco-secao) * 2);
+  margin: 0;
+  padding: var(--espaco-base);
+  list-style: none;
+  border: 1px solid var(--cor-borda-controle);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-suave);
+  color: var(--cor-tinta);
+}
+
+/* Cada opção é um botão de largura total, com 44px de altura mínima. */
+.menu-usuario__opcao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-base);
+  width: 100%;
+  /* 44px é o alvo de toque mínimo declarado no DESIGN.md. */
+  min-height: 44px;
+  padding: var(--espaco-base);
+  border: 1px solid transparent;
+  border-radius: var(--raio-sm);
+  background-color: transparent;
+  color: var(--cor-tinta);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+/* Hover/foco da opção: fundo no tom secundário (texto segue legível). */
+.menu-usuario__opcao:hover {
+  background-color: var(--cor-secundaria);
+}
+
+/* No painel claro, o cargo volta a usar o tom de apoio do app. */
+.menu-usuario__opcao .menu-usuario__cargo {
+  color: var(--cor-texto-suave);
+}

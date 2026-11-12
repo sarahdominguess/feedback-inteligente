@@ -77,6 +77,22 @@ export const VISOES = {
 };
 
 /**
+ * Perfis de usuário da demonstração (menu do canto superior direito).
+ *
+ * O sistema NÃO tem login: estes são os dois perfis do cenário do desafio.
+ * Escolher um deles no menu troca a VISÃO do app (gerente ou regional) — e a
+ * visão já é guardada pelo contexto, então nada é salvo aqui.
+ *
+ * Aqui vai só o PRIMEIRO NOME, que é o que aparece no menu. Em outros pontos
+ * da tela (ex.: anotações da regional) o nome completo continua vindo da API
+ * ("Diego Furtado", "Patrícia Lemos").
+ */
+export const USUARIOS = [
+  { visao: VISOES.GERENTE, nome: 'Diego', cargo: 'Gerente' },
+  { visao: VISOES.REGIONAL, nome: 'Patrícia', cargo: 'Regional' },
+];
+
+/**
  * Limite de caracteres de uma anotação nova — só para ORIENTAR na tela.
  *
  * Serve para o contador e para o maxLength do campo de escrita. O limite de
