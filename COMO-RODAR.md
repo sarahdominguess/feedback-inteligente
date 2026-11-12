@@ -102,7 +102,7 @@ créditos** e podem levar de 10 a 60 segundos. As demais são leves.
 | --- | --- | --- |
 | GET | `/health` | Confirma que o servidor está no ar. |
 | GET | `/api/vendedores/{loja_id}` | Lista os vendedores da loja com métricas e comparativo. Aceita `?mes=AAAA-MM`. |
-| GET | `/api/vendedores/{vendedor_id}/historico` | Histórico de um vendedor: resumo mensal, anotações e roteiros já preparados. |
+| GET | `/api/vendedores/{vendedor_id}/historico` | Histórico de um vendedor: resumo mensal, anotações e roteiros já preparados. Cada item de `feedbacks_preparados` traz também o **conteúdo** (as quatro listas) do roteiro gerado, além de id, mês e horário. |
 | POST | `/api/vendedores/{vendedor_id}/anotacoes` | Grava uma anotação nova do gerente sobre o vendedor. Corpo: `texto`. A data é a de hoje, definida pelo servidor. |
 | POST | `/api/feedback/gerar` | Gera o roteiro com a IA e grava o registro. Corpo: `vendedor_id` e, opcional, `mes_referencia`. |
 | GET | `/api/regional/desempenho-gerente` | Visão da regional: resultado da loja mês a mês, cobertura dos roteiros e anotações. |
@@ -177,26 +177,46 @@ Ordem para subir tudo:
 3. Abra http://localhost:5173.
 
 Em http://localhost:5173 o app abre na visão do gerente, já na aba
-**Feedback**, com a Bianca selecionada. Na barra lateral ficam as abas em fila
-(**Feedback**, **Anotações**, **Dados**) e, embaixo delas, o card do
-colaborador escolhido com uma seta ao lado do nome: a seta abre a lista dos
-outros colaboradores da loja, para trocar de pessoa.
+**Feedback**, com a Bianca selecionada.
+
+**Cabeçalho (topo, largura toda):** à esquerda o nome do projeto
+(**Feedback Inteligente**) com o subtítulo **"Assistente de IA para
+feedback"**; à direita o menu de usuário, que mostra quem está usando o
+sistema e o cargo. Clicando na seta aparecem as duas opções — **Diego /
+Gerente** e **Patrícia / Regional** — e escolher uma troca a visão do app (não
+há login; são os dois perfis da demonstração).
+
+**Barra lateral:** fica colada na borda esquerda, com as abas em fila
+(**Feedback**, **Anotações**, **Dados**) e, embaixo, o card do colaborador com
+a seta para trocar de pessoa. O botão no topo da barra **recolhe** (só ícones,
+64px) ou **expande** (ícone + texto, 260px); recolhida, passar o mouse num
+ícone mostra o nome e clicar no círculo do colaborador expande a barra. Ela só
+existe na visão do gerente.
+
+**Conteúdo:** ocupa todo o espaço restante, ao lado da barra; na visão
+regional (sem barra) usa a largura inteira.
 
 Na área central:
 
 - **Feedback**: o botão **Gerar feedback** usa IA, consome créditos e pode
   levar de 10 segundos a alguns minutos. O resultado aparece em quatro cards
   de largura total, um embaixo do outro: Pontos positivos, Pontos de melhoria,
-  Possíveis motivos e Roteiro de conversa sugerido.
+  Possíveis motivos e Roteiro de conversa sugerido. Abaixo, em **Roteiros já
+  preparados**, cada roteiro anterior tem uma **seta** que abre o conteúdo
+  daquela geração (os mesmos quatro cards); um roteiro recém-gerado entra no
+  topo da lista na hora.
 - **Anotações**: em formato de chat. O histórico aparece como mensagens, da
   mais antiga para a mais nova, e o campo embaixo grava uma anotação nova
   (Enter envia; Shift+Enter quebra linha). As anotações sobre o time ficam num
   bloco recolhível.
 - **Dados**: indicadores da pessoa e comparativo com o time.
 
-No cabeçalho, o alternador **Regional** mostra a visão executiva da loja:
-resultado mês a mês, cobertura dos roteiros preparados e as anotações da
-regional.
+**Rodapé (fim da página, largura toda):** "Desenvolvido por Sarah Domingues" e
+o link **@sarahdev.css**, que abre o Instagram em outra aba.
+
+No menu de usuário, escolher **Patrícia / Regional** mostra a visão executiva
+da loja: resultado mês a mês, cobertura dos roteiros preparados e as anotações
+da regional.
 
 Comandos úteis, de dentro de `frontend/`:
 
