@@ -463,3 +463,193 @@ test('trocar de vendedor limpa o estado do envio de anotação', () => {
     erro: null,
   });
 });
+
+// ---------------------------------------------------------------------------
+// Feedback novo entrando na lista de roteiros preparados
+// ---------------------------------------------------------------------------
+
+/**
+ * Monta um estado com o histórico da Bianca carregado.
+ *
+ * Diferente do helper de anotações, aqui os detalhes trazem "vendedor_id" —
+ * é esse campo que o reducer usa para saber de quem é a lista de roteiros
+ * preparados. Recebe os itens que a lista já deve conter.
+ */
+function estadoComPreparados(itens = []) {
+  let estado = criarEstadoInicial();
+
+  estado = appReducer(estado, {
+    tipo: TIPOS.SELECIONAR_VENDEDOR,
+    vendedorId: 'C0031',
+  });
+  estado = appReducer(estado, {
+    tipo: TIPOS.DETALHES_SUCESSO,
+    vendedorId: 'C0031',
+    dados: {
+      vendedor_id: 'C0031',
+      nome: 'Bianca Rocha',
+      anotacoes: [],
+      feedbacks_preparados: itens,
+    },
+  });
+
+  return estado;
+}
+
+/**
+ * Resposta da geração de feedback, no formato da API (FeedbackGerarResposta).
+ */
+function respostaGerada(extra = {}) {
+  return {
+    feedback_id: 'novo-id',
+    vendedor_id: 'C0031',
+    vendedor_nome: 'Bianca Rocha',
+    mes_referencia: '2026-10',
+    gerado_em: '2026-11-12T14:00:00Z',
+    roteiro: {
+      pontos_positivos: ['Bom atendimento'],
+      pontos_melhoria: ['Oferecer mais peças'],
+      possiveis_motivos: ['Correria no sábado'],
+      roteiro_conversa: ['Como foi o sábado?'],
+    },
+    ...extra,
+  };
+}
+
+test('geração com sucesso põe o roteiro novo no INÍCIO dos preparados', () => {
+  // A lista mostra o mais recente primeiro; os antigos continuam lá.
+  const estado = estadoComPreparados([
+    { feedback_id: 'antigo-1' },
+    { feedback_id: 'antigo-2' },
+  ]);
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_SUCESSO,
+    vendedorId: 'C0031',
+    dados: respostaGerada(),
+  });
+
+  const preparados = proximo.detalhes.dados.feedbacks_preparados;
+
+  assert.equal(preparados.length, 3);
+  assert.equal(preparados[0].feedback_id, 'novo-id');
+  assert.equal(preparados[1].feedback_id, 'antigo-1');
+  assert.equal(preparados[2].feedback_id, 'antigo-2');
+
+  // O item novo tem só os quatro campos da lista, com o roteiro completo.
+  assert.deepEqual(Object.keys(preparados[0]).sort(), [
+    'feedback_id',
+    'gerado_em',
+    'mes_referencia',
+    'roteiro',
+  ]);
+  assert.deepEqual(
+    preparados[0].roteiro.pontos_positivos,
+    ['Bom atendimento'],
+  );
+});
+
+test('a geração continua guardando o roteiro em estado.feedbacks', () => {
+  // O painel de destaque da aba usa esse pedaço do estado; ele não pode
+  // deixar de ser preenchido só porque a lista também mudou.
+  const estado = estadoComPreparados();
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_SUCESSO,
+    vendedorId: 'C0031',
+    dados: respostaGerada(),
+  });
+
+  assert.equal(proximo.feedbacks.C0031.status, STATUS.SUCESSO);
+  assert.equal(proximo.feedbacks.C0031.dados.feedback_id, 'novo-id');
+});
+
+test('geração repetida com o mesmo feedback_id não duplica o item', () => {
+  // Reenviar/atualizar o mesmo roteiro não pode criar duas linhas iguais.
+  let estado = estadoComPreparados([{ feedback_id: 'antigo-1' }]);
+
+  const acao = {
+    tipo: TIPOS.FEEDBACK_SUCESSO,
+    vendedorId: 'C0031',
+    dados: respostaGerada(),
+  };
+
+  estado = appReducer(estado, acao);
+  estado = appReducer(estado, acao);
+
+  const preparados = estado.detalhes.dados.feedbacks_preparados;
+
+  assert.equal(preparados.length, 2);
+  assert.equal(preparados[0].feedback_id, 'novo-id');
+  assert.equal(preparados[1].feedback_id, 'antigo-1');
+});
+
+test('geração de OUTRA pessoa não mexe nos detalhes da tela', () => {
+  // Resposta atrasada de uma troca de colaborador: o histórico na tela é da
+  // Bianca, então nada nele pode mudar.
+  const estado = estadoComPreparados([{ feedback_id: 'antigo-1' }]);
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_SUCESSO,
+    vendedorId: 'C0032',
+    dados: respostaGerada({ feedback_id: 'de-outra-pessoa' }),
+  });
+
+  // O objeto de detalhes continua sendo o MESMO.
+  assert.equal(proximo.detalhes, estado.detalhes);
+  // Mas o roteiro da outra pessoa fica guardado no mapa dela.
+  assert.equal(
+    proximo.feedbacks.C0032.dados.feedback_id,
+    'de-outra-pessoa',
+  );
+});
+
+test('geração sem histórico carregado não quebra e guarda o feedback', () => {
+  // Cenário: os detalhes ainda não chegaram. Não há lista para atualizar,
+  // mas o roteiro precisa ficar guardado para a tela mostrar.
+  const estado = criarEstadoInicial();
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_SUCESSO,
+    vendedorId: 'C0031',
+    dados: respostaGerada(),
+  });
+
+  assert.equal(proximo.detalhes, estado.detalhes);
+  assert.equal(proximo.feedbacks.C0031.status, STATUS.SUCESSO);
+});
+
+test('resposta sem roteiro válido não mexe nos detalhes', () => {
+  // Se a API devolver algo incompleto, a lista fica como estava; o roteiro
+  // ainda é guardado (a tela de destaque mostra o que veio).
+  const estado = estadoComPreparados([{ feedback_id: 'antigo-1' }]);
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_SUCESSO,
+    vendedorId: 'C0031',
+    dados: respostaGerada({ roteiro: { pontos_positivos: [] } }),
+  });
+
+  assert.equal(proximo.detalhes, estado.detalhes);
+  assert.equal(proximo.feedbacks.C0031.status, STATUS.SUCESSO);
+});
+
+test('o estado anterior não é alterado ao incluir o roteiro novo', () => {
+  // Estado imutável: quem guarda a referência antiga continua com ela.
+  const estado = estadoComPreparados([{ feedback_id: 'antigo-1' }]);
+  const antes = structuredClone(estado);
+
+  const proximo = appReducer(estado, {
+    tipo: TIPOS.FEEDBACK_SUCESSO,
+    vendedorId: 'C0031',
+    dados: respostaGerada(),
+  });
+
+  assert.deepEqual(estado, antes);
+  assert.notEqual(proximo, estado);
+  assert.notEqual(proximo.detalhes, estado.detalhes);
+  assert.notEqual(
+    proximo.detalhes.dados.feedbacks_preparados,
+    estado.detalhes.dados.feedbacks_preparados,
+  );
+});

@@ -13,13 +13,19 @@
  * As ações cobrem carregar a lista de vendedores, selecionar alguém, buscar o
  * histórico, gerar feedback, carregar a regional, navegar entre aba/visão e
  * ENVIAR UMA ANOTAÇÃO NOVA (as ações de anotação ficam num bloco próprio,
- * mais abaixo).
+ * mais abaixo). Quando a geração dá certo, o roteiro novo entra também no
+ * topo da lista de "Roteiros já preparados" do histórico carregado — sem
+ * recarregar nada da API.
  *
  * Este arquivo não usa React de propósito: assim a lógica pode ser testada
  * direto no Node, sem navegador.
  */
 
 import { ABAS, LOJA_PADRAO_ID, STATUS, VISOES } from '../constantes.js';
+import {
+  incluirNoInicio,
+  itemPreparadoDeResposta,
+} from '../utilitarios/roteirosPreparados.js';
 
 /**
  * Nomes das ações que o reducer entende. Usar constantes evita erro de
@@ -158,6 +164,60 @@ function atualizarFeedback(estado, vendedorId, entrada) {
 }
 
 /**
+ * Põe um roteiro recém-gerado no topo da lista de "Roteiros já preparados".
+ *
+ * Recebe o estado, o código do vendedor e a resposta da geração. Devolve o
+ * estado com os detalhes atualizados — ou o MESMO estado quando não é o caso:
+ *
+ * 1) os detalhes ainda não foram carregados com sucesso (não há lista);
+ * 2) os detalhes são de OUTRA pessoa (resposta atrasada de uma troca de
+ *    colaborador): mexer neles mostraria o roteiro na pessoa errada;
+ * 3) a resposta não permite montar um item válido (sem feedback_id ou sem as
+ *    quatro listas).
+ *
+ * Em todos esses casos nada quebra: o feedback continua guardado em
+ * estado.feedbacks[vendedorId], e a lista do histórico espera a próxima
+ * carga para aparecer.
+ *
+ * Por que existe: sem isso, a lista só se atualizaria ao recarregar os dados
+ * do colaborador. Como a resposta da geração já traz tudo, dá para atualizar
+ * na hora, sem nenhuma chamada HTTP a mais.
+ */
+function incluirPreparadoNoHistorico(estado, vendedorId, dados) {
+  const detalhes = estado.detalhes;
+
+  if (detalhes.status !== STATUS.SUCESSO || !detalhes.dados) {
+    return estado;
+  }
+
+  if (detalhes.dados.vendedor_id !== vendedorId) {
+    return estado;
+  }
+
+  const item = itemPreparadoDeResposta(dados);
+
+  if (item === null) {
+    return estado;
+  }
+
+  return {
+    ...estado,
+    detalhes: {
+      ...detalhes,
+      dados: {
+        ...detalhes.dados,
+        // Lista NOVA: o estado antigo nunca é alterado. O item novo entra na
+        // frente porque a lista mostra o mais recente primeiro.
+        feedbacks_preparados: incluirNoInicio(
+          detalhes.dados.feedbacks_preparados,
+          item,
+        ),
+      },
+    },
+  };
+}
+
+/**
  * Aplica uma ação ao estado, devolvendo o próximo estado.
  *
  * Recebe: estado atual e ação ({ tipo, ...dados }).
@@ -258,12 +318,29 @@ export function appReducer(estado, acao) {
         erro: null,
       });
 
-    case TIPOS.FEEDBACK_SUCESSO:
-      return atualizarFeedback(estado, acao.vendedorId, {
+    case TIPOS.FEEDBACK_SUCESSO: {
+      /*
+       * O roteiro novo fica guardado por vendedor (é o que a aba Feedback
+       * mostra em destaque)...
+       */
+      const comFeedback = atualizarFeedback(estado, acao.vendedorId, {
         status: STATUS.SUCESSO,
         dados: acao.dados ?? null,
         erro: null,
       });
+
+      /*
+       * ...e, quando o histórico da MESMA pessoa está na tela, ele também
+       * entra no topo de "Roteiros já preparados" — sem nova chamada HTTP,
+       * porque a resposta da geração já traz tudo. Se não for o caso, a
+       * função devolve o estado como está.
+       */
+      return incluirPreparadoNoHistorico(
+        comFeedback,
+        acao.vendedorId,
+        acao.dados,
+      );
+    }
 
     case TIPOS.FEEDBACK_ERRO:
       return atualizarFeedback(estado, acao.vendedorId, {
