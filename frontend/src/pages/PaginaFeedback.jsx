@@ -141,7 +141,10 @@ export function PaginaFeedback() {
         className="pagina-feedback__secao"
         aria-labelledby="titulo-gerar"
       >
-        <h2 id="titulo-gerar" className="pagina-feedback__titulo">
+        <h2
+          id="titulo-gerar"
+          className="pagina-feedback__titulo pagina-feedback__titulo--principal"
+        >
           Gerar feedback
         </h2>
 

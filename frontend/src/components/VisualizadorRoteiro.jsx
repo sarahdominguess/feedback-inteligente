@@ -30,22 +30,26 @@ const SECOES = {
     titulo: 'Pontos positivos',
     Icone: TrendingUp,
     tom: 'positiva',
+    variante: 'positivos',
   },
   pontos_melhoria: {
     titulo: 'Pontos de melhoria',
     Icone: Target,
     tom: 'atencao',
+    variante: 'melhorias',
   },
   possiveis_motivos: {
     titulo: 'Possíveis motivos',
     Icone: Search,
     tom: 'neutra',
+    variante: 'motivos',
     legenda: 'São hipóteses para investigar na conversa, não conclusões.',
   },
   roteiro_conversa: {
     titulo: 'Roteiro de conversa sugerido',
     Icone: MessageSquare,
     tom: 'neutra',
+    variante: 'roteiro',
     numerada: true,
   },
 };
@@ -62,7 +66,7 @@ const SECOES = {
  * e combinados. As demais são <ul>, porque a ordem não importa.
  */
 function renderizarSecao(chave, roteiro, TagTitulo) {
-  const { titulo, Icone, tom, legenda, numerada } = SECOES[chave];
+  const { titulo, Icone, tom, variante, legenda, numerada } = SECOES[chave];
 
   /*
    * Não julgamos o conteúdo: só garantimos que exista uma lista para
@@ -77,7 +81,7 @@ function renderizarSecao(chave, roteiro, TagTitulo) {
 
   return (
     <section
-      className={`visualizador-roteiro__secao visualizador-roteiro__secao--${tom}`}
+      className={`visualizador-roteiro__secao visualizador-roteiro__secao--${tom} visualizador-roteiro__secao--${variante}`}
     >
       <div className="visualizador-roteiro__cabecalho-secao">
         {/*
