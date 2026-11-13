@@ -1,80 +1,67 @@
 /*
  * Estilos do rodapé.
  *
- * Usa a mesma família visual do cabeçalho: superfície escura do DESIGN.md
- * (#1E1E24) com texto branco (contraste ≈ 16,5:1, bem acima do AA). O link é
- * branco sublinhado — o sublinhado é o indicador que não depende de cor.
+ * Faixa sobre o fundo da página, separada do conteúdo por uma divisória de
+ * 1 px. O texto é de apoio (14 px em --cor-texto-suave); o link do Instagram
+ * usa o verde da marca, com sublinhado que engrossa no hover e no foco.
  */
-
-/* ----------------------------------------------------------------------
- * Container
- *
- * No celular os dois itens ficam um embaixo do outro, centralizados. A partir
- * de 768px viram uma linha, com o crédito à esquerda e o link à direita.
- * -------------------------------------------------------------------- */
 
 .rodape {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
   /*
    * Faixa de largura total no fim da página. O padding nas laterais afasta o
-   * texto da borda da tela; sem cantos arredondados, porque a faixa vai de
-   * ponta a ponta.
+   * texto da borda; sem cantos arredondados, porque vai de ponta a ponta.
    */
   width: 100%;
-  padding: var(--espaco-secao);
-  background-color: var(--cor-fundo-escuro);
-  color: var(--cor-texto-sobre-fundo);
+  padding: var(--espaco-entre-itens) var(--espaco-entre-blocos);
+  border-top: 1px solid var(--cor-linha);
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto-suave);
   text-align: center;
 }
 
-/* Crédito: texto de apoio, sem destaque. */
+/* Crédito: 14 px em texto de apoio (9,5:1 sobre o fundo). */
 .rodape__texto {
   margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-nota);
+  line-height: var(--entrelinha-corpo);
 }
 
 /*
- * Link do Instagram.
- *
- * min-height 44px garante o alvo de toque do DESIGN.md; inline-flex com
- * align-items center centraliza o texto dentro dessa altura. O sublinhado
- * deixa claro que é um link sem depender da cor.
+ * Link do Instagram: 44 px de alvo de toque, verde (#3DDC97 dá 10,3:1 sobre o
+ * fundo) e sublinhado sempre visível — o traço é o sinal que não depende da
+ * cor. No hover e no foco o traço engrossa.
  */
 .rodape__link {
   display: inline-flex;
   align-items: center;
-  /* 44px: alvo de toque mínimo declarado no DESIGN.md. */
-  min-height: 44px;
-  padding: 0 var(--espaco-base);
+  min-height: var(--alvo-toque-minimo);
+  padding: 0 var(--espaco-entre-itens);
   border-radius: var(--raio-sm);
-  color: var(--cor-texto-sobre-fundo);
-  font-size: var(--texto-rotulo);
-  font-weight: var(--peso-medio);
+  color: var(--cor-verde);
+  font-size: var(--texto-nota);
+  font-weight: var(--peso-semi);
   text-decoration: underline;
-  /* Afasta o sublinhado do texto para não cortar as letras com descendente. */
-  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  /* Afasta o sublinhado do texto para não cortar letras com descendente. */
+  text-underline-offset: 3px;
   transition: color 150ms ease;
 }
 
-/*
- * Hover: o texto ganha o tom secundário (menta claro). O sublinhado continua,
- * então a indicação de link não depende só da cor. Contraste do menta sobre
- * o fundo escuro fica em ≈ 13:1.
- */
-.rodape__link:hover {
-  color: var(--cor-secundaria);
+.rodape__link:hover,
+.rodape__link:focus-visible {
+  text-decoration-thickness: 2px;
 }
 
 /*
- * O foco de teclado vem da regra global :focus-visible (contorno verde-menta
- * + anel escuro), que aparece bem sobre o fundo escuro do rodapé.
+ * O foco de teclado vem da regra global :focus-visible (contorno verde de
+ * 3 px), que aparece bem sobre o fundo escuro do rodapé.
  */
 
-/* Telas largas: os dois itens na mesma linha, nas pontas. */
+/* Telas largas: crédito à esquerda e link à direita, na mesma linha. */
 @media (min-width: 768px) {
   .rodape {
     flex-direction: row;

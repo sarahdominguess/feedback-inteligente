@@ -1,59 +1,48 @@
 /*
  * Estilos do componente EstadoCarregando.
  *
- * O bloco tem fundo claro próprio (superfície suave) e texto escuro, o que
- * garante contraste AA tanto sobre a página roxa quanto dentro de um cartão.
- * Cores, espaços e raios vêm todos de estilos/tokens.css.
+ * É um cartão escuro com barra verde à esquerda (a tela está buscando dados,
+ * ação em andamento) e um esqueleto animado que imita o conteúdo que chega.
+ * Quem pede menos movimento no sistema vê só o texto, sem animação.
  */
-
-/* ----------------------------------------------------------------------
- * Container
- *
- * Coluna com respiro entre o esqueleto, o título e a descrição.
- * -------------------------------------------------------------------- */
 
 .estado-carregando {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-lg);
-  padding: var(--espaco-secao);
-  border-radius: var(--raio-lg);
-  /* #F5EFFB com texto #17171C: contraste ≈ 14:1 (passa em AA). */
-  background-color: var(--cor-superficie-suave);
-  color: var(--cor-tinta);
-}
-
-/* Variante "cartao": ganha uma borda discreta para parecer um cartão. */
-.estado-carregando--cartao {
-  border: 1px solid var(--cor-borda);
+  gap: var(--espaco-entre-itens);
+  padding: var(--espaco-cartao);
+  border-left: 6px solid var(--cor-verde);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
+  color: var(--cor-texto);
 }
 
 /* ----------------------------------------------------------------------
  * Esqueleto (skeleton)
  *
- * Blocos cinza que imitam o conteúdo que está chegando. A cor de base é a
- * borda cinza do sistema; o brilho é uma faixa mais clara que atravessa.
+ * Blocos que imitam o conteúdo que está chegando. A base é a cor da borda e
+ * o brilho é a cor da divisória, atravessando da direita para a esquerda.
  * -------------------------------------------------------------------- */
 
 .estado-carregando__esqueleto {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
 }
 
 .estado-carregando__linha {
   display: block;
   width: 100%;
-  /* 12px: altura aproximada de uma linha de texto. */
-  height: var(--espaco-xl);
+  /* Altura aproximada de uma linha de texto de 17 px. */
+  height: var(--espaco-entre-itens);
   border-radius: var(--raio-sm);
-  background-color: var(--cor-borda);
-  /* Gradiente montado só com tokens: borda → superfície → borda. */
+  background-color: var(--cor-linha);
+  /* Gradiente montado só com tokens: linha → borda → linha. */
   background-image: linear-gradient(
     90deg,
-    var(--cor-borda) 25%,
-    var(--cor-superficie-suave) 50%,
-    var(--cor-borda) 75%
+    var(--cor-linha) 25%,
+    var(--cor-borda) 50%,
+    var(--cor-linha) 75%
   );
   background-size: 200% 100%;
   animation: estado-carregando-brilho 1.4s ease-in-out infinite;
@@ -71,7 +60,7 @@
 
 /* Na variante cartão, os blocos são mais altos, como cartões de indicador. */
 .estado-carregando--cartao .estado-carregando__linha {
-  height: calc(var(--espaco-secao) * 1.5); /* 24px */
+  height: var(--espaco-entre-blocos);
 }
 
 /* O brilho anda da direita para a esquerda em um ciclo suave. */
@@ -89,31 +78,35 @@
  * Textos
  * -------------------------------------------------------------------- */
 
-/* Título: o texto principal do estado de carregamento. */
+/* Título: 17 px/700 em tinta (14,1:1 sobre o cartão). */
 .estado-carregando__titulo {
   margin: 0;
   font-size: var(--texto-corpo);
   font-weight: var(--peso-forte);
+  color: var(--cor-tinta);
 }
 
-/* Descrição: informação de apoio, um pouco menor. */
+/* Descrição: mesmo tamanho, peso normal (12,2:1 sobre o cartão). */
 .estado-carregando__descricao {
   margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.4;
+  font-size: var(--texto-corpo);
+  line-height: var(--entrelinha-corpo);
 }
 
 /* ----------------------------------------------------------------------
  * Movimento reduzido
  *
- * Quando a pessoa pede ao sistema para reduzir animações, o brilho para e
- * a linha fica cinza e parada. O conteúdo continua legível.
+ * Quem pediu menos movimento vê só o texto: o esqueleto animado sai de cena
+ * e nada desliza na tela.
  * -------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
+  .estado-carregando__esqueleto {
+    display: none;
+  }
+
   .estado-carregando__linha {
     animation: none;
     background-image: none;
-    background-color: var(--cor-borda);
   }
 }

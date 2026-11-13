@@ -1,25 +1,19 @@
 /*
  * Estilos do componente EstadoErro.
  *
- * Usa os tokens de perigo do sistema: fundo rosa claro (#FEE2E2) com borda
- * rosa (#FECACA) e texto tinta (#17171C), combinação com contraste ≈ 14,8:1.
+ * O DESIGN.md não tem vermelho: o erro usa o roxo como cor de atenção, em uma
+ * barra de 6 px à esquerda, com ícone CircleAlert, título e mensagem em tinta.
+ * O texto é quem explica o problema — a cor nunca é o único sinal.
  */
-
-/* ----------------------------------------------------------------------
- * Container
- *
- * Ícone à esquerda e conteúdo à direita; o alinhamento no topo evita que o
- * ícone "flutue" no meio quando o texto é longo.
- * -------------------------------------------------------------------- */
 
 .estado-erro {
   display: flex;
   align-items: flex-start;
-  gap: var(--espaco-lg);
-  padding: var(--espaco-secao);
-  border: 1px solid var(--cor-perigo-borda);
-  border-radius: var(--raio-lg);
-  background-color: var(--cor-perigo-fundo);
+  gap: var(--espaco-entre-itens);
+  padding: var(--espaco-cartao);
+  border-left: 6px solid var(--cor-roxo);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
   color: var(--cor-tinta);
 }
 
@@ -27,47 +21,46 @@
 .estado-erro__icone {
   display: inline-flex;
   flex: 0 0 auto;
-  /* Não existe token de vermelho para texto; a tinta mantém o contraste. */
-  color: var(--cor-tinta);
+  color: var(--cor-roxo);
 }
 
-/* Tamanho do desenho: 16px (token de seção) multiplicado por 1,5 = 24px. */
+/* Desenho de 24 px, com o traço de 2 px da biblioteca. */
 .estado-erro__icone svg {
-  width: calc(var(--espaco-secao) * 1.5);
-  height: calc(var(--espaco-secao) * 1.5);
+  width: 24px;
+  height: 24px;
 }
 
 /* Coluna com título, mensagem e (às vezes) botão. */
 .estado-erro__conteudo {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
+  gap: var(--espaco-xs);
   /* Permite que o texto encolha ao lado do ícone em telas estreitas. */
   min-width: 0;
 }
 
-/* Título curto e forte, sempre igual. */
+/* Título curto e forte, sempre igual: 17 px/700 em tinta. */
 .estado-erro__titulo {
   margin: 0;
   font-size: var(--texto-corpo);
   font-weight: var(--peso-forte);
+  color: var(--cor-tinta);
 }
 
-/* Mensagem vinda do estado, em tamanho de leitura confortável. */
+/* Mensagem vinda do estado: mesmo tamanho, leitura confortável. */
 .estado-erro__mensagem {
   margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-corpo);
+  line-height: var(--entrelinha-corpo);
   /* Garante que uma palavra muito longa não estoure o cartão. */
   overflow-wrap: anywhere;
 }
 
 /*
- * Botão: reaproveita a classe global ui-botao-primario (definida em
- * estilos/base.css), que já garante 44px de altura e bom contraste.
- * Só ajustamos o alinhamento para ele não ocupar a largura toda.
+ * Botão: reaproveita a classe global ui-botao-primario (estilos/base.css), que
+ * já garante 52 px de altura e o verde da ação. Só ajustamos o alinhamento.
  */
 .estado-erro__botao {
   align-self: flex-start;
-  margin-top: var(--espaco-sm);
+  margin-top: var(--espaco-entre-itens);
 }

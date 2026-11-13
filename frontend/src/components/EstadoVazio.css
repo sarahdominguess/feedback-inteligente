@@ -1,55 +1,47 @@
 /*
  * Estilos do componente EstadoVazio.
  *
- * Fundo claro (#F5EFFB) com texto tinta (#17171C): contraste ≈ 14:1, então
- * o bloco funciona sobre a página roxa e dentro de um cartão claro.
+ * Cartão escuro com barra roxa à esquerda (espaço reservado, ainda sem
+ * conteúdo) e tudo centralizado: ícone (quando existe), título e explicação.
  */
-
-/* ----------------------------------------------------------------------
- * Container
- *
- * Centraliza tudo na horizontal e usa borda tracejada, que sugere "espaço
- * reservado, ainda sem conteúdo" sem competir com os cartões de dados.
- * -------------------------------------------------------------------- */
 
 .estado-vazio {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--espaco-lg);
-  padding: var(--espaco-secao);
-  border: 1px dashed var(--cor-borda);
-  border-radius: var(--raio-lg);
-  background-color: var(--cor-superficie-suave);
-  color: var(--cor-tinta);
+  gap: var(--espaco-entre-itens);
+  padding: var(--espaco-cartao);
+  border-left: 6px solid var(--cor-roxo);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
+  color: var(--cor-texto);
   text-align: center;
 }
 
-/* Ícone opcional acima do texto. */
+/* Ícone opcional acima do texto, na cor do bloco (4,6:1 sobre o cartão). */
 .estado-vazio__icone {
   display: inline-flex;
-  /* A tinta garante contraste; não há token de cinza médio para ícone. */
-  color: var(--cor-tinta);
+  color: var(--cor-roxo);
 }
 
-/* Tamanho do desenho: 16px (token de seção) multiplicado por 1,5 = 24px. */
+/* Desenho de 24 px, com o traço de 2 px da biblioteca. */
 .estado-vazio__icone svg {
-  width: calc(var(--espaco-secao) * 1.5);
-  height: calc(var(--espaco-secao) * 1.5);
+  width: 24px;
+  height: 24px;
 }
 
-/* Título: o resumo do vazio. */
+/* Título: 17 px/700 em tinta (14,1:1 sobre o cartão). */
 .estado-vazio__titulo {
   margin: 0;
   font-size: var(--texto-corpo);
   font-weight: var(--peso-forte);
+  color: var(--cor-tinta);
 }
 
-/* Descrição: explica o motivo em uma largura confortável de leitura. */
+/* Descrição: mesma medida, largura confortável de leitura. */
 .estado-vazio__descricao {
-  /* ≈400px, montado a partir do token de 16px para não inventar medida. */
-  max-width: calc(var(--espaco-secao) * 25);
+  max-width: calc(var(--espaco-entre-blocos) * 16);
   margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-corpo);
+  line-height: var(--entrelinha-corpo);
 }
