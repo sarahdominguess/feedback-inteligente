@@ -3,90 +3,111 @@
  *
  * O visual do chat (título, mensagens, balões, campo, contador, botão e erro)
  * mora em components/ChatAnotacoes.css, com as mesmas classes. Aqui ficam só
- * a coluna da página, a orientação e o bloco recolhível do time.
- *
- * A página fica dentro do cartão claro da área central: texto tinta sobre
- * superfície suave (contraste ≈ 14:1). Só tokens de cor, espaço e raio.
+ * a coluna da página, a orientação do topo e o bloco recolhível do time.
  */
 
 /* ----------------------------------------------------------------------
  * Estrutura da página
+ *
+ * Coluna com 24 px entre os blocos, como as outras abas.
  * -------------------------------------------------------------------- */
 
-/* Coluna: orientação, conversa, campo de escrita e seção do time. */
 .pagina-anotacoes {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-secao);
+  gap: var(--espaco-entre-blocos);
 }
 
 /*
- * Orientação do topo: caixa discreta com borda para se separar do fundo
- * (que é da mesma cor).
+ * Orientação do topo: nota de apoio. O DESIGN.md não prevê este texto, então
+ * ele fica discreto — 14 px em --cor-texto-suave (9,5:1 sobre o fundo), sem
+ * moldura e sem competir com a conversa.
  */
 .pagina-anotacoes__orientacao {
   margin: 0;
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-md);
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-nota);
+  line-height: var(--entrelinha-corpo);
+  color: var(--cor-texto-suave);
 }
 
 /* ----------------------------------------------------------------------
  * Anotações sobre o time (bloco recolhível)
+ *
+ * Mesmo desenho dos cartões recolhíveis dos roteiros: fundo de cartão, raio
+ * 14 px e barra roxa de 4 px à esquerda.
  * -------------------------------------------------------------------- */
 
 .pagina-anotacoes__time {
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-lg);
-  background-color: var(--cor-superficie-suave);
+  padding: var(--espaco-entre-itens);
+  border-left: 4px solid var(--cor-roxo);
+  border-radius: var(--raio-item);
+  background-color: var(--cor-cartao);
 }
 
 /*
- * O <summary> é o título clicável do bloco. Altura mínima de 44px garante o
- * alvo de toque do DESIGN.md; cursor pointer avisa que abre e fecha.
+ * O <summary> é o título clicável do bloco. Altura mínima de 44 px garante o
+ * alvo de toque; o cursor pointer avisa que abre e fecha.
  */
 .pagina-anotacoes__time-resumo {
-  min-height: 44px;
   display: flex;
   align-items: center;
-  font-weight: var(--peso-medio);
+  min-height: var(--alvo-toque-minimo);
+  font-size: var(--texto-item);
+  font-weight: var(--peso-semi);
+  color: var(--cor-tinta);
   cursor: pointer;
 }
 
 /* Espaço entre o título e o conteúdo aberto. */
 .pagina-anotacoes__time[open] .pagina-anotacoes__time-resumo {
-  margin-bottom: var(--espaco-lg);
+  margin-bottom: var(--espaco-entre-itens);
 }
 
-/* Explicação da seção do time: texto de apoio, menor. */
+/* Explicação da seção do time: nota de apoio (8,4:1 sobre o cartão). */
 .pagina-anotacoes__explicacao {
-  margin: 0 0 var(--espaco-lg) 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  margin: 0 0 var(--espaco-entre-itens) 0;
+  font-size: var(--texto-nota);
+  line-height: var(--entrelinha-corpo);
   color: var(--cor-texto-suave);
 }
 
-/* Lista do time: sem marcadores e sem recuo. */
+/* Lista do time: sem marcadores, sem recuo e com 12 px entre itens. */
 .pagina-anotacoes__lista-time {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Cada anotação do time é um cartão simples, só de leitura. */
+/*
+ * Cada anotação do time é um bloco só de leitura, um degrau abaixo do cartão
+ * que o contém: fundo da página e divisória discreta.
+ */
 .pagina-anotacoes__item-time {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-xs);
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-md);
-  font-size: var(--texto-legenda);
+  padding: var(--espaco-entre-itens);
+  border: 1px solid var(--cor-linha);
+  border-radius: var(--raio-campo);
+  background-color: var(--cor-fundo);
+  font-size: var(--texto-nota);
   color: var(--cor-texto-suave);
+}
+
+/* Data da anotação do time: 14 px em texto de apoio (9,5:1 sobre o fundo). */
+.pagina-anotacoes__item-time time {
+  font-size: var(--texto-nota);
+  color: var(--cor-texto-suave);
+}
+
+/*
+ * O texto reaproveita a classe do balão do chat, que é de 17 px; aqui ele
+ * volta a 14 px, porque é uma lista de leitura e não a conversa principal.
+ */
+.pagina-anotacoes__item-time .pagina-anotacoes__texto {
+  font-size: var(--texto-nota);
+  color: var(--cor-texto);
 }

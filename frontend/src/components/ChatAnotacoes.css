@@ -1,50 +1,50 @@
 /*
  * Estilos do chat de anotações (componente reutilizável).
  *
- * Movidos da página de anotações sem alteração: as classes continuam com o
- * prefixo "pagina-anotacoes" para a aparência e os seletores não mudarem.
- *
- * Os balões usam a cor secundária com texto tinta (≈ 13:1). Só tokens de cor,
- * espaço e raio.
+ * Tradução do visual antigo para o tema escuro do Return.Ai: título grande,
+ * área de mensagens sobre o fundo da página, balões de cartão com barra roxa
+ * e um cartão de escrita com borda verde no topo. As classes com prefixo
+ * "pagina-anotacoes" continuam as mesmas (o JSX não mudou).
  */
 
 /* Bloco da conversa: título e área de mensagens. */
 .pagina-anotacoes__chat {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-lg);
+  gap: var(--espaco-entre-blocos);
 }
 
-/* Título "Anotações sobre ...": 22px, um degrau acima do texto comum. */
+/* Título da aba: 40 px/800 em tinta (15,9:1 sobre o fundo). */
 .pagina-anotacoes__titulo {
   margin: 0;
-  font-size: var(--texto-display-sm);
-  font-weight: var(--peso-medio);
+  font-size: var(--texto-titulo-pagina);
+  font-weight: var(--peso-extra);
+  color: var(--cor-tinta);
 }
 
 /* ----------------------------------------------------------------------
  * Área de mensagens
  *
- * Altura máxima de 60vh com rolagem interna: a conversa não empurra o campo
- * de escrita para fora da tela em listas longas. O vh é medida de tela, não
- * da escala de espaçamento, por isso não vem de um token.
+ * Fundo da página com borda de divisória, altura máxima de 60vh e rolagem
+ * interna: a conversa não empurra o campo de escrita para fora da tela.
+ * A barra de rolagem usa os tons do tema (nenhuma cor nova).
  * -------------------------------------------------------------------- */
 
 .pagina-anotacoes__mensagens {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-lg);
+  gap: var(--espaco-entre-itens);
   max-height: 60vh;
   overflow-y: auto;
-  padding: var(--espaco-lg);
-  /* Borda de controle (~10:1) delimita a área que rola. */
-  border: 1px solid var(--cor-borda-controle);
-  border-radius: var(--raio-lg);
-  background-color: var(--cor-superficie-suave);
-  color: var(--cor-tinta);
+  padding: var(--espaco-entre-itens);
+  border: 1px solid var(--cor-linha);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  /* Barra de rolagem escura: trilho no fundo, polegar na cor da borda. */
+  scrollbar-color: var(--cor-borda) var(--cor-fundo);
   /* Rolagem suave quando o navegador posiciona a barra. */
   scroll-behavior: smooth;
-  /* O conteúdo pode encolher em telas estreitas sem estourar a largura. */
   min-width: 0;
 }
 
@@ -52,29 +52,36 @@
 .pagina-anotacoes__dia {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
 }
 
 /*
- * Separador de dia: centralizado, pequeno e discreto. A cor é o texto de
- * apoio sobre a superfície clara (≈ 10:1), então continua legível.
+ * Separador de dia: linha de divisória dos dois lados e o rótulo no meio,
+ * em 14 px e --cor-texto-suave (9,5:1 sobre o fundo). As linhas são
+ * pseudo-elementos, então nenhum texto ou elemento novo entra no DOM.
  */
 .pagina-anotacoes__separador {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-entre-itens);
   margin: 0;
-  align-self: center;
-  padding: var(--espaco-xs) var(--espaco-lg);
-  border-radius: var(--raio-full);
-  font-size: var(--texto-legenda);
-  font-weight: var(--peso-medio);
+  font-size: var(--texto-nota);
   color: var(--cor-texto-suave);
-  background-color: var(--cor-superficie-suave);
+}
+
+.pagina-anotacoes__separador::before,
+.pagina-anotacoes__separador::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background-color: var(--cor-linha);
 }
 
 /* Lista de balões do dia: sem marcadores e sem recuo do navegador. */
 .pagina-anotacoes__lista {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -90,85 +97,84 @@
 }
 
 /*
- * Balão da mensagem: largura no máximo 85% para o lado de quem escreveu
- * ficar claro. Fundo na cor secundária (menta claro) com texto tinta:
- * contraste ≈ 13:1, acima do mínimo AA.
+ * Balão: fundo de cartão, raio 18 px e barra roxa de 6 px à esquerda.
+ * Todas as anotações são do próprio gerente (a API não distingue "recém-
+ * enviada"), então a barra é roxa em todas. Texto em --cor-texto (12,2:1).
  */
 .pagina-anotacoes__balao {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-xs);
   max-width: 85%;
-  padding: var(--espaco-lg) var(--espaco-xl);
-  border: 1px solid var(--cor-borda-controle);
-  border-radius: var(--raio-lg);
-  background-color: var(--cor-secundaria);
-  color: var(--cor-tinta);
+  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  border-left: 6px solid var(--cor-roxo);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
+  color: var(--cor-texto);
 }
 
 /*
- * Texto da anotação, como veio da API.
- *
+ * Texto da anotação, como veio da API: 17 px com entrelinha 1,5.
  * white-space: pre-wrap preserva as quebras de linha e os espaços digitados
- * (é só exibição, o dado não muda). overflow-wrap evita que uma palavra
- * gigante estoure o balão.
+ * (é só exibição, o dado não muda).
  */
 .pagina-anotacoes__texto {
   margin: 0;
   font-size: var(--texto-corpo);
-  line-height: 1.5;
+  line-height: var(--entrelinha-corpo);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-/* Data dentro do balão: letra menor, mesmo tom do texto (contraste alto). */
+/* Data dentro do balão: 14 px em texto de apoio (8,4:1 sobre o cartão). */
 .pagina-anotacoes__data {
   align-self: flex-end;
-  font-size: var(--texto-legenda);
-  font-weight: var(--peso-medio);
-  color: var(--cor-tinta);
+  font-size: var(--texto-nota);
+  color: var(--cor-texto-suave);
 }
 
 /* ----------------------------------------------------------------------
  * Campo de escrita
+ *
+ * Um cartão com borda superior verde de 4 px (a ação de escrever é o que
+ * "anda para frente" nesta tela).
  * -------------------------------------------------------------------- */
 
 .pagina-anotacoes__formulario {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
+  padding: var(--espaco-cartao);
+  border-top: 4px solid var(--cor-verde);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
 }
 
 /*
- * Campo de texto com várias linhas.
- *
- * font-size 16px (token de entrada): abaixo disso o iOS dá zoom ao focar.
- * resize: vertical deixa a pessoa aumentar a altura, mas não a largura.
+ * Campo de texto com várias linhas: fundo da página, borda de campo, raio 12
+ * e altura mínima de 52 px. Fonte de 17 px (abaixo de 16 o iOS dá zoom ao
+ * focar). resize: vertical deixa aumentar a altura, nunca a largura.
  */
 .pagina-anotacoes__campo {
   width: 100%;
-  min-height: 44px;
-  padding: var(--espaco-lg) var(--espaco-xl);
-  border: 1px solid var(--cor-borda-controle);
-  border-radius: var(--raio-md);
-  background-color: var(--cor-superficie-suave);
+  min-height: var(--altura-controle);
+  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  background-color: var(--cor-fundo);
   color: var(--cor-tinta);
   font-family: inherit;
-  font-size: var(--texto-entrada);
-  line-height: 1.5;
+  font-size: var(--texto-item);
+  line-height: var(--entrelinha-corpo);
   resize: vertical;
 }
 
-/*
- * Foco visível: a borda escurece ao entrar no campo. O contorno do
- * :focus-visible (regra global de base.css) continua valendo para quem
- * navega por teclado.
- */
+/* Foco: a borda fica verde; o contorno global :focus-visible continua valendo. */
 .pagina-anotacoes__campo:focus {
-  border-color: var(--cor-tinta);
+  border-color: var(--cor-verde);
 }
 
-/* Texto de exemplo (placeholder) com tom de apoio. */
+/* Texto de exemplo (placeholder) em texto de apoio (9,5:1 sobre o fundo). */
 .pagina-anotacoes__campo::placeholder {
   color: var(--cor-texto-suave);
 }
@@ -178,53 +184,58 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--espaco-lg);
+  gap: var(--espaco-entre-itens);
   /* Em telas estreitas, o botão desce em vez de espremer o contador. */
   flex-wrap: wrap;
 }
 
-/* Contador de caracteres: discreto, sem competir com o campo. */
+/* Contador de caracteres: 14 px, discreto, sem competir com o campo. */
 .pagina-anotacoes__contador {
-  font-size: var(--texto-legenda);
+  font-size: var(--texto-nota);
   color: var(--cor-texto-suave);
 }
 
-/* Ícone do botão no tamanho do texto (16px). */
+/* Ícone de enviar: 20 px, alinhado ao texto do botão. */
 .pagina-anotacoes__botao svg {
-  width: var(--texto-corpo);
-  height: var(--texto-corpo);
+  width: 20px;
+  height: 20px;
 }
 
 /*
- * Mensagem de erro do envio: usa o par de perigo do tema (fundo claro,
- * borda e texto tinta ≈ 14,8:1). Nunca é só cor: o texto explica o problema.
+ * Erro do envio: cartão com barra roxa à esquerda (o DESIGN.md não tem
+ * vermelho). O texto continua legível em tinta e o role="alert" do JSX
+ * garante o anúncio — a cor nunca é o único sinal. O visual completo do erro
+ * é fechado na fatia 9.11.
  */
 .pagina-anotacoes__erro {
   margin: 0;
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-perigo-borda);
-  border-radius: var(--raio-md);
-  background-color: var(--cor-perigo-fundo);
+  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  border-left: 4px solid var(--cor-roxo);
+  border-radius: var(--raio-campo);
+  background-color: var(--cor-fundo);
   color: var(--cor-tinta);
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-nota);
+  line-height: var(--entrelinha-corpo);
 }
 
 /* ----------------------------------------------------------------------
- * Telas estreitas (a partir de 360px de largura)
+ * Telas estreitas (a partir de 360 px de largura)
  *
- * Menos respiro nas laterais para o texto caber sem rolagem horizontal, e o
- * balão pode ocupar mais espaço.
+ * Menos respiro nas laterais e balões um pouco mais largos, para o texto
+ * caber sem rolagem horizontal.
  * -------------------------------------------------------------------- */
 
 @media (max-width: 480px) {
   .pagina-anotacoes__mensagens {
-    padding: var(--espaco-base);
+    padding: var(--espaco-entre-itens);
   }
 
   .pagina-anotacoes__balao {
     max-width: 92%;
-    padding: var(--espaco-base) var(--espaco-lg);
+  }
+
+  .pagina-anotacoes__formulario {
+    padding: var(--espaco-entre-itens);
   }
 }
 
