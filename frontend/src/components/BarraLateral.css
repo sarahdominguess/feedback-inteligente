@@ -1,12 +1,12 @@
 /*
- * Estilos da barra lateral.
+ * Estilos da barra lateral (DESIGN.md, seção 5).
  *
- * A barra é uma faixa clara COLADA na borda esquerda da tela, com duas
- * larguras: 260px expandida (ícone + texto) e 64px recolhida (só ícones). A
- * troca é animada por uma transição curta de largura.
+ * É a coluna da esquerda sobre o fundo da página: botão de recolher no topo,
+ * as abas no meio e o cartão da pessoa/loja embaixo. Duas larguras: 260 px
+ * expandida e 88 px recolhida. A troca é animada só na largura.
  *
- * Sem "overflow: hidden": os filhos já se adaptam à largura menor, e cortar o
- * transbordo poderia esconder o contorno de foco do teclado.
+ * Sem "overflow: hidden": os filhos se adaptam à largura menor, e cortar o
+ * transbordo esconderia o contorno de foco do teclado (seção 8).
  */
 
 /* ----------------------------------------------------------------------
@@ -22,32 +22,34 @@
    * fica com "flex: 1" e ocupa todo o espaço que sobrar.
    */
   flex: 0 0 auto;
-  width: 260px;
+  width: var(--largura-lateral);
   /* Estica na vertical para acompanhar a altura do corpo. */
   align-self: stretch;
-  padding: var(--espaco-secao);
+  padding: var(--espaco-entre-itens);
   /* Só a borda da direita: a esquerda encosta na borda da tela. */
-  border-right: 1px solid var(--cor-borda);
-  background-color: var(--cor-superficie-suave);
+  border-right: 1px solid var(--cor-linha);
+  /*
+   * Fundo da página #16151A com texto tinta #F2F0EA: 15,9:1. A divisória
+   * #2E2C36 é o que separa a barra do conteúdo.
+   */
+  background-color: var(--cor-fundo);
   color: var(--cor-tinta);
   /* Permite encolher sem estourar a largura em telas estreitas. */
   min-width: 0;
   /*
-   * "transition" anima a troca de largura. É só a largura: cores e espaços
-   * não mudam. Quem prefere menos movimento tem a transição desligada pela
-   * regra global de prefers-reduced-motion em estilos/base.css.
+   * "transition" anima a troca de largura. Quem prefere menos movimento tem a
+   * transição desligada pela regra global de prefers-reduced-motion.
    */
   transition: width 200ms ease;
 }
 
 /*
- * Recolhida: 64px é o suficiente para um ícone de 16px dentro de um botão de
- * 44px, com um respiro pequeno nas laterais. O padding diminui para o
- * conteúdo caber sem ser cortado.
+ * Recolhida: 88 px de largura deixam 64 px de conteúdo (88 - 12 de padding em
+ * cada lado), o bastante para um botão de 52 px com o ícone centralizado e
+ * para o anel de foco (3 px + 2 px de afastamento) aparecer inteiro.
  */
 .barra-lateral--recolhida {
-  width: 64px;
-  padding: var(--espaco-base);
+  width: var(--largura-lateral-recolhida);
 }
 
 /*
@@ -63,14 +65,15 @@
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-secao);
+  gap: var(--espaco-entre-itens);
 }
 
 /* ----------------------------------------------------------------------
- * Botão de expandir/recolher (no topo da barra)
+ * Botão de recolher/expandir (no topo da barra)
  *
- * Só ícone, com 44x44px (alvo de toque do DESIGN.md). O foco do teclado vem
- * da regra global :focus-visible.
+ * Ocupa a largura toda, com 52 px de altura (a mesma dos outros controles),
+ * fundo de cartão, borda de campo e raio de item. No hover a borda fica verde,
+ * o único jeito de destacar sem trocar a cor do fundo.
  * -------------------------------------------------------------------- */
 
 .barra-lateral__alternar {
@@ -78,29 +81,28 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
-  min-width: 44px;
-  min-height: 44px;
-  margin-bottom: var(--espaco-base);
+  width: 100%;
+  min-height: var(--altura-controle);
+  margin-bottom: var(--espaco-entre-itens);
   padding: 0;
-  border: 1px solid var(--cor-borda-controle);
-  border-radius: var(--raio-md);
-  background-color: var(--cor-superficie-suave);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-item);
+  background-color: var(--cor-cartao);
   color: var(--cor-tinta);
   cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease;
+  transition: border-color 150ms ease;
 }
 
-/* Hover: fundo clareia e a borda escurece, deixando claro que é clicável. */
+/*
+ * Hover: a borda verde (#3DDC97) aparece sobre o cartão (#222029) a 9,1:1,
+ * deixando claro que o botão é clicável.
+ */
 .barra-lateral__alternar:hover {
-  border-color: var(--cor-tinta);
-  background-color: var(--cor-primaria-ativa);
+  border-color: var(--cor-verde);
 }
 
-/* Tamanho do desenho do ícone: 16px, igual ao texto de corpo. */
+/* Ícone de painel: 24 px, com o traço de 2 px que a biblioteca já usa. */
 .barra-lateral__alternar svg {
-  width: var(--texto-corpo);
-  height: var(--texto-corpo);
+  width: 24px;
+  height: 24px;
 }
