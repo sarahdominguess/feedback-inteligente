@@ -1,139 +1,209 @@
 /*
- * Tokens de design do app.
+ * Tokens de design do Return.Ai (Etapa 9).
  *
  * "Token" é um valor com nome (uma variável CSS). Em vez de espalhar códigos
- * como #00E6B8 pelos arquivos, guardamos tudo aqui e usamos
- * var(--cor-primaria). Para mudar o visual, muda-se em um lugar só.
- *
- * Todos os valores abaixo vêm do frontend/DESIGN.md. As combinações de
- * fundo/texto escolhidas estão explicadas nos comentários de contraste.
+ * como #16151A pelos arquivos, guardamos tudo aqui e usamos var(--cor-fundo).
+ * A fonte da verdade é o frontend/DESIGN.md: fundo escuro com verde e roxo como
+ * únicos destaques. No fim do arquivo existe uma camada TEMPORÁRIA com os nomes
+ * antigos, para o app não quebrar enquanto os componentes são migrados.
  */
 
 :root {
   /* ------------------------------------------------------------------
-   * Cores da marca e de superfície
+   * Cores (DESIGN.md, seção 2 — tabela de tokens)
+   *
+   * Um cartão escuro sobre um fundo ainda mais escuro separa os blocos sem
+   * precisar de sombra nem de borda forte. Verde é ação e o que vai bem;
+   * roxo é apoio e ponto de atenção.
    * ------------------------------------------------------------------ */
 
-  /* Cor de ação principal (CTAs). Só para o que precisa de destaque. */
-  --cor-primaria: #00e6b8;
-  /* Variação do primário para hover/estado ativo. */
-  --cor-primaria-ativa: #74f1ce;
-  /* Cor de apoio (chips, destaques secundários). */
-  --cor-secundaria: #74f1ce;
+  /* Fundo da página (igual ao fundo da logo). */
+  --cor-fundo: #16151a;
+  /* Cartões, botões secundários e itens do menu. */
+  --cor-cartao: #222029;
+  /* Divisórias do cabeçalho e da barra lateral. */
+  --cor-linha: #2e2c36;
+  /* Bordas de campos (select, textarea). */
+  --cor-borda: #4a4757;
+  /* Texto principal. */
+  --cor-tinta: #f2f0ea;
+  /* Texto corrido dentro dos cartões. */
+  --cor-texto: #e2dfea;
+  /* Texto secundário, rótulos e notas. */
+  --cor-texto-suave: #bdbac8;
+  /* Destaque principal: ação primária, item ativo e o que está indo bem. */
+  --cor-verde: #3ddc97;
+  /* Texto sobre o verde (botão primário e item ativo). */
+  --cor-sobre-verde: #0b2e1f;
+  /* Destaque secundário: pontos de atenção e informação de apoio. */
+  --cor-roxo: #a66bf2;
 
-  /* Texto forte e títulos em superfícies claras. */
-  --cor-tinta: #17171c;
-  /* Texto de leitura em superfícies claras. */
-  --cor-texto: #2e2e38;
-  /* Texto de menor ênfase (descrições, metadados), em superfícies claras.
-     No DESIGN.md "muted" tem o mesmo valor de "body". */
-  --cor-texto-suave: #2e2e38;
-
-  /* Bordas, divisórias e contornos discretos. */
-  --cor-borda: #d1d5db;
-  /* Borda de controles interativos (select, abas, itens clicáveis e botão
-     secundário). O hairline #D1D5DB tem só ~1,3:1 sobre a superfície clara,
-     abaixo dos 3:1 exigidos para limites de controle. Este tom (= texto do
-     DESIGN.md) fica em ~10:1 e continua sendo um token do sistema. */
-  --cor-borda-controle: #2e2e38;
-
-  /* Fundo principal da página (roxo da marca). */
-  --cor-fundo: #8328d9;
-  /* Superfície clara para cartões e painéis. Escolhida no lugar de
-     "surface-card" (que tem o MESMO roxo do fundo) para o cartão se destacar
-     e para o texto escuro ficar legível. */
-  --cor-superficie-suave: #f5effb;
-  /* Tom escuro declarado no DESIGN.md para barras laterais/cabeçalhos. */
-  --cor-fundo-escuro: #1e1e24;
-
-  /* Texto sobre a cor primária (contraste alto com o verde-menta). */
-  --cor-texto-sobre-primaria: #111111;
-  /* Texto sobre fundos escuros ou sobre o roxo da página. */
-  --cor-texto-sobre-fundo: #ffffff;
+  /* Anel de foco: o DESIGN.md (seção 8) pede contorno de 3 px em verde. */
+  --cor-foco: var(--cor-verde);
+  /*
+   * Texto sobre o roxo sólido usa o tom do fundo da página: dá 5,2:1.
+   * Branco puro ficaria em 3,5:1 e reprovaria em AA para texto normal.
+   */
+  --cor-sobre-roxo: var(--cor-fundo);
 
   /* ------------------------------------------------------------------
-   * Cores de estado
+   * Tipografia (DESIGN.md, seção 3)
    *
-   * O DESIGN.md cita success/warning/danger, mas NÃO declara valores para
-   * elas. Para não inventar cores, reaproveitamos tokens declarados:
-   * - sucesso usa border-color-3 (#48EDBA);
-   * - perigo usa background-color-4 (#FEE2E2) e border-color-2 (#FECACA).
-   * Não há token de amarelo/laranja para "alerta"; quando precisar de aviso,
-   * use superfície suave com borda e texto (sem cor nova).
+   * A Inter vem do Google Fonts pelo index.html. Se a internet falhar, o
+   * navegador usa sans-serif e nada quebra — por isso o fallback é genérico.
+   * Os pesos carregados são exatamente 400, 600, 700 e 800.
    * ------------------------------------------------------------------ */
 
-  --cor-sucesso: #48edba;
-  --cor-perigo-fundo: #fee2e2;
-  --cor-perigo-borda: #fecaca;
+  --fonte-familia: 'Inter', sans-serif;
 
-  /* ------------------------------------------------------------------
-   * Tipografia (família e escala do DESIGN.md)
-   *
-   * A fonte "Space Grotesk" não é baixada da internet: se não estiver
-   * instalada, o navegador usa system-ui/sans-serif (fallback).
-   * ------------------------------------------------------------------ */
-
-  --fonte-familia: 'Space Grotesk', system-ui, sans-serif;
-
-  --texto-display-xl: 48px;
-  --texto-display-lg: 36px;
-  --texto-display-md: 28px;
-  --texto-display-sm: 22px;
-  --texto-corpo: 16px;
-  --texto-legenda: 12px;
-  --texto-botao: 14px;
-  --texto-rotulo: 14px;
-  --texto-entrada: 16px;
-  --texto-link: 16px;
+  --texto-titulo-pagina: 40px; /* h1, peso 800 */
+  --texto-titulo-bloco: 22px; /* h3, peso 700 */
+  --texto-item: 17px; /* item de menu, botão e campo, peso 600–700 */
+  --texto-corpo: 17px; /* texto corrido nos cartões, peso 400 */
+  --texto-rotulo: 15px; /* rótulo de campo, peso 600 */
+  --texto-nota: 14px; /* nota de apoio, peso 400 (mínimo do DESIGN.md) */
 
   --peso-regular: 400;
-  --peso-medio: 500;
+  --peso-semi: 600;
   --peso-forte: 700;
+  --peso-extra: 800;
+
+  /* Entrelinha do texto corrido: 1,5 deixa o parágrafo respirar. */
+  --entrelinha-corpo: 1.5;
 
   /* ------------------------------------------------------------------
-   * Espaçamentos (escala do DESIGN.md)
+   * Espaçamentos (DESIGN.md, seções 4 e 5)
+   *
+   * Os dois tokens de padding são atalhos de duas medidas (vertical e
+   * horizontal), do mesmo jeito que o DESIGN.md descreve cada um.
    * ------------------------------------------------------------------ */
 
-  --espaco-xxs: 0px;
-  --espaco-xs: 1px;
-  --espaco-sm: 3px;
-  --espaco-md: 5px;
-  --espaco-base: 7px;
-  --espaco-lg: 10px;
-  --espaco-xl: 12px;
-  --espaco-xxl: 1rem;
-  --espaco-secao: 16px;
+  /* Espaço entre itens de uma lista e entre itens do menu. */
+  --espaco-entre-itens: 12px;
+  /* Espaço entre blocos (cartões) da mesma tela. */
+  --espaco-entre-blocos: 24px;
+  /* Respiro do conteúdo: 40 px em cima/embaixo, 48 px nas laterais. */
+  --espaco-conteudo: 40px 48px;
+  /* Respiro interno do cartão de conteúdo. */
+  --espaco-cartao: 26px 28px;
 
   /* ------------------------------------------------------------------
-   * Raios (escala do DESIGN.md)
+   * Raios (DESIGN.md, seção 5)
+   *
+   * Quanto maior o bloco, maior o raio: campo 12 px, item 14 px, cartão
+   * 18 px. O raio total serve para círculos (avatar e ícone em círculo).
    * ------------------------------------------------------------------ */
 
-  --raio-xs: 2px;
-  --raio-sm: 4px;
-  --raio-md: 12px;
-  --raio-lg: 1rem;
-  --raio-xl: 16px;
+  --raio-campo: 12px;
+  --raio-item: 14px;
+  --raio-cartao: 18px;
   --raio-full: 9999px;
+
+  /* ------------------------------------------------------------------
+   * Medidas de layout (DESIGN.md, seção 4)
+   *
+   * A altura do controle (52 px) é a mesma de botão, campo e item de menu —
+   * é ela que mantém a tela alinhada. O alvo de toque mínimo (44 px) vem da
+   * seção 8 e vale para qualquer elemento clicável, mesmo os menores.
+   * ------------------------------------------------------------------ */
+
+  --altura-cabecalho: 84px;
+  --largura-lateral: 260px;
+  --largura-lateral-recolhida: 88px;
+  --largura-conteudo: 1160px;
+  --altura-controle: 52px;
+  --alvo-toque-minimo: 44px;
+
+  /* ==================================================================
+   * CAMADA DE COMPATIBILIDADE — TEMPORÁRIA — removida na fatia 9.12
+   *
+   * Os nomes abaixo são os ANTIGOS, ainda usados pelos componentes que a
+   * Etapa 9 vai reestilizar um a um. Cada um aponta para o token novo
+   * equivalente, então trocar o tema não exige mexer em vinte arquivos de
+   * uma vez. Nenhum nome usado no projeto pode ficar indefinido: um
+   * var(--...) sem definição é ignorado pelo navegador e o texto pode
+   * ficar invisível. Só apague esta camada depois de o grep provar que
+   * ninguém mais usa os nomes antigos.
+   * ================================================================== */
+
+  /* Cores antigas → cores novas. */
+  --cor-primaria: var(--cor-verde);
+  --cor-secundaria: var(--cor-roxo);
+  --cor-superficie-suave: var(--cor-cartao);
+  --cor-fundo-escuro: var(--cor-fundo);
+  --cor-texto-sobre-fundo: var(--cor-tinta);
+  --cor-texto-sobre-primaria: var(--cor-sobre-verde);
+  --cor-borda-controle: var(--cor-borda);
+  /*
+   * Hover do antigo primário. O DESIGN.md não define um segundo verde; o
+   * realce do hover será resolvido no próprio componente, sem inventar cor
+   * nova (por exemplo, mudando a borda ou a opacidade). Por isso o apelido
+   * aponta para o mesmo verde.
+   */
+  --cor-primaria-ativa: var(--cor-verde);
+
+  /*
+   * Estados. O DESIGN.md só tem verde e roxo: não existe vermelho nem
+   * amarelo. Sucesso usa o verde; erro e alerta usam o roxo e sempre com
+   * ícone e título, porque cor nunca é o único sinal de significado.
+   */
+  --cor-sucesso: var(--cor-verde);
+  --cor-perigo-fundo: var(--cor-cartao);
+  --cor-perigo-borda: var(--cor-roxo);
+
+  /* Tamanhos de texto antigos → escala nova. */
+  --texto-display-lg: var(--texto-titulo-pagina);
+  --texto-display-sm: var(--texto-titulo-bloco);
+  --texto-botao: var(--texto-item);
+  --texto-entrada: var(--texto-item);
+  --texto-legenda: var(--texto-nota);
+  /*
+   * h2 ainda não foi reestilizado e usa 28 px; a escala do DESIGN.md não tem
+   * esse degrau, então o valor atual é preservado até a fatia do componente.
+   */
+  --texto-display-md: 28px;
+
+  /* Pesos antigos. O DESIGN.md não usa 500; 600 é o "meio" da escala nova. */
+  --peso-medio: var(--peso-semi);
+
+  /* Raios antigos → raios novos. */
+  --raio-md: var(--raio-campo);
+  --raio-lg: var(--raio-cartao);
+  --raio-sm: 4px;
+
+  /*
+   * Espaçamentos antigos. Só o de 12 px ganhou equivalente na escala nova
+   * (espaço entre itens); os demais continuam com o valor atual para não
+   * desalinhar telas que ainda serão migradas.
+   */
+  --espaco-xl: var(--espaco-entre-itens);
+  --espaco-secao: 16px;
+  --espaco-lg: 10px;
+  --espaco-base: 7px;
+  --espaco-sm: 3px;
+  --espaco-xs: 1px;
 }
 
 /*
- * Combinações de fundo e texto usadas no app (razões aproximadas):
+ * Contraste das combinações usadas (razões reais, calculadas com a fórmula da
+ * WCAG sobre a luminância relativa dos hex da seção 2 do DESIGN.md):
  *
- * 1) Página: roxo #8328D9 com texto branco #FFFFFF.
- *    Razão ≈ 6,4:1 — passa em AA para texto normal.
- *    (O DESIGN.md sugere texto #17171C no roxo, mas isso dá ≈ 2,8:1 e
- *    reprova; por isso usamos o token de texto sobre fundo escuro.)
+ * | Combinação                       | Razão  | Situação                          |
+ * |----------------------------------|--------|-----------------------------------|
+ * | tinta #F2F0EA sobre fundo        |  15,9:1| AAA                               |
+ * | texto #E2DFEA sobre cartão       |  12,2:1| AAA                               |
+ * | texto-suave #BDBAC8 sobre cartão |   8,4:1| AAA                               |
+ * | verde #3DDC97 sobre fundo        |  10,3:1| AAA (serve para texto e ícone)    |
+ * | sobre-verde #0B2E1F sobre verde  |   8,3:1| AAA (texto do botão primário)     |
+ * | roxo #A66BF2 sobre cartão        |   4,6:1| AA para texto normal              |
+ * | roxo #A66BF2 sobre fundo         |   5,2:1| AA para texto normal              |
+ * | borda #4A4757 sobre fundo        |  ~2,0:1| abaixo dos 3:1 de limite de campo |
  *
- * 2) Cartões/painéis: superfície suave #F5EFFB com texto:
- *    - tinta #17171C → ≈ 14,1:1;
- *    - texto #2E2E38 → ≈ 10,2:1.
+ * DIVERGÊNCIA REGISTRADA: a borda de campo #4A4757 tem cerca de 2:1 sobre o
+ * fundo #16151A, abaixo dos 3:1 que a WCAG pede para limites de controle.
+ * Seguimos o valor do DESIGN.md e deixamos o caso para decisão do dono; o
+ * campo continua identificável pelo rótulo visível e pelo fundo do cartão.
  *
- * 3) Cabeçalho/barra lateral: fundo escuro #1E1E24 com texto branco.
- *    Razão ≈ 16,5:1.
- *
- * 4) Botão principal: verde-menta #00E6B8 com texto #111111.
- *    Razão ≈ 11,2:1.
- *
- * 5) Estado de perigo: fundo #FEE2E2 com texto tinta.
- *    Razão ≈ 14,8:1.
+ * Texto sobre roxo sólido usa --cor-sobre-roxo (o tom do fundo), que dá 5,2:1.
+ * Branco puro ficaria em 3,5:1 e reprovaria em AA para texto normal.
  */
