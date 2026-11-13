@@ -4,7 +4,8 @@
  * A página é uma coluna de três faixas: cabeçalho no topo, corpo no meio
  * (barra lateral + conteúdo) e rodapé no fim. O corpo cresce para ocupar o
  * espaço livre, então o rodapé fica sempre no fim da tela — mesmo quando o
- * conteúdo é curto.
+ * conteúdo é curto. O fundo escuro vem do token --cor-fundo (#16151A), o
+ * mesmo da imagem da logo.
  *
  * "Flexbox" é a forma de organizar elementos em linha ou coluna: aqui usamos
  * coluna no app inteiro e linha dentro do corpo.
@@ -17,6 +18,8 @@
 .app {
   display: flex;
   flex-direction: column;
+  /* Fundo da página: escuro, com texto claro herdado do body (15,9:1). */
+  background-color: var(--cor-fundo);
   /*
    * A página ocupa no mínimo a altura da tela.
    * 100dvh é a altura "dinâmica" da janela: no celular ela desconta as
@@ -33,6 +36,7 @@
  * flex: 1 faz o corpo crescer e empurrar o rodapé para o fim da tela.
  * align-items: stretch estica os filhos na vertical: a barra lateral fica
  * com a altura toda do corpo, do fim do cabeçalho ao começo do rodapé.
+ * O empilhamento em telas estreitas ainda não foi alterado nesta etapa.
  */
 .app__corpo {
   display: flex;
@@ -43,6 +47,6 @@
 /*
  * Não há regra de empilhamento para telas estreitas: a barra lateral
  * continua AO LADO do conteúdo em qualquer largura. No celular ela só começa
- * recolhida (64px, só ícones — ver BarraLateral.jsx), para o conteúdo ficar
+ * recolhida (88px, só ícones — ver BarraLateral.jsx), para o conteúdo ficar
  * com o resto da tela.
  */

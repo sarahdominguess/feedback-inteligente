@@ -1,10 +1,10 @@
 /*
- * Estilos base do app.
+ * Estilos base do Return.Ai (Etapa 9).
  *
- * Contém o "chão" visual: reset simples, corpo da página, títulos, foco
- * visível para teclado e algumas classes utilitárias (prefixo "ui-") que
- * qualquer tela pode reaproveitar. As cores, fontes, espaços e raios vêm de
- * estilos/tokens.css (variáveis CSS).
+ * É o "chão" visual de todas as telas: reset, corpo escuro, títulos, foco
+ * visível, campos de formulário e as classes utilitárias "ui-" que qualquer
+ * tela reaproveita. Cores, fontes, espaços e raios vêm de estilos/tokens.css.
+ * Regra do DESIGN.md: fundo escuro, verde para ação, roxo para apoio.
  */
 
 /* ----------------------------------------------------------------------
@@ -28,25 +28,27 @@ body {
 /* ----------------------------------------------------------------------
  * Corpo da página
  *
- * Fundo roxo da marca com texto branco (contraste ≈ 6,4:1, passa em AA).
- * Cartões claros definem a própria cor de texto (tinta), então dentro deles
- * o texto não fica branco.
+ * Fundo #16151A com texto tinta #F2F0EA: contraste 15,9:1 (AAA), bem acima
+ * do mínimo de 4,5:1. Corpo de 17 px com entrelinha 1,5 é o tamanho de
+ * leitura pedido na seção 3 do DESIGN.md.
  * -------------------------------------------------------------------- */
 
 body {
   min-height: 100vh;
   font-family: var(--fonte-familia);
   font-size: var(--texto-corpo);
-  line-height: 1.5;
+  line-height: var(--entrelinha-corpo);
   background-color: var(--cor-fundo);
-  color: var(--cor-texto-sobre-fundo);
+  color: var(--cor-tinta);
 }
 
 /* ----------------------------------------------------------------------
  * Títulos h1–h4
  *
- * Só tamanho, peso e espaçamento: a cor é herdada do elemento pai. Assim o
- * mesmo título fica branco na página e tinta dentro de um cartão claro.
+ * Só tamanho, peso e espaçamento: a cor é herdada do elemento pai, então o
+ * mesmo título fica tinta na página (15,9:1) e continua legível dentro de
+ * um cartão. O h1 é o único com 40 px/800; os títulos de seção (h2/h3) são
+ * menores de propósito, porque a tela tem vários blocos empilhados.
  * -------------------------------------------------------------------- */
 
 h1,
@@ -54,26 +56,30 @@ h2,
 h3,
 h4 {
   margin: 0;
-  font-weight: var(--peso-regular);
+  color: inherit;
 }
 
 h1 {
-  font-size: var(--texto-display-lg);
+  font-size: var(--texto-titulo-pagina);
+  font-weight: var(--peso-extra);
   line-height: 1.15;
 }
 
 h2 {
   font-size: var(--texto-display-md);
+  font-weight: var(--peso-forte);
   line-height: 1.2;
 }
 
 h3 {
-  font-size: var(--texto-display-sm);
+  font-size: var(--texto-titulo-bloco);
+  font-weight: var(--peso-forte);
   line-height: 1.25;
 }
 
 h4 {
   font-size: var(--texto-corpo);
+  font-weight: var(--peso-semi);
   line-height: 1.35;
 }
 
@@ -81,40 +87,38 @@ h4 {
  * Foco visível para teclado
  *
  * :focus-visible só aparece quando a pessoa navega com Tab (não a cada
- * clique de mouse), o que evita "pulos" visuais para quem usa mouse.
- *
- * Usamos DOIS sinais: o contorno verde-menta aparece sobre fundos escuros
- * e o anel escuro (box-shadow) aparece sobre superfícies claras. Juntos
- * garantem foco percebido em qualquer uma das combinações do app.
+ * clique de mouse). O DESIGN.md (seção 8) pede contorno de 3 px em verde:
+ * #3DDC97 sobre o fundo #16151A dá 10,3:1, então o anel aparece em qualquer
+ * bloco. Um só sinal basta no tema escuro; o anel claro antigo saiu.
  * -------------------------------------------------------------------- */
 
 :focus-visible {
-  outline: 3px solid var(--cor-primaria-ativa);
+  outline: 3px solid var(--cor-foco);
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px var(--cor-tinta);
 }
 
 /* ----------------------------------------------------------------------
- * Classes utilitárias de uso comum
+ * Utilitários de uso comum
  * -------------------------------------------------------------------- */
 
 /*
- * ui-cartao: superfície clara com borda e raio para agrupar conteúdo.
- * Texto em tinta (contraste ≈ 14:1 sobre a superfície suave).
+ * ui-cartao: superfície escura para agrupar conteúdo.
+ * Fundo #222029 com texto tinta: 14,1:1. A barra colorida de 6 px à
+ * esquerda depende da cor do bloco (verde ou roxo) e é aplicada no
+ * componente que conhece esse significado.
  */
 .ui-cartao {
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-lg);
-  background-color: var(--cor-superficie-suave);
+  padding: var(--espaco-cartao);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
   color: var(--cor-tinta);
 }
 
 /*
  * Botões: base compartilhada.
- *
- * Altura 44px, raio 12px e fonte de botão vêm dos componentes do
- * DESIGN.md. A transição é curta para o clique parecer imediato.
+ * Altura de 52 px e raio de 12 px vêm da seção 5 do DESIGN.md (a mesma
+ * altura de campo e de item de menu mantém a tela alinhada). A transição
+ * curta faz o clique parecer imediato.
  */
 .ui-botao-primario,
 .ui-botao-secundario {
@@ -122,58 +126,58 @@ h4 {
   align-items: center;
   justify-content: center;
   gap: var(--espaco-sm);
-  min-height: 44px;
-  padding: var(--espaco-sm) var(--espaco-lg);
-  border: 1px solid transparent;
-  border-radius: var(--raio-md);
+  min-height: var(--altura-controle);
+  padding: 0 var(--espaco-entre-blocos);
   font-family: inherit;
-  font-size: var(--texto-botao);
+  font-size: var(--texto-item);
   font-weight: var(--peso-forte);
   line-height: 1.2;
   cursor: pointer;
   transition:
     background-color 150ms ease,
     border-color 150ms ease,
+    filter 150ms ease,
     color 150ms ease;
 }
 
 /*
  * ui-botao-primario: a ação mais importante da tela.
- * Verde-menta com texto #111111 (contraste ≈ 11,2:1) e borda tinta (~14:1
- * sobre a superfície): assim o limite do botão fica visível mesmo quando ele
- * está sobre um cartão claro.
+ * Verde #3DDC97 com texto #0B2E1F: 8,3:1. Sem borda, como pede o DESIGN.md.
  */
 .ui-botao-primario {
-  background-color: var(--cor-primaria);
-  border-color: var(--cor-tinta);
-  color: var(--cor-texto-sobre-primaria);
+  border: 0;
+  border-radius: var(--raio-campo);
+  background-color: var(--cor-verde);
+  color: var(--cor-sobre-verde);
 }
 
+/*
+ * Hover: o botão fica levemente mais claro. brightness() clareia o próprio
+ * verde, então nenhuma cor nova entra no sistema.
+ */
 .ui-botao-primario:hover:not(:disabled) {
-  background-color: var(--cor-primaria-ativa);
-  border-color: var(--cor-tinta);
+  filter: brightness(1.08);
 }
 
 /*
  * ui-botao-secundario: ação alternativa.
- * Fundo claro com texto tinta; a borda usa --cor-borda-controle (~10:1 sobre
- * a superfície), porque o hairline não chega aos 3:1 exigidos para delimitar
- * um controle. No hover a borda escurece para deixar claro que o botão está
- * sob o cursor. Funciona tanto dentro de cartões quanto sobre o roxo.
+ * Fundo #222029 com texto tinta: 14,1:1. A borda só aparece no hover, para
+ * não competir com o botão principal.
  */
 .ui-botao-secundario {
-  background-color: var(--cor-superficie-suave);
-  border-color: var(--cor-borda-controle);
+  border: 1px solid transparent;
+  border-radius: var(--raio-campo);
+  background-color: var(--cor-cartao);
   color: var(--cor-tinta);
 }
 
 .ui-botao-secundario:hover:not(:disabled) {
-  border-color: var(--cor-tinta);
+  border-color: var(--cor-borda);
 }
 
 /*
- * Desabilitado: opacidade menor e cursor de "não permitido".
- * Opacidade é uma técnica de CSS (não é uma cor nova do DESIGN.md).
+ * Desabilitado: opacidade menor e cursor de "não permitido" — o mesmo sinal
+ * visual em qualquer botão, sem precisar de uma cor de estado.
  */
 .ui-botao-primario:disabled,
 .ui-botao-secundario:disabled {
@@ -182,9 +186,8 @@ h4 {
 }
 
 /*
- * ui-texto-suave: descrições e metadados.
- * Use SOMENTE dentro de cartões/superfícies claras: sobre o roxo da página
- * a cor não teria contraste suficiente.
+ * ui-texto-suave: descrições, metadados e notas de apoio.
+ * #BDBAC8 sobre cartão dá 8,4:1 e sobre o fundo 9,5:1, então serve nos dois.
  */
 .ui-texto-suave {
   color: var(--cor-texto-suave);
@@ -204,6 +207,59 @@ h4 {
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* ----------------------------------------------------------------------
+ * Campos de formulário
+ *
+ * Regra geral que vale para qualquer select, textarea ou input do app; as
+ * classes de cada página continuam mandando quando precisarem de algo
+ * próprio (classe vence seletor de elemento).
+ *
+ * - rótulo visível: 15 px, peso 600, texto suave (8,4:1 sobre o cartão);
+ * - select: fundo do cartão, texto tinta (14,1:1);
+ * - textarea/input: fundo da página, texto tinta (15,9:1);
+ * - borda #4A4757 sobre o fundo fica em ~2:1, abaixo dos 3:1 que a WCAG
+ *   pede para limites de controle. É o valor do DESIGN.md e está registrado
+ *   como divergência; o rótulo visível mantém o campo identificável.
+ * -------------------------------------------------------------------- */
+
+label {
+  display: block;
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-suave);
+}
+
+select,
+textarea,
+input {
+  min-height: var(--altura-controle);
+  padding: 0 var(--espaco-entre-itens);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  font-family: inherit;
+  font-size: var(--texto-item);
+  color: var(--cor-tinta);
+}
+
+select {
+  background-color: var(--cor-cartao);
+}
+
+textarea,
+input {
+  background-color: var(--cor-fundo);
+}
+
+/*
+ * Área de texto: o respiro interno aparece nos quatro lados, porque o texto
+ * começa no topo e não no meio da caixa.
+ */
+textarea {
+  padding: var(--espaco-entre-itens);
+  line-height: var(--entrelinha-corpo);
+  resize: vertical;
 }
 
 /* ----------------------------------------------------------------------
