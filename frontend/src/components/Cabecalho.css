@@ -27,7 +27,7 @@
   padding: var(--espaco-entre-itens) var(--espaco-entre-blocos);
   /*
    * Fundo escuro #16151A com texto tinta #F2F0EA: 15,9:1. A divisória
-   * #2E2C36 é mais clara que o fundo, só para marcar o fim da faixa.
+   * --cor-linha é mais clara que o fundo, só para marcar o fim da faixa.
    */
   background-color: var(--cor-fundo);
   border-bottom: 1px solid var(--cor-linha);
@@ -79,5 +79,5 @@
 .cabecalho__area-usuario {
   display: flex;
   align-items: center;
-  gap: var(--espaco-lg);
+  gap: var(--espaco-entre-itens);
 }

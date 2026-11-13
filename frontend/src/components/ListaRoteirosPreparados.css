@@ -40,7 +40,7 @@
 .lista-roteiros-preparados__texto {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
   /* min-width: 0 permite que o texto encolha em vez de estourar a largura. */
   min-width: 0;
 }

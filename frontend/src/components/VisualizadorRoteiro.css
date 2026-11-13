@@ -24,7 +24,7 @@
 .visualizador-roteiro__cabecalho {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
 }
 
 /* Para quem é o roteiro: título de bloco em tinta (15,9:1 sobre o fundo). */
@@ -66,7 +66,7 @@
 /* ----------------------------------------------------------------------
  * Cartão de conteúdo
  *
- * Fundo #222029, raio 18 px, padding 26x28 px e barra de 6 px à esquerda
+ * Fundo --cor-cartao, raio 18 px, padding 26x28 px e barra de 6 px à esquerda
  * (a cor vem da variante). Texto corrido em --cor-texto (12,2:1).
  * -------------------------------------------------------------------- */
 

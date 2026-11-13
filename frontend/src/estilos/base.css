@@ -37,6 +37,7 @@ body {
   min-height: 100vh;
   font-family: var(--fonte-familia);
   font-size: var(--texto-corpo);
+  font-weight: var(--peso-regular);
   line-height: var(--entrelinha-corpo);
   background-color: var(--cor-fundo);
   color: var(--cor-tinta);
@@ -66,7 +67,7 @@ h1 {
 }
 
 h2 {
-  font-size: var(--texto-display-md);
+  font-size: var(--texto-titulo-bloco);
   font-weight: var(--peso-forte);
   line-height: 1.2;
 }
@@ -125,7 +126,7 @@ h4 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--espaco-sm);
+  gap: var(--espaco-entre-itens);
   min-height: var(--altura-controle);
   padding: 0 var(--espaco-entre-blocos);
   font-family: inherit;

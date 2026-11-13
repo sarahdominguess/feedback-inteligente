@@ -104,9 +104,9 @@
 .pagina-anotacoes__balao {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
   max-width: 85%;
-  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  padding: var(--espaco-entre-itens);
   border-left: 6px solid var(--cor-roxo);
   border-radius: var(--raio-cartao);
   background-color: var(--cor-cartao);
@@ -158,7 +158,7 @@
 .pagina-anotacoes__campo {
   width: 100%;
   min-height: var(--altura-controle);
-  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  padding: var(--espaco-entre-itens);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-campo);
   background-color: var(--cor-fundo);
@@ -209,7 +209,7 @@
  */
 .pagina-anotacoes__erro {
   margin: 0;
-  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  padding: var(--espaco-entre-itens);
   border-left: 4px solid var(--cor-roxo);
   border-radius: var(--raio-campo);
   background-color: var(--cor-fundo);

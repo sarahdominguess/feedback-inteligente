@@ -9,10 +9,10 @@
 .selo {
   display: inline-flex;
   align-items: center;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
   /* Em uma coluna flex, o selo não deve esticar a largura toda. */
   align-self: flex-start;
-  padding: var(--espaco-xs) var(--espaco-entre-itens);
+  padding: var(--espaco-minimo) var(--espaco-entre-itens);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-full);
   /* Fundo da página: o selo "vaza" o cartão em vez de criar outra superfície. */

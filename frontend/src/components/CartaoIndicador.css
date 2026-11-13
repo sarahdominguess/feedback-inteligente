@@ -1,7 +1,7 @@
 /*
  * Estilos do componente CartaoIndicador (DESIGN.md, "Cartão de conteúdo").
  *
- * Fundo #222029, raio 18 px, padding 26x28 px e barra de 6 px à esquerda na
+ * Fundo --cor-cartao, raio 18 px, padding 26x28 px e barra de 6 px à esquerda na
  * cor da situação: verde quando a métrica vai bem, roxo nos pontos de atenção.
  * O cartão só organiza rótulo, valor, detalhe e selo.
  */
@@ -37,7 +37,7 @@
 /* Valor principal: 28 px/800 em tinta (14,1:1 sobre o cartão). */
 .cartao-indicador__valor {
   margin: 0;
-  font-size: var(--texto-display-md);
+  font-size: var(--texto-valor);
   font-weight: var(--peso-extra);
   line-height: 1.2;
   color: var(--cor-tinta);
@@ -57,5 +57,5 @@
  */
 .cartao-indicador__situacao {
   display: flex;
-  margin-top: var(--espaco-xs);
+  margin-top: var(--espaco-minimo);
 }

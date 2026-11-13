@@ -30,7 +30,7 @@
   border-right: 1px solid var(--cor-linha);
   /*
    * Fundo da página #16151A com texto tinta #F2F0EA: 15,9:1. A divisória
-   * #2E2C36 é o que separa a barra do conteúdo.
+   * --cor-linha é o que separa a barra do conteúdo.
    */
   background-color: var(--cor-fundo);
   color: var(--cor-tinta);

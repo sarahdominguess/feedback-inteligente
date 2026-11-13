@@ -62,6 +62,12 @@
   --texto-corpo: 17px; /* texto corrido nos cartões, peso 400 */
   --texto-rotulo: 15px; /* rótulo de campo, peso 600 */
   --texto-nota: 14px; /* nota de apoio, peso 400 (mínimo do DESIGN.md) */
+  /*
+   * Número grande dentro de um cartão (ex.: valor de um indicador). O DESIGN.md
+   * não declara esse degrau; 28 px foi preservado porque o número precisa ser
+   * lido de longe sem competir com o título da página (40 px).
+   */
+  --texto-valor: 28px;
 
   --peso-regular: 400;
   --peso-semi: 600;
@@ -78,6 +84,12 @@
    * horizontal), do mesmo jeito que o DESIGN.md descreve cada um.
    * ------------------------------------------------------------------ */
 
+  /*
+   * Respiro mínimo entre linhas empilhadas (rótulo e valor, nome e cargo).
+   * É o menor degrau da escala; o DESIGN.md não declara nada abaixo de 12 px,
+   * mas esses pares não podem ficar colados.
+   */
+  --espaco-minimo: 4px;
   /* Espaço entre itens de uma lista e entre itens do menu. */
   --espaco-entre-itens: 12px;
   /* Espaço entre blocos (cartões) da mesma tela. */
@@ -113,75 +125,6 @@
   --largura-conteudo: 1160px;
   --altura-controle: 52px;
   --alvo-toque-minimo: 44px;
-
-  /* ==================================================================
-   * CAMADA DE COMPATIBILIDADE — TEMPORÁRIA — removida na fatia 9.12
-   *
-   * Os nomes abaixo são os ANTIGOS, ainda usados pelos componentes que a
-   * Etapa 9 vai reestilizar um a um. Cada um aponta para o token novo
-   * equivalente, então trocar o tema não exige mexer em vinte arquivos de
-   * uma vez. Nenhum nome usado no projeto pode ficar indefinido: um
-   * var(--...) sem definição é ignorado pelo navegador e o texto pode
-   * ficar invisível. Só apague esta camada depois de o grep provar que
-   * ninguém mais usa os nomes antigos.
-   * ================================================================== */
-
-  /* Cores antigas → cores novas. */
-  --cor-primaria: var(--cor-verde);
-  --cor-secundaria: var(--cor-roxo);
-  --cor-superficie-suave: var(--cor-cartao);
-  --cor-fundo-escuro: var(--cor-fundo);
-  --cor-texto-sobre-fundo: var(--cor-tinta);
-  --cor-texto-sobre-primaria: var(--cor-sobre-verde);
-  --cor-borda-controle: var(--cor-borda);
-  /*
-   * Hover do antigo primário. O DESIGN.md não define um segundo verde; o
-   * realce do hover será resolvido no próprio componente, sem inventar cor
-   * nova (por exemplo, mudando a borda ou a opacidade). Por isso o apelido
-   * aponta para o mesmo verde.
-   */
-  --cor-primaria-ativa: var(--cor-verde);
-
-  /*
-   * Estados. O DESIGN.md só tem verde e roxo: não existe vermelho nem
-   * amarelo. Sucesso usa o verde; erro e alerta usam o roxo e sempre com
-   * ícone e título, porque cor nunca é o único sinal de significado.
-   */
-  --cor-sucesso: var(--cor-verde);
-  --cor-perigo-fundo: var(--cor-cartao);
-  --cor-perigo-borda: var(--cor-roxo);
-
-  /* Tamanhos de texto antigos → escala nova. */
-  --texto-display-lg: var(--texto-titulo-pagina);
-  --texto-display-sm: var(--texto-titulo-bloco);
-  --texto-botao: var(--texto-item);
-  --texto-entrada: var(--texto-item);
-  --texto-legenda: var(--texto-nota);
-  /*
-   * h2 ainda não foi reestilizado e usa 28 px; a escala do DESIGN.md não tem
-   * esse degrau, então o valor atual é preservado até a fatia do componente.
-   */
-  --texto-display-md: 28px;
-
-  /* Pesos antigos. O DESIGN.md não usa 500; 600 é o "meio" da escala nova. */
-  --peso-medio: var(--peso-semi);
-
-  /* Raios antigos → raios novos. */
-  --raio-md: var(--raio-campo);
-  --raio-lg: var(--raio-cartao);
-  --raio-sm: 4px;
-
-  /*
-   * Espaçamentos antigos. Só o de 12 px ganhou equivalente na escala nova
-   * (espaço entre itens); os demais continuam com o valor atual para não
-   * desalinhar telas que ainda serão migradas.
-   */
-  --espaco-xl: var(--espaco-entre-itens);
-  --espaco-secao: 16px;
-  --espaco-lg: 10px;
-  --espaco-base: 7px;
-  --espaco-sm: 3px;
-  --espaco-xs: 1px;
 }
 
 /*

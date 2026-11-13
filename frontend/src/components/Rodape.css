@@ -40,7 +40,7 @@
   align-items: center;
   min-height: var(--alvo-toque-minimo);
   padding: 0 var(--espaco-entre-itens);
-  border-radius: var(--raio-sm);
+  border-radius: var(--raio-campo);
   color: var(--cor-verde);
   font-size: var(--texto-nota);
   font-weight: var(--peso-semi);

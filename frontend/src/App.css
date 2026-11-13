@@ -4,7 +4,7 @@
  * A página é uma coluna de três faixas: cabeçalho no topo, corpo no meio
  * (barra lateral + conteúdo) e rodapé no fim. O corpo cresce para ocupar o
  * espaço livre, então o rodapé fica sempre no fim da tela — mesmo quando o
- * conteúdo é curto. O fundo escuro vem do token --cor-fundo (#16151A), o
+ * conteúdo é curto. O fundo escuro vem do token --cor-fundo, o
  * mesmo da imagem da logo.
  *
  * "Flexbox" é a forma de organizar elementos em linha ou coluna: aqui usamos

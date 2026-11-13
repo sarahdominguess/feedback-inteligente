@@ -35,7 +35,7 @@
   width: 100%;
   /* Altura aproximada de uma linha de texto de 17 px. */
   height: var(--espaco-entre-itens);
-  border-radius: var(--raio-sm);
+  border-radius: var(--raio-campo);
   background-color: var(--cor-linha);
   /* Gradiente montado só com tokens: linha → borda → linha. */
   background-image: linear-gradient(

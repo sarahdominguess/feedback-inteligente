@@ -22,7 +22,7 @@
 /* ----------------------------------------------------------------------
  * Cartão da pessoa escolhida
  *
- * Fundo #222029, raio de 14 px e barra roxa de 4 px no topo. O roxo é o
+ * Fundo --cor-cartao, raio de 14 px e barra roxa de 4 px no topo. O roxo é o
  * destaque de apoio do DESIGN.md (4,6:1 sobre o cartão) — serve de marca do
  * bloco, não de texto.
  * -------------------------------------------------------------------- */
@@ -68,7 +68,7 @@
 .seletor-colaborador__texto {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
   /* flex: 1 faz o texto ocupar o espaço e empurrar a seta para a direita;
      min-width: 0 permite encolher em vez de estourar a largura. */
   flex: 1 1 auto;

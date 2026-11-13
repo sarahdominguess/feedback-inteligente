@@ -49,14 +49,14 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: var(--espaco-secao);
+  gap: var(--espaco-entre-itens);
 }
 
 /* Campo = rótulo + select, um embaixo do outro. */
 .pagina-feedback__campo {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
 }
 
 /* Rótulo visível: 15 px/600 em texto de apoio (9,5:1 sobre o fundo). */

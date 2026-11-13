@@ -21,7 +21,7 @@
 .pagina-dados-regional__cabecalho {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
 }
 
 /* Título "Loja ... — gerente ...": título da página, 40 px/800 em tinta. */
@@ -113,7 +113,7 @@
 
 /* Legenda visível e ligada à tabela pelo elemento <caption>. */
 .pagina-dados-regional__legenda-tabela {
-  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  padding: var(--espaco-entre-itens);
   border-bottom: 1px solid var(--cor-linha);
   color: var(--cor-texto-suave);
   font-size: var(--texto-nota);
@@ -123,7 +123,7 @@
 /* Células: respiro e linha separando as linhas. */
 .pagina-dados-regional__tabela th,
 .pagina-dados-regional__tabela td {
-  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  padding: var(--espaco-entre-itens);
   border-bottom: 1px solid var(--cor-linha);
   text-align: left;
   vertical-align: top;
@@ -184,7 +184,7 @@
 
 /* Espaço entre o número e o selo. */
 .pagina-dados-regional__atingimento .selo {
-  margin-top: var(--espaco-xs);
+  margin-top: var(--espaco-minimo);
 }
 
 /* Nome do vendedor no cabeçalho da linha: tinta e peso 600. */

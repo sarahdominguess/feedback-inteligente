@@ -34,7 +34,7 @@
 .estado-erro__conteudo {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  gap: var(--espaco-minimo);
   /* Permite que o texto encolha ao lado do ícone em telas estreitas. */
   min-width: 0;
 }
