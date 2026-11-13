@@ -1,18 +1,18 @@
 /*
- * Estilos do cabeçalho.
+ * Estilos do cabeçalho (DESIGN.md, seções 4 e 5).
  *
- * Duas regiões na mesma faixa: à esquerda a identidade (título + subtítulo) e
- * à direita a área do usuário (hoje com os botões de visão). O cabeçalho fica
- * direto sobre o roxo da página, então o texto é branco (contraste ≈ 6,4:1,
- * passa em AA). Os botões são claros para se destacarem do fundo e usam texto
- * tinta.
+ * É a faixa de 84 px no topo: logo Return.Ai à esquerda e menu do usuário à
+ * direita, sobre o mesmo fundo da página. A divisória inferior de 1 px separa
+ * a faixa do conteúdo sem precisar de sombra.
  */
 
 /* ----------------------------------------------------------------------
  * Container
  *
  * flex-wrap permite que a área do usuário desça para a linha de baixo em
- * telas estreitas, sem precisar de uma regra extra de media query.
+ * telas estreitas, sem precisar de media query. min-height (e não height)
+ * mantém os 84 px normais sem cortar o conteúdo quando ele quebra em duas
+ * linhas.
  * -------------------------------------------------------------------- */
 
 .cabecalho {
@@ -20,55 +20,64 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--espaco-secao);
-  /*
-   * Faixa de largura total no topo. O padding nas laterais impede o texto de
-   * colar na borda da tela; sem cantos arredondados, porque a faixa vai de
-   * ponta a ponta.
-   */
+  gap: var(--espaco-entre-blocos);
   width: 100%;
-  padding: var(--espaco-secao);
-  /* Branco sobre o roxo #8328D9: ≈ 6,4:1. */
-  color: var(--cor-texto-sobre-fundo);
+  min-height: var(--altura-cabecalho);
+  /* Mesmo respiro lateral da barra lateral, para as colunas alinharem. */
+  padding: var(--espaco-entre-itens) var(--espaco-entre-blocos);
+  /*
+   * Fundo escuro #16151A com texto tinta #F2F0EA: 15,9:1. A divisória
+   * #2E2C36 é mais clara que o fundo, só para marcar o fim da faixa.
+   */
+  background-color: var(--cor-fundo);
+  border-bottom: 1px solid var(--cor-linha);
+  color: var(--cor-tinta);
 }
 
 /*
- * Identidade: título em cima, subtítulo embaixo.
- * min-width: 0 permite que o texto encolha e quebre linha em vez de empurrar
- * a área do usuário para fora da tela em 360px.
+ * Identidade: a logo.
+ * min-width: 0 permite que o bloco encolha em vez de empurrar a área do
+ * usuário para fora da tela em 360 px.
  */
 .cabecalho__identidade {
   display: flex;
-  flex-direction: column;
-  gap: var(--espaco-sm);
+  align-items: center;
   min-width: 0;
 }
 
+/* O h1 existe para a estrutura de títulos; o texto visível é a imagem. */
+.cabecalho__titulo {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  line-height: 1;
+  color: inherit;
+}
+
+/*
+ * Logo: 56 px de altura, largura automática (proporcional). display: block
+ * evita o espaço fantasma que a imagem ganha como texto em linha. O fundo
+ * da imagem é o mesmo da página, então ela não aparece dentro de uma caixa.
+ */
+.cabecalho__logo {
+  display: block;
+  height: 56px;
+  width: auto;
+}
+
+/*
+ * O slogan "Assistente de IA para feedback" NÃO tem mais estilo visual: ele
+ * fica no DOM com a classe ui-visualmente-oculto (estilos/base.css) e é lido
+ * por leitores de tela. Por isso não há regra .cabecalho__subtitulo aqui.
+ */
+
 /*
  * Área do usuário, à direita.
- *
- * É um bloco separado para receber, na próxima fatia, o nome e o cargo de
- * quem está usando o sistema. Hoje ela só alinha os botões de visão.
+ * É um bloco separado porque concentra a identificação e a troca de perfil
+ * (components/MenuUsuario.css).
  */
 .cabecalho__area-usuario {
   display: flex;
   align-items: center;
   gap: var(--espaco-lg);
 }
-
-/* h1 herda tamanho (36px) e peso (400) de estilos/base.css. */
-.cabecalho__titulo {
-  color: inherit;
-}
-
-/* Subtítulo: mesmo branco, tamanho menor de apoio. */
-.cabecalho__subtitulo {
-  margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.4;
-}
-
-/*
- * Os botões "Gerente/Regional" saíram do cabeçalho: quem troca a visão agora
- * é o MenuUsuario (components/MenuUsuario.css).
- */

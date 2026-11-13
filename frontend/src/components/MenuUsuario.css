@@ -1,9 +1,9 @@
 /*
- * Estilos do menu de usuário do cabeçalho.
+ * Estilos do menu de usuário do cabeçalho (DESIGN.md, seção 4).
  *
- * A identificação (círculo, nome e cargo) fica sobre o roxo da página, com
- * texto branco (contraste ≈ 6,4:1). O painel que abre é claro, com texto
- * tinta (≈ 14:1), para se destacar do fundo escuro.
+ * Mostra quem está usando o sistema: nome e cargo à esquerda e o círculo roxo
+ * com a inicial à direita, como na referência. A seta abre um painel escuro
+ * com a outra pessoa; escolher troca a visão do app.
  */
 
 /* ----------------------------------------------------------------------
@@ -17,70 +17,79 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--espaco-base);
-  color: var(--cor-texto-sobre-fundo);
-}
-
-/* Identificação: círculo à esquerda, nome e cargo empilhados à direita. */
-.menu-usuario__identificacao {
-  display: flex;
-  align-items: center;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
+  color: var(--cor-tinta);
 }
 
 /*
- * Círculo com as iniciais: 44px (alvo de toque do DESIGN.md), fundo primária
- * com texto escuro (contraste ≈ 11,2:1).
+ * Identificação: texto e círculo.
+ * row-reverse coloca o avatar à DIREITA do nome sem mudar a ordem do DOM (a
+ * a estrutura e a leitura continuam as mesmas). O texto fica alinhado à direita,
+ * encostado no avatar, como no cabeçalho da referência.
+ */
+.menu-usuario__identificacao {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--espaco-entre-itens);
+}
+
+/*
+ * Círculo com a inicial: 40 px, roxo #A66BF2 com texto #16151A (5,2:1).
+ * Branco puro sobre o roxo daria 3,5:1 e reprovaria em AA para texto normal.
  */
 .menu-usuario__avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--raio-full);
-  background-color: var(--cor-primaria);
-  color: var(--cor-texto-sobre-primaria);
-  font-size: var(--texto-botao);
+  background-color: var(--cor-roxo);
+  color: var(--cor-sobre-roxo);
+  font-size: var(--texto-item);
   font-weight: var(--peso-forte);
+  line-height: 1;
 }
 
-/* Versão menor do avatar, usada dentro do painel. */
+/* Versão menor do avatar, usada dentro do painel de opções. */
 .menu-usuario__avatar--opcao {
   width: 36px;
   height: 36px;
-  font-size: var(--texto-legenda);
+  font-size: var(--texto-nota);
 }
 
-/* Nome em cima, cargo embaixo. */
+/* Nome em cima, cargo embaixo, os dois alinhados à direita do avatar. */
 .menu-usuario__texto {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-xs);
+  align-items: flex-end;
+  text-align: right;
   /* min-width: 0 deixa o texto encolher em telas estreitas. */
   min-width: 0;
 }
 
-/* Nome: texto principal do menu. */
+/* Nome: texto principal do menu, tinta sobre o fundo (15,9:1). */
 .menu-usuario__nome {
-  font-size: var(--texto-corpo);
+  font-size: var(--texto-item);
   font-weight: var(--peso-forte);
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
 
-/* Cargo: texto de apoio, um degrau menor. */
+/* Cargo: 14 px em texto suave (9,5:1 sobre o fundo). */
 .menu-usuario__cargo {
-  font-size: var(--texto-legenda);
-  line-height: 1.2;
+  font-size: var(--texto-nota);
+  line-height: 1.3;
+  color: var(--cor-texto-suave);
 }
 
 /* ----------------------------------------------------------------------
  * Botão da seta
  *
- * Só ícone, 44x44px. O foco do teclado vem da regra global :focus-visible.
+ * Só ícone, com alvo de toque de 44 px e desenho de 20 px, como pede o
+ * DESIGN.md (seção 8). O foco do teclado vem da regra global :focus-visible.
  * -------------------------------------------------------------------- */
 
 .menu-usuario__seta {
@@ -88,73 +97,68 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  /* 44x44px: alvo de toque mínimo do DESIGN.md. */
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--alvo-toque-minimo);
+  min-height: var(--alvo-toque-minimo);
   padding: 0;
-  /* Sobre o fundo escuro, a borda é o que delimita o botão. */
-  border: 1px solid var(--cor-texto-sobre-fundo);
-  border-radius: var(--raio-md);
+  border: 0;
+  border-radius: var(--raio-campo);
   background-color: transparent;
-  color: var(--cor-texto-sobre-fundo);
-  cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    color 150ms ease;
-}
-
-/*
- * Hover: o botão ganha fundo claro e texto escuro (≈ 14:1), deixando claro
- * que é clicável sobre o fundo roxo.
- */
-.menu-usuario__seta:hover {
-  background-color: var(--cor-superficie-suave);
   color: var(--cor-tinta);
+  cursor: pointer;
+  transition: background-color 150ms ease;
 }
 
-/* Tamanho do desenho da seta: 16px, igual ao texto de corpo. */
+/* Hover: o botão ganha o fundo do cartão, sem trocar a cor do ícone. */
+.menu-usuario__seta:hover {
+  background-color: var(--cor-cartao);
+}
+
+/* Tamanho do desenho da seta: 20 px, definido no DESIGN.md. */
 .menu-usuario__seta svg {
-  width: var(--texto-corpo);
-  height: var(--texto-corpo);
+  width: 20px;
+  height: 20px;
 }
 
 /* ----------------------------------------------------------------------
  * Painel de opções
  *
  * position: absolute tira o painel do fluxo: ele aparece POR CIMA do
- * conteúdo, logo abaixo do menu, alinhado à direita. z-index alto garante
- * que ele fique na frente do conteúdo da página.
- *
- * max-width com 100vw impede que o painel estoure a tela em 360px.
+ * conteúdo, logo abaixo do menu, alinhado à direita. Fundo de cartão com
+ * borda de divisória — sem sombra, porque o DESIGN.md não define um token
+ * de sombra e não inventamos cor nova. max-width com 100vw impede que o
+ * painel estoure a tela em 360 px.
  * -------------------------------------------------------------------- */
 
 .menu-usuario__painel {
   position: absolute;
-  top: calc(100% + var(--espaco-base));
+  top: calc(100% + var(--espaco-entre-itens));
   right: 0;
   z-index: 20;
-  min-width: 200px;
-  max-width: calc(100vw - var(--espaco-secao) * 2);
+  min-width: 220px;
+  max-width: calc(100vw - var(--espaco-entre-blocos) * 2);
   margin: 0;
-  padding: var(--espaco-base);
+  padding: var(--espaco-entre-itens);
   list-style: none;
-  border: 1px solid var(--cor-borda-controle);
-  border-radius: var(--raio-md);
-  background-color: var(--cor-superficie-suave);
+  border: 1px solid var(--cor-linha);
+  border-radius: var(--raio-item);
+  background-color: var(--cor-cartao);
   color: var(--cor-tinta);
 }
 
-/* Cada opção é um botão de largura total, com 44px de altura mínima. */
+/*
+ * Cada opção é um botão de largura total com 52 px de altura (a mesma dos
+ * outros controles). Aqui o avatar fica à esquerda: é o padrão de lista de
+ * escolha e ajuda a comparar as duas pessoas de relance.
+ */
 .menu-usuario__opcao {
   display: flex;
   align-items: center;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
   width: 100%;
-  /* 44px é o alvo de toque mínimo declarado no DESIGN.md. */
-  min-height: 44px;
-  padding: var(--espaco-base);
-  border: 1px solid transparent;
-  border-radius: var(--raio-sm);
+  min-height: var(--altura-controle);
+  padding: 0 var(--espaco-entre-itens);
+  border: 0;
+  border-radius: var(--raio-campo);
   background-color: transparent;
   color: var(--cor-tinta);
   font-family: inherit;
@@ -163,12 +167,23 @@
   transition: background-color 150ms ease;
 }
 
-/* Hover/foco da opção: fundo no tom secundário (texto segue legível). */
-.menu-usuario__opcao:hover {
-  background-color: var(--cor-secundaria);
+/* Na opção, nome e cargo voltam a alinhar à esquerda, junto do avatar. */
+.menu-usuario__opcao .menu-usuario__texto {
+  align-items: flex-start;
+  text-align: left;
 }
 
-/* No painel claro, o cargo volta a usar o tom de apoio do app. */
+/*
+ * Hover e foco pintam a opção com o fundo da página, o tom mais escuro do
+ * sistema: o item se destaca sem precisar de cor nova e o texto continua em
+ * 15,9:1.
+ */
+.menu-usuario__opcao:hover,
+.menu-usuario__opcao:focus-visible {
+  background-color: var(--cor-fundo);
+}
+
+/* No painel, o cargo usa o texto de apoio (8,4:1 sobre o cartão). */
 .menu-usuario__opcao .menu-usuario__cargo {
   color: var(--cor-texto-suave);
 }
