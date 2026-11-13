@@ -1,63 +1,61 @@
 /*
- * Estilos do componente CartaoIndicador.
+ * Estilos do componente CartaoIndicador (DESIGN.md, "Cartão de conteúdo").
  *
- * Superfície clara (#F5EFFB) com texto tinta (#17171C), contraste ≈ 14:1.
- * O cartão só organiza rótulo, valor, detalhe e selo; nenhuma cor nova é
- * criada aqui.
+ * Fundo #222029, raio 18 px, padding 26x28 px e barra de 6 px à esquerda na
+ * cor da situação: verde quando a métrica vai bem, roxo nos pontos de atenção.
+ * O cartão só organiza rótulo, valor, detalhe e selo.
  */
-
-/* ----------------------------------------------------------------------
- * Container
- *
- * Coluna com respiro curto entre as linhas. O padding de seção (16px) dá
- * espaço suficiente para o cartão respirar sem virar um bloco gigante.
- * -------------------------------------------------------------------- */
 
 .cartao-indicador {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
-  padding: var(--espaco-secao);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-lg);
-  background-color: var(--cor-superficie-suave);
-  color: var(--cor-tinta);
-}
-
-/* Nome da métrica: menor e com peso médio, para não competir com o valor. */
-.cartao-indicador__rotulo {
-  margin: 0;
-  font-size: var(--texto-rotulo);
-  font-weight: var(--peso-medio);
-  line-height: 1.35;
+  gap: var(--espaco-entre-itens);
+  padding: var(--espaco-cartao);
+  border-left: 6px solid var(--cor-verde);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
+  color: var(--cor-texto);
 }
 
 /*
- * Valor principal: o maior texto do cartão.
- * Peso regular (400) segue a escala display do DESIGN.md; o destaque vem do
- * tamanho (28px), não de negrito.
+ * Atenção (abaixo da média): barra roxa. É um ponto de desenvolvimento da
+ * conversa, não um erro — por isso não existe vermelho no sistema.
  */
+.cartao-indicador--atencao {
+  border-left-color: var(--cor-roxo);
+}
+
+/* Nome da métrica: 15 px/600 em texto de apoio (8,4:1 sobre o cartão). */
+.cartao-indicador__rotulo {
+  margin: 0;
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-semi);
+  line-height: 1.35;
+  color: var(--cor-texto-suave);
+}
+
+/* Valor principal: 28 px/800 em tinta (14,1:1 sobre o cartão). */
 .cartao-indicador__valor {
   margin: 0;
   font-size: var(--texto-display-md);
-  font-weight: var(--peso-regular);
+  font-weight: var(--peso-extra);
   line-height: 1.2;
   color: var(--cor-tinta);
 }
 
-/* Detalhe: informação de apoio, em texto menor. */
+/* Detalhe: nota de apoio de 14 px (8,4:1 sobre o cartão). */
 .cartao-indicador__detalhe {
   margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.4;
+  font-size: var(--texto-nota);
+  line-height: var(--entrelinha-corpo);
   color: var(--cor-texto-suave);
 }
 
 /*
- * Área do selo. align-self evita que o selo estique a largura toda dentro
- * desta coluna; o espaçamento extra separa o selo do detalhe.
+ * Área do selo: um bloco flex para o selo não esticar a largura toda da
+ * coluna e ficar colado ao conteúdo acima.
  */
 .cartao-indicador__situacao {
   display: flex;
-  margin-top: var(--espaco-sm);
+  margin-top: var(--espaco-xs);
 }

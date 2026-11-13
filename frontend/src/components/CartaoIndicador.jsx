@@ -46,12 +46,19 @@ export function CartaoIndicador({
   // O selo só aparece quando a situação foi informada.
   const temSituacao = typeof situacao === 'string' && situacao !== '';
 
+  /*
+   * Tom do cartão: a barra da esquerda acompanha a situação (verde quando vai
+   * bem, roxo nos pontos de atenção). Sem situação, fica verde — é o estado
+   * neutro do novo visual.
+   */
+  const tom = temSituacao ? tomDaSituacao(situacao) : 'sem-situacao';
+
   return (
     /*
      * <div> em vez de <article>: um <article> sem título vira um marco sem
      * nome para leitores de tela. O cartão é só um bloco visual.
      */
-    <div className="cartao-indicador">
+    <div className={`cartao-indicador cartao-indicador--${tom}`}>
       {/* Nome da métrica, em texto menor. */}
       <p className="cartao-indicador__rotulo">{rotulo}</p>
 

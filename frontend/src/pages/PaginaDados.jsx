@@ -128,7 +128,10 @@ export function PaginaDados() {
         className="pagina-dados__secao"
         aria-labelledby="titulo-indicadores"
       >
-        <h2 id="titulo-indicadores" className="pagina-dados__titulo">
+        <h2
+          id="titulo-indicadores"
+          className="pagina-dados__titulo pagina-dados__titulo--principal"
+        >
           Indicadores do período
         </h2>
 
