@@ -2,86 +2,85 @@
  * Estilos da aba Feedback da visão regional.
  *
  * Cópia própria do CSS da aba do gerente (PaginaFeedback), com prefixo
- * "pagina-feedback-regional": as classes não são compartilhadas, então a
- * página antiga pode mudar sem quebrar esta tela.
- *
- * A página fica dentro do cartão claro da área central, com texto tinta sobre
- * superfície suave (contraste ≈ 14:1). O roteiro gerado usa o
- * VisualizadorRoteiro, que empilha os quatro cards em largura total.
+ * "pagina-feedback-regional": as classes não são compartilhadas, então uma
+ * tela pode evoluir sem quebrar a outra. Os valores são os mesmos, para as
+ * duas abas parecerem a MESMA tela.
  */
 
-/* Coluna com os dois blocos da página. */
+/* Coluna com os dois blocos, separados por 24 px. */
 .pagina-feedback-regional {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-secao);
+  gap: var(--espaco-entre-blocos);
 }
 
-/* Cada bloco: título e conteúdo. */
+/* Cada bloco: título e conteúdo, com 24 px entre as partes. */
 .pagina-feedback-regional__secao {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-lg);
+  gap: var(--espaco-entre-blocos);
 }
 
-/* Separador discreto entre "Gerar feedback" e "Roteiros já preparados". */
-.pagina-feedback-regional__secao + .pagina-feedback-regional__secao {
-  padding-top: var(--espaco-secao);
-  border-top: 1px solid var(--cor-borda);
-}
-
-/* Título de bloco: 22px, um degrau acima do texto comum. */
+/* Título de bloco ("Roteiros já preparados"): 22 px/700. */
 .pagina-feedback-regional__titulo {
   margin: 0;
-  font-size: var(--texto-display-sm);
-  font-weight: var(--peso-medio);
+  font-size: var(--texto-titulo-bloco);
+  font-weight: var(--peso-forte);
+  color: var(--cor-tinta);
+}
+
+/*
+ * Título principal da aba: 40 px/800 em tinta (15,9:1 sobre o fundo),
+ * igual ao da aba do gerente.
+ */
+.pagina-feedback-regional__titulo--principal {
+  font-size: var(--texto-titulo-pagina);
+  font-weight: var(--peso-extra);
 }
 
 /* ----------------------------------------------------------------------
- * Seletor e botão
+ * Linha Período + botão
  *
- * Em telas largas ficam na mesma linha; quando falta espaço, o botão desce.
- * align-items: flex-end alinha o botão com a base do select (o label ocupa
- * uma linha acima).
+ * Rótulo em cima do select; select e botão lado a lado, alinhados pela base.
+ * Em tela estreita o botão desce (flex-wrap), sem regra extra.
  * -------------------------------------------------------------------- */
 
 .pagina-feedback-regional__controles {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: var(--espaco-base);
+  gap: var(--espaco-secao);
 }
 
-/* Campo = label + select, um embaixo do outro. */
+/* Campo = rótulo + select, um embaixo do outro. */
 .pagina-feedback-regional__campo {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-xs);
 }
 
-/* Rótulo do select, ligado a ele por htmlFor/id. */
+/* Rótulo visível: 15 px/600 em texto de apoio (9,5:1 sobre o fundo). */
 .pagina-feedback-regional__rotulo {
   font-size: var(--texto-rotulo);
-  font-weight: var(--peso-medio);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-suave);
 }
 
 /*
- * Select com 44px de altura (alvo de toque), fundo claro e texto tinta.
- * A largura mínima evita que meses por extenso fiquem espremidos.
+ * Select: fundo de cartão, borda de campo, raio 12 e altura 52 px — as medidas
+ * da seção 5 do DESIGN.md. Texto tinta sobre o cartão: 14,1:1.
  */
 .pagina-feedback-regional__select {
   min-width: 220px;
   max-width: 100%;
-  min-height: 44px;
-  padding: var(--espaco-sm) var(--espaco-lg);
-  /* Borda de controle (~10:1): o select fica sobre um cartão da mesma cor,
-     então a borda é o que delimita o campo. */
-  border: 1px solid var(--cor-borda-controle);
-  border-radius: var(--raio-md);
-  background-color: var(--cor-superficie-suave);
+  min-height: var(--altura-controle);
+  padding: 0 var(--espaco-entre-itens);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  background-color: var(--cor-cartao);
   color: var(--cor-tinta);
   font-family: inherit;
-  font-size: var(--texto-entrada);
+  font-size: var(--texto-item);
 }
 
 /* Durante a geração o select fica apagado, como os botões desabilitados. */
@@ -94,22 +93,22 @@
 .pagina-feedback-regional__resultado {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-itens);
 }
 
 /* ----------------------------------------------------------------------
  * Roteiros já preparados
  * -------------------------------------------------------------------- */
 
-/* Explicação de que "preparado" não é "realizado". */
+/* Frase de apoio ("preparado" não é "realizado"): nota de 14 px. */
 .pagina-feedback-regional__explicacao {
   margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-nota);
+  line-height: 1.5;
   color: var(--cor-texto-suave);
 }
 
 /*
  * A lista de roteiros preparados tem CSS próprio, em
- * components/ListaRoteirosPreparados.css.
+ * components/ListaRoteirosPreparados.css — o mesmo componente do gerente.
  */

@@ -1,18 +1,17 @@
 /*
  * Estilos da aba Dados da visão regional.
  *
- * CSS próprio, com prefixo "pagina-dados-regional": as classes não são
- * compartilhadas com a página antiga da regional (removida na Etapa 8.7).
- *
- * A página fica dentro do cartão claro da área central, com texto tinta sobre
- * superfície suave (contraste ≈ 14:1). Só tokens de cor, espaço e raio.
+ * Mesmo desenho da aba Dados do gerente (cartões de indicador, selos e
+ * tabelas em cartão), com o acréscimo do acompanhamento dos feedbacks por
+ * vendedor. As classes são próprias ("pagina-dados-regional"), com os mesmos
+ * valores — copiados, não importados.
  */
 
-/* Coluna com cabeçalho e as duas seções. */
+/* Coluna com cabeçalho, resultado e acompanhamento, 24 px entre os blocos. */
 .pagina-dados-regional {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-secao);
+  gap: var(--espaco-entre-blocos);
 }
 
 /* ----------------------------------------------------------------------
@@ -25,17 +24,18 @@
   gap: var(--espaco-xs);
 }
 
-/* Título "Loja ... — gerente ...": 22px, um degrau acima do texto comum. */
+/* Título "Loja ... — gerente ...": título da página, 40 px/800 em tinta. */
 .pagina-dados-regional__titulo {
   margin: 0;
-  font-size: var(--texto-display-sm);
-  font-weight: var(--peso-medio);
+  font-size: var(--texto-titulo-pagina);
+  font-weight: var(--peso-extra);
+  color: var(--cor-tinta);
 }
 
-/* Período analisado, em texto de apoio (contraste ≈ 10:1). */
+/* Período analisado: nota de apoio (9,5:1 sobre o fundo). */
 .pagina-dados-regional__periodo {
   margin: 0;
-  font-size: var(--texto-rotulo);
+  font-size: var(--texto-nota);
   color: var(--cor-texto-suave);
 }
 
@@ -46,61 +46,59 @@
 .pagina-dados-regional__secao {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-lg);
+  gap: var(--espaco-entre-blocos);
 }
 
-/* Separador discreto entre o resultado e o acompanhamento. */
-.pagina-dados-regional__secao + .pagina-dados-regional__secao {
-  padding-top: var(--espaco-secao);
-  border-top: 1px solid var(--cor-borda);
-}
-
-/* Título de seção (h3). */
+/* Título de seção (h3): 22 px/700 em tinta. */
 .pagina-dados-regional__subtitulo {
   margin: 0;
-  font-size: var(--texto-display-sm);
-  font-weight: var(--peso-medio);
+  font-size: var(--texto-titulo-bloco);
+  font-weight: var(--peso-forte);
+  color: var(--cor-tinta);
 }
 
 /* ----------------------------------------------------------------------
  * Cartões de cobertura
  *
- * Grade que se ajusta sozinha: dois cartões lado a lado quando há espaço,
- * um embaixo do outro em telas estreitas.
+ * Os cartões vêm do CartaoIndicador (componente compartilhado): fundo de
+ * cartão, raio 18 e barra verde/roxa conforme a situação. Hoje o backend não
+ * envia uma situação de cobertura, então eles aparecem no tom neutro (verde).
  * -------------------------------------------------------------------- */
 
 .pagina-dados-regional__cartoes {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--espaco-base);
+  gap: var(--espaco-entre-blocos);
 }
 
-/* Frase fixa sobre "preparado" não ser "realizado". */
+/* Frase fixa sobre "preparado" não ser "realizado": nota de apoio. */
 .pagina-dados-regional__esclarecimento {
   margin: 0;
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-nota);
+  line-height: 1.5;
   color: var(--cor-texto-suave);
 }
 
 /* ----------------------------------------------------------------------
  * Tabelas
  *
- * overflow-x: auto deixa a tabela rolar para o lado em telas estreitas, sem
- * estourar a página. As larguras mínimas evitam que as colunas se espremam.
+ * Cartão com rolagem horizontal; em telas estreitas a tabela rola dentro dele
+ * e o container recebe foco pelo Tab (tabIndex no JSX), com contorno verde.
  * -------------------------------------------------------------------- */
 
 .pagina-dados-regional__tabela-container {
   max-width: 100%;
   overflow-x: auto;
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-md);
+  border-radius: var(--raio-cartao);
+  background-color: var(--cor-cartao);
+  scrollbar-color: var(--cor-borda) var(--cor-cartao);
 }
 
 .pagina-dados-regional__tabela {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--texto-rotulo);
+  font-size: var(--texto-nota);
+  color: var(--cor-texto);
 }
 
 /* Resultado: oito colunas, muitas com valores em reais. */
@@ -115,28 +113,29 @@
 
 /* Legenda visível e ligada à tabela pelo elemento <caption>. */
 .pagina-dados-regional__legenda-tabela {
-  padding: var(--espaco-lg) var(--espaco-xl);
-  border-bottom: 1px solid var(--cor-borda);
+  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  border-bottom: 1px solid var(--cor-linha);
   color: var(--cor-texto-suave);
-  font-size: var(--texto-legenda);
+  font-size: var(--texto-nota);
   text-align: left;
 }
 
 /* Células: respiro e linha separando as linhas. */
 .pagina-dados-regional__tabela th,
 .pagina-dados-regional__tabela td {
-  padding: var(--espaco-lg) var(--espaco-xl);
-  border-bottom: 1px solid var(--cor-borda);
+  padding: var(--espaco-entre-itens) var(--espaco-secao);
+  border-bottom: 1px solid var(--cor-linha);
   text-align: left;
   vertical-align: top;
 }
 
-/* Cabeçalhos em negrito para se destacarem dos valores. */
+/* Cabeçalho: 14 px/600 em texto de apoio (8,4:1 sobre o cartão). */
 .pagina-dados-regional__tabela thead th {
-  font-weight: var(--peso-forte);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-suave);
 }
 
-/* A última linha não precisa de borda: o container já tem a sua. */
+/* A última linha não precisa de borda. */
 .pagina-dados-regional__tabela tbody tr:last-child th,
 .pagina-dados-regional__tabela tbody tr:last-child td {
   border-bottom: 0;
@@ -154,14 +153,15 @@
 
 /* Célula do mês: nome e selo lado a lado. */
 .pagina-dados-regional__mes {
-  font-weight: var(--peso-medio);
+  font-weight: var(--peso-semi);
+  color: var(--cor-tinta);
 }
 
 .pagina-dados-regional__mes-conteudo {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--espaco-sm);
+  gap: var(--espaco-entre-itens);
 }
 
 /* O nome do mês não quebra no meio ("outubro de 2026"). */
@@ -170,9 +170,9 @@
 }
 
 /*
- * Célula de atingimento: número em cima e selo embaixo, os dois alinhados à
- * direita pela regra de números do td. Usamos blocos (e não flex) porque o
- * Selo tem um align-self próprio, pensado para outros contextos.
+ * Célula de atingimento: número em cima e selo embaixo, alinhados à direita
+ * pela regra de números. Usamos blocos porque o Selo tem align-self próprio,
+ * pensado para outros contextos.
  */
 .pagina-dados-regional__atingimento {
   display: block;
@@ -187,14 +187,15 @@
   margin-top: var(--espaco-xs);
 }
 
-/* Nome do vendedor no cabeçalho da linha. */
+/* Nome do vendedor no cabeçalho da linha: tinta e peso 600. */
 .pagina-dados-regional__vendedor {
-  font-weight: var(--peso-medio);
+  font-weight: var(--peso-semi);
+  color: var(--cor-tinta);
 }
 
-/* Mensagem quando uma lista vem vazia. */
+/* Mensagem quando uma lista vem vazia: nota de apoio. */
 .pagina-dados-regional__vazio {
   margin: 0;
-  font-size: var(--texto-rotulo);
+  font-size: var(--texto-nota);
   color: var(--cor-texto-suave);
 }

@@ -1,35 +1,53 @@
 /*
- * Estilos da área central.
+ * Estilos da área central (DESIGN.md, seção 4).
  *
- * É o conteúdo principal: ocupa TODO o espaço que sobra ao lado da barra
- * lateral (ou a largura inteira, na visão regional). O respiro interno vem
- * daqui, já que o container da página não tem mais padding próprio.
- *
- * Fundo claro com texto tinta (contraste ≈ 14:1). Sem borda e sem cantos
- * arredondados: a área encosta nas bordas da tela e na lateral.
+ * É o conteúdo principal, ao lado da barra lateral. A largura para de crescer
+ * em 1160 px e o bloco fica centralizado no espaço que sobra, com respiro de
+ * 40 px em cima/embaixo e 48 px nas laterais. O fundo é o da página: nada de
+ * moldura clara em volta do painel de abas.
  */
 
 .area-central {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-secao);
+  gap: var(--espaco-entre-blocos);
   /*
-   * flex: 1 faz a área ocupar todo o espaço restante da linha. min-width: 0
-   * permite que ela ENCOLHA em vez de estourar a página: assim tabelas
-   * largas rolam dentro do próprio container, sem criar rolagem horizontal
-   * na página inteira.
+   * flex: 1 faz a área ocupar todo o espaço restante da linha; max-width
+   * impede que o texto estique demais em telas grandes; margin-inline auto
+   * centraliza o bloco. min-width: 0 permite ENCOLHER em vez de estourar a
+   * página (tabelas largas rolam dentro do próprio container).
    */
   flex: 1;
+  width: 100%;
+  max-width: var(--largura-conteudo);
   min-width: 0;
-  padding: var(--espaco-secao);
-  background-color: var(--cor-superficie-suave);
+  margin-inline: auto;
+  padding: var(--espaco-conteudo);
+  background-color: var(--cor-fundo);
   color: var(--cor-tinta);
-  /* Altura mínima de ~288px para a área não "sumir" quando está vazia. */
-  min-height: calc(var(--espaco-secao) * 18);
+  /* Altura mínima para a área não "sumir" quando está vazia. */
+  min-height: calc(var(--espaco-entre-blocos) * 12);
 }
 
 /*
- * O painel em si não muda nada no visual; ele existe para o papel ARIA.
- * O foco de teclado (tabIndex=0) usa a regra global :focus-visible de
- * estilos/base.css, então continua visível.
+ * Painel da aba ativa: sem fundo, borda ou sombra próprios (o cartão é de cada
+ * bloco de conteúdo). O contorno de teclado vem da regra global
+ * :focus-visible, porque o painel recebe tabIndex=0 no JSX.
  */
+.area-central__painel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-entre-blocos);
+  min-width: 0;
+}
+
+/*
+ * Telas estreitas: 48 px de cada lado consomem quase toda a largura de um
+ * celular, então o respiro cai para 24 px (o padding maior continua valendo
+ * nas telas largas).
+ */
+@media (max-width: 768px) {
+  .area-central {
+    padding: var(--espaco-entre-blocos);
+  }
+}

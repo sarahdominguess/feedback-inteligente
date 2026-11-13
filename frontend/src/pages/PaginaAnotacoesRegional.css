@@ -2,28 +2,24 @@
  * Estilos da aba Anotações da visão regional.
  *
  * O visual do chat (título, mensagens, balões, campo e botão) vem de
- * components/ChatAnotacoes.css. Aqui ficam só a coluna da página e a caixa de
- * orientação, no mesmo padrão da aba do gerente.
- *
- * Texto tinta sobre superfície suave (contraste ≈ 14:1). Só tokens.
+ * components/ChatAnotacoes.css — o mesmo componente do gerente, então as duas
+ * abas são idênticas. Aqui ficam só a coluna da página e a orientação do topo.
  */
 
-/* Coluna: orientação e conversa. */
+/* Coluna: orientação e conversa, com 24 px entre os blocos. */
 .pagina-anotacoes-regional {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-secao);
+  gap: var(--espaco-entre-blocos);
 }
 
 /*
- * Orientação do topo: caixa discreta com borda para se separar do fundo
- * (que é da mesma cor).
+ * Orientação do topo: nota de apoio (14 px em --cor-texto-suave, 9,5:1 sobre
+ * o fundo), sem moldura, igual à da aba do gerente.
  */
 .pagina-anotacoes-regional__orientacao {
   margin: 0;
-  padding: var(--espaco-lg);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-md);
-  font-size: var(--texto-rotulo);
-  line-height: 1.45;
+  font-size: var(--texto-nota);
+  line-height: var(--entrelinha-corpo);
+  color: var(--cor-texto-suave);
 }

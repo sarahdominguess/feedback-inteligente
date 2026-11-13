@@ -150,7 +150,7 @@ export function PaginaFeedbackRegional() {
       >
         <h2
           id="titulo-gerar-regional"
-          className="pagina-feedback-regional__titulo"
+          className="pagina-feedback-regional__titulo pagina-feedback-regional__titulo--principal"
         >
           Gerar feedback para o gerente
         </h2>
