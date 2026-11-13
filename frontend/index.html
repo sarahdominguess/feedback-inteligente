@@ -2,9 +2,27 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Ícone da aba do navegador: PNG oficial do Return.Ai (public/favicon.png). -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Feedback Inteligente</title>
+
+    <!--
+      Fonte Inter, exigida pelo DESIGN.md (seção 3, pesos 400/600/700/800).
+      Ela vem do Google Fonts porque não é um arquivo do projeto. Sem internet,
+      o navegador simplesmente usa a fonte de reserva (sans-serif) e a tela
+      continua legível — nada quebra.
+      Os dois "preconnect" abrem a conexão antes do download: o primeiro com o
+      servidor que entrega o CSS da fonte e o segundo com o que entrega os
+      arquivos dela. Isso deixa o texto com a fonte certa mais cedo.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+    />
+
+    <title>Return.Ai</title>
   </head>
   <body>
     <div id="root"></div>
