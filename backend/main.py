@@ -1,4 +1,4 @@
-"""Ponto de entrada da API do FullStore Feedback Inteligente.
+"""Ponto de entrada da API do Return.Ai.
 
 É este arquivo que o Uvicorn executa para colocar o servidor no ar. Aqui
 ficam só as configurações gerais: carregamento do .env, CORS, tratamento
@@ -87,7 +87,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="FullStore Feedback Inteligente",
+    title="Return.Ai",
     version="0.1.0",
     lifespan=lifespan,
 )

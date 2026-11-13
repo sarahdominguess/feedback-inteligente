@@ -1,4 +1,4 @@
-"""Exceções do domínio do FullStore Feedback Inteligente.
+"""Exceções do domínio do Return.Ai.
 
 Exceção: um tipo especial de erro em Python. Aqui ficam os erros que sabemos
 explicar em português e que o restante do backend pode capturar para responder

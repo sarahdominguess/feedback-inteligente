@@ -1,7 +1,7 @@
 # Como rodar o projeto
 
 Instruções para subir o backend (FastAPI) e o frontend (React + Vite) da aplicação
-**FullStore Feedback Inteligente** em ambiente local.
+**Return.Ai** em ambiente local.
 
 ## Pré-requisitos
 
@@ -179,9 +179,8 @@ Ordem para subir tudo:
 Em http://localhost:5173 o app abre na visão do gerente, já na aba
 **Feedback**, com a Bianca selecionada.
 
-**Cabeçalho (topo, largura toda):** à esquerda o nome do projeto
-(**Feedback Inteligente**) com o subtítulo **"Assistente de IA para
-feedback"**; à direita o menu de usuário, que mostra quem está usando o
+**Cabeçalho (topo, largura toda):** à esquerda a logo **Return.Ai**; à direita
+o menu de usuário, que mostra quem está usando o
 sistema e o cargo. Clicando na seta aparecem as duas opções — **Diego /
 Gerente** e **Patrícia / Regional** — e escolher uma troca a visão do app (não
 há login; são os dois perfis da demonstração).
